@@ -1,0 +1,51 @@
+{
+  "proof": "milestone-3-positive",
+  "result": "PASS",
+  "generated_by": "evidence/run-positive-proof.sh",
+  "chain": "local anvil devnet (chainId 31337)",
+  "provenance_note": "Coston2 was the plan target; a live production-attested FCC round trip there is externally blocked (BLK-001/BLK-002). This is the honest local substitute: same contracts, same FCC verifier scheme, same exact-payout invariant, on the chain the genuine tee-node vector targets. Signature genuineness (bytes match real Flare code) is proven separately by tools/tee-signer + contracts/test/FccRealSignature.t.sol.",
+  "deployment": {
+    "settlement": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+    "escrowToken": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "teeRegistry": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "fccVerifier": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    "verifierMode": "flare-fcc-v1/simulated-attestation",
+    "merchant": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "creator": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "teeId": "0xC9fe5A864FbE024a2cc46d0dF6b2F5e2417204ca",
+    "extensionId": "65536"
+  },
+  "order": {
+    "instructionId": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+    "orderDigest": "0xbe4b0fa03136646a52108527f8dd4873c60796d246fe5dd610ec0d4a2f6a1a45",
+    "eligibility": "ELIGIBLE(1)"
+  },
+  "transactions": {
+    "fund": "0x19a353c9fa2ec31734423368819d1f961a57f9e456a8e8bba0d71dc76250ce7a",
+    "settle": "0x9278ea5722c0e2d385e6d00a7d12ad252442109d1e0aa5649a5c1d46473d9fa7",
+    "settleBlock": 6,
+    "settleStatus": "success",
+    "settleGasUsed": 138825
+  },
+  "balances": {
+    "escrowBefore": 100000000,
+    "escrowAfter": 80000000,
+    "escrowDelta": 20000000,
+    "creatorBefore": 0,
+    "creatorAfter": 20000000,
+    "creatorDelta": 20000000,
+    "merchantAfter": 0,
+    "totalSettled": 20000000,
+    "orderSettled": "true"
+  },
+  "exact_amount_agreement": {
+    "netApplied": 200000000,
+    "commissionBps": 1000,
+    "configuredFormula_floor_net_bps_over_10000": 20000000,
+    "fccResultAmount": 20000000,
+    "settledEventAmount": 20000000,
+    "creatorBalanceDelta": 20000000,
+    "escrowBalanceDelta": 20000000,
+    "all_equal": true
+  }
+}
