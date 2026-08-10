@@ -9,11 +9,14 @@ record shows, not universal attribution truth.
 
 Built for the Flare Summer Signal hackathon. Testnet (Coston2) and synthetic data only.
 
-> Status: work in progress. This repository is being built proof-first: the settlement
-> invariant is enforced and tested locally, then the real Flare Confidential Compute
-> (FCC) result-authenticity boundary is reproduced on-chain and swapped in under the
-> same settlement contract. See "Current state" below for exactly what is and is not
-> proven yet. No claim here should be read as more than what the tests demonstrate.
+> Status: proof-first build, judge-ready. The settlement invariant is enforced and
+> tested locally, the real Flare Confidential Compute (FCC) result-authenticity boundary
+> is reproduced byte-for-byte and swapped in under the same settlement contract, and both
+> the positive and negative on-chain proofs plus a one-command proof gate run green. The
+> one piece still outside our control is the live tee-node round trip on Coston2, which is
+> externally blocked and stands in as simulated attestation. See "Current state" below for
+> exactly what is and is not proven. No claim here should be read as more than what the
+> tests demonstrate.
 
 ## The idea
 
@@ -76,7 +79,7 @@ identity, and all golden vectors live in [`spec/jorqeth-v1.json`](spec/jorqeth-v
 
 ## Current state
 
-Proven locally (44 passing tests):
+Proven locally (55 passing tests):
 
 - Eligible order pays the exact floor commission, once, to the bound creator.
 - Refunded / unmatched order is a valid evaluation that pays zero.
@@ -88,9 +91,26 @@ Proven locally (44 passing tests):
   rejected at the boundary, and removing the TEE (empty active set) halts the payable
   path entirely while escrow stays intact.
 
-Not yet done: the live tee-node round trip on Coston2 (simulated attestation), Coston2
-deployment and on-chain positive / negative proof (M3-M4), proof gate (M5), and the
-judge-facing surfaces (M6+).
+Proven on-chain and packaged for a judge:
+
+- A funded settlement contract is deployed and every path is driven against it: the
+  eligible sale pays the exact `+20.000000` mUSD commission and every other path
+  (refund, replay, tampering, wrong domain, untrusted signer, expiry,
+  infrastructure-unknown, error status, fleet outage) leaves escrow untouched. Across the
+  whole matrix, exactly one path moves value. This is the positive proof (M3) and the
+  negative / failure proof (M4).
+- One command re-runs the full Foundry suite, both on-chain proofs, and a privacy scan,
+  then rewrites the committed evidence: `bash evidence/run-proof-gate.sh` (M5).
+- A zero-dependency, read-only judge page replays that evidence, with a settlement
+  receipt, an FCC proof inspector, and a trust & product brief beside it (M6, M8). A
+  cold-start rehearsal runner drives the whole thing from a clean chain (M7). See
+  [`web/README.md`](web/README.md).
+
+Still outside our control: the live tee-node round trip on Coston2. No funded Coston2
+wallet is available, so the on-chain proofs run against a local chain and the verifier is
+labelled `simulated-attestation`. The TEE signature scheme itself is proven byte-for-byte
+against real Flare library code, which is the self-contained substitute for that blocked
+round trip.
 
 ## Build and test
 

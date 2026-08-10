@@ -37,8 +37,7 @@ contract FccRealSignatureTest is Test {
 
     // Data = abi.encode(PayableResult), exactly 12 static words (384 bytes),
     // produced by go-ethereum abi.Arguments.Pack in the driver.
-    bytes internal constant CAP_DATA =
-        hex"0000000000000000000000000000000000000000000000000000000000000001"
+    bytes internal constant CAP_DATA = hex"0000000000000000000000000000000000000000000000000000000000000001"
         hex"cbd0f075e08709f2fd3f28132cb9496eecfcac785276e84c16b0d8e475b4c99a"
         hex"be4b0fa03136646a52108527f8dd4873c60796d246fe5dd610ec0d4a2f6a1a45"
         hex"000000000000000000000000000000000000000000000000000000000000c0de"
@@ -52,16 +51,12 @@ contract FccRealSignatureTest is Test {
         hex"0000000000000000000000000000000000000000000000000000000068e78610";
 
     // Genuine tee-node signature, r||s||v with v normalized to 28 (0x1c) for on-chain use.
-    bytes internal constant CAP_SIG_V2728 =
-        hex"9717c77497e3dc0669df3303d7b00a0d1e7b851c53062f830a9519cf9ac82ce4"
-        hex"3133a0a3537818352976b85da785a9ba427af9d30f87768971b62f6e475a2e53"
-        hex"1c";
+    bytes internal constant CAP_SIG_V2728 = hex"9717c77497e3dc0669df3303d7b00a0d1e7b851c53062f830a9519cf9ac82ce4"
+        hex"3133a0a3537818352976b85da785a9ba427af9d30f87768971b62f6e475a2e53" hex"1c";
 
     // The same signature exactly as go-ethereum emits it, v in {0,1} (0x01).
-    bytes internal constant CAP_SIG_RAW_V01 =
-        hex"9717c77497e3dc0669df3303d7b00a0d1e7b851c53062f830a9519cf9ac82ce4"
-        hex"3133a0a3537818352976b85da785a9ba427af9d30f87768971b62f6e475a2e53"
-        hex"01";
+    bytes internal constant CAP_SIG_RAW_V01 = hex"9717c77497e3dc0669df3303d7b00a0d1e7b851c53062f830a9519cf9ac82ce4"
+        hex"3133a0a3537818352976b85da785a9ba427af9d30f87768971b62f6e475a2e53" hex"01";
 
     // Intermediate hashes captured from the genuine Flare code, asserted below.
     bytes32 internal constant CAP_AR_HASH =
