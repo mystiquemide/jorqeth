@@ -1,0 +1,77 @@
+{
+  "proof": "milestone-5-proof-gate",
+  "result": "PASS",
+  "generated_by": "evidence/run-proof-gate.sh",
+  "chain": "local anvil devnet (chainId 31337)",
+  "provenance_note": "The Milestone 5 Proof Gate. One command re-runs the full forge suite and both on-chain proofs from a clean state, then resolves each mandatory checklist item to a source-of-truth artifact. Runs on local anvil 31337 for the same reason as the positive/negative proofs (BLK-001/BLK-002). A fully-live production-attested Coston2 round trip remains externally blocked; the genuine Flare-code signature (CP-003) is the accepted self-contained substitute.",
+  "summary": {
+    "checklist_items_passed": 9,
+    "checklist_items_total": 9,
+    "forge_tests_passed": 55,
+    "forge_tests_failed": 0,
+    "genuine_signature_vector": "go regen skipped (toolchain go1.25 unavailable offline); covered by forge FccRealSignatureTest",
+    "privacy_scan_findings": 0
+  },
+  "sources_of_truth": {
+    "forge_suite": "forge test",
+    "positive_proof": "evidence/positive-proof.json",
+    "negative_proof": "evidence/negative-proof.json",
+    "genuine_signature": "tools/tee-signer/genuine-vector.json + contracts/test/FccRealSignature.t.sol"
+  },
+  "checklist": [
+    {
+      "item": "winning_invariant_end_to_end",
+      "requirement": "The winning invariant works end to end.",
+      "status": "pass",
+      "evidence": "forge test 55 passed / 0 failed; positive-proof.json=PASS; negative-proof.json only_eligible=true"
+    },
+    {
+      "item": "real_fcc_load_bearing",
+      "requirement": "The current real FCC path works and is load-bearing.",
+      "status": "pass",
+      "evidence": "FccRealSignatureTest=ok (genuine Flare-code signature verifies); FccSettlementTest=ok (eligible pays only on a registered-TEE signature); genuine vector: go regen skipped (toolchain go1.25 unavailable offline); covered by forge FccRealSignatureTest"
+    },
+    {
+      "item": "positive_proof_inspectable",
+      "requirement": "Positive proof exists and is independently inspectable.",
+      "status": "pass",
+      "evidence": "evidence/positive-proof.{json,md}; RPC-re-verifiable via the cast calls in positive-proof.md"
+    },
+    {
+      "item": "exact_payout_agreement",
+      "requirement": "The exact eligible payout and creator balance delta agree.",
+      "status": "pass",
+      "evidence": "positive-proof.json exact_amount_agreement.all_equal=true; creatorBalanceDelta=20000000 across formula/FCC/event/balance"
+    },
+    {
+      "item": "negative_proof_zero_payout",
+      "requirement": "Negative proof exists and visibly produces zero payout.",
+      "status": "pass",
+      "evidence": "negative-proof.json paths_that_transferred_value=1 (only the eligible order); refund settles zero and is terminal (true)"
+    },
+    {
+      "item": "replay_wrongdomain_cannot_pay",
+      "requirement": "Replay and wrong-domain attempts cannot pay.",
+      "status": "pass",
+      "evidence": "negative-proof.json vectors: replay.paid=false, wrong_domain_chain.paid=false, wrong_domain_contract.paid=false"
+    },
+    {
+      "item": "timeout_infra_fails_closed",
+      "requirement": "FCC timeout or infrastructure uncertainty fails closed.",
+      "status": "pass",
+      "evidence": "negative-proof.json: infra-unknown, fleet-outage, and error-status all revert (pay zero) and do NOT consume the digest (retryable): true/true/true"
+    },
+    {
+      "item": "no_prohibited_fields",
+      "requirement": "Public evidence contains no raw merchant/customer record or credential.",
+      "status": "pass",
+      "evidence": "privacy scan of 33 tracked files: 0 prohibited pattern(s); only the documented public anvil dev key is present"
+    },
+    {
+      "item": "core_reproducible",
+      "requirement": "The complete core flow is reproducible from documented steps.",
+      "status": "pass",
+      "evidence": "this script re-ran forge test + both proofs from a fresh anvil boot; rerun: bash evidence/run-proof-gate.sh"
+    }
+  ]
+}
