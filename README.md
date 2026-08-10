@@ -122,6 +122,80 @@ forge test -vvv
 
 Foundry 1.7.x, Solidity 0.8.28.
 
+## Reproduce the proof
+
+Every claim above regenerates from a clean chain with one command:
+
+```bash
+bash evidence/run-proof-gate.sh
+```
+
+That re-runs the full Foundry suite, both on-chain proofs, and a privacy scan, then
+rewrites the committed evidence. It is deterministic: a fresh clone reproduces the same
+`evidence/*.json` byte-for-byte, down to the settle transaction hash and block.
+
+Evidence index:
+
+| File | What it proves |
+|---|---|
+| [`evidence/positive-proof.md`](evidence/positive-proof.md) | The eligible sale pays the exact `+20.000000` mUSD commission, with five independent amount sources in agreement. |
+| [`evidence/negative-proof.md`](evidence/negative-proof.md) | Across every attempted path against one funded campaign, exactly one moves value; refund, replay, wrong domain, expiry, untrusted signer, tampering, and infrastructure-unknown all pay zero. |
+| [`evidence/proof-gate.md`](evidence/proof-gate.md) | All nine mandatory checklist items pass in one run. |
+| [`contracts/test/FccRealSignature.t.sol`](contracts/test/FccRealSignature.t.sol) | A genuine Flare tee-node signature over `abi.encode(PayableResult)` verifies byte-for-byte against the real FCC scheme. |
+
+## Judge page
+
+A zero-dependency, read-only page replays the committed evidence, with a settlement
+receipt, an FCC proof inspector, and a trust & product brief beside it. No chain call, no
+build step:
+
+```bash
+node web/serve.mjs          # http://127.0.0.1:8080  (redirects to the judge page)
+```
+
+See [`web/README.md`](web/README.md) for the surfaces, tests, and design notes.
+
+## New work vs inherited scaffold
+
+Built during Flare Summer Signal (this repository's contribution):
+
+- `JorqethSettlement`, `SignatureResultVerifier`, `FccResultVerifier`, the frozen
+  `PayableResult` schema and hashing, and the `MockUSD` synthetic escrow token.
+- The full local and on-chain proof pipeline (`evidence/run-*.sh`), the deterministic
+  positive/negative/gate evidence, and the cold-start rehearsal runner.
+- The zero-dependency judge page and its three amplification surfaces.
+- `tools/tee-signer`: a small tool that re-derives a genuine tee-node signature vector
+  from the pinned official Flare sources, so the on-chain FCC test runs against real bytes.
+
+Inherited, reused unchanged (not this project's work):
+
+- The Flare Confidential Compute signing scheme itself, frozen byte-for-byte from the
+  pinned official `tee-node` and `go-flare-common` sources. `FccResultVerifier`
+  reconstructs the exact hash a genuine TEE node signs; it does not invent a scheme.
+- forge-std and OpenZeppelin, pinned as submodules.
+
+## Limitations
+
+- **Merchant-source dependence.** Jorqeth settles what the agreed merchant record shows,
+  not objective attribution outside that source.
+- **Fixed refund snapshot.** Eligibility is evaluated at settlement time, not reconciled
+  against later disputes.
+- **One connector.** A single synthetic merchant record source is wired, not a production
+  commerce integration.
+- **Non-production FCC.** No funded Coston2 wallet is available, so the on-chain proofs run
+  on a local devnet with simulated attestation; a live Coston2 Confidential Space round
+  trip is externally blocked. The genuine byte-for-byte signature proof is the
+  self-contained substitute for that one blocked step.
+
+## Roadmap
+
+1. Production secret delivery: an off-chain confidential channel to hand the extension its
+   merchant credential under real attestation.
+2. Merchant pilot connector: one real commerce record source behind the same
+   minimal-result boundary.
+3. Settlement-window and refund finality: a dispute window before a payout becomes
+   irreversible.
+
 ## Security and privacy
 
 - No credential, private key, raw merchant record, or customer field appears in any
