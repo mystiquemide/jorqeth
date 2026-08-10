@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jorqeth — confidential commission settlement, proven</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23b4245a'/%3E%3Ctext x='8' y='12' font-size='11' text-anchor='middle' fill='white' font-family='sans-serif'%3EJ%3C/text%3E%3C/svg%3E" />
+    <meta
+      name="description"
+      content="A read-only replay of Jorqeth's positive and negative settlement proof, bound to the committed Milestone 5 evidence."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="wrap">
+        <p class="eyebrow">Flare Confidential Compute · hackathon proof</p>
+        <h1>Jorqeth settles creator commissions from a merchant's own records, in private.</h1>
+        <p class="lede">
+          A merchant funds an escrow. A Flare Confidential Compute extension evaluates each sale
+          against the campaign rules inside a TEE and signs the result. This contract pays the
+          bound creator the exact commission only when that signed result is eligible, and pays
+          nothing otherwise. This page is a read-only replay of that already-proven behaviour.
+        </p>
+
+        <div class="banner" role="note" aria-label="Data and mode disclosure">
+          <p>
+            <strong>Replay mode.</strong> Every number below is read live from the committed proof
+            files <code>evidence/positive-proof.json</code> and
+            <code>evidence/negative-proof.json</code>, regenerable with
+            <code>bash evidence/run-proof-gate.sh</code>. No live chain call or trigger runs here.
+          </p>
+          <p>
+            <strong>Synthetic data, testnet values only.</strong> No real merchant or customer
+            record is used or shown. Runs on a local anvil devnet; a fully live, production-attested
+            Coston2 round trip is externally blocked, so the verifier mode is honestly labelled
+            <span class="mode-tag" data-bind="verifierMode">simulated-attestation</span>.
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="wrap" tabindex="-1">
+      <div id="load-error" class="load-error" hidden role="alert">
+        Could not load the proof evidence. Run <code>bash evidence/run-proof-gate.sh</code> and serve
+        this page from the repository root.
+      </div>
+
+      <!-- Winning invariant, one line, from real state -->
+      <section class="invariant" aria-labelledby="inv-h">
+        <h2 id="inv-h">The winning invariant</h2>
+        <p class="invariant-line">
+          Across <strong data-bind="invariant.pathsAttempted">–</strong> attempts against one funded
+          campaign, exactly <strong data-bind="invariant.pathsThatPaid">–</strong> path moved value.
+        </p>
+        <dl class="stat-grid">
+          <div><dt>Creator final balance</dt><dd data-bind="invariant.creatorFinal">–</dd></div>
+          <div><dt>Escrow final</dt><dd data-bind="invariant.escrowFinal">–</dd></div>
+          <div><dt>Total settled</dt><dd data-bind="invariant.totalSettled">–</dd></div>
+        </dl>
+      </section>
+
+      <!-- Campaign summary -->
+      <section class="card" aria-labelledby="camp-h">
+        <h2 id="camp-h">Funded campaign</h2>
+        <dl class="kv">
+          <div><dt>Escrow funded</dt><dd><span data-bind="campaign.escrowFunded">–</span> mUSD</dd></div>
+          <div><dt>Commission rate</dt><dd><span data-bind="campaign.commissionPercent">–</span>% (<span data-bind="campaign.commissionBps">–</span> bps)</dd></div>
+          <div><dt>Net sale applied</dt><dd><span data-bind="campaign.netApplied">–</span> mUSD</dd></div>
+          <div><dt>Chain</dt><dd data-bind="campaign.chain">–</dd></div>
+          <div><dt>Settlement</dt><dd class="addr" data-bind-addr="campaign.settlement">–</dd></div>
+          <div><dt>Creator (payee)</dt><dd class="addr" data-bind-addr="campaign.creator">–</dd></div>
+          <div><dt>TEE machine id</dt><dd class="addr" data-bind-addr="campaign.teeId">–</dd></div>
+        </dl>
+      </section>
+
+      <!-- Positive scenario -->
+      <section class="card scenario" data-tone="pay" aria-labelledby="pos-h">
+        <div class="scenario-head">
+          <h2 id="pos-h">Eligible sale</h2>
+          <span class="pill" data-bind="eligible.state.label">–</span>
+        </div>
+        <p class="explain" data-bind="eligible.explain">–</p>
+
+        <div class="balance-move">
+          <div class="bcol">
+            <span class="blabel">Creator before</span>
+            <span class="bamt" data-bind="eligible.creatorBefore">–</span>
+          </div>
+          <div class="barrow" aria-hidden="true">→</div>
+          <div class="bcol">
+            <span class="blabel">Creator after</span>
+            <span class="bamt pay" data-bind="eligible.creatorAfter">–</span>
+          </div>
+          <div class="bcol delta">
+            <span class="blabel">Paid</span>
+            <span class="bamt pay">+<span data-bind="eligible.creatorDelta">–</span> mUSD</span>
+          </div>
+        </div>
+
+        <details class="agreement">
+          <summary>Exact-amount agreement (every independent source equals the payout)</summary>
+          <table>
+            <caption class="visually-hidden">Five independent amount sources, all equal</caption>
+            <thead><tr><th scope="col">Source</th><th scope="col">Amount (mUSD)</th></tr></thead>
+            <tbody data-rows="eligible.agreement"></tbody>
+          </table>
+          <p class="agree-verdict" data-bind-flag="eligible.allEqual">–</p>
+        </details>
+
+        <p class="txline">
+          Settle tx <code class="addr" data-bind-addr="eligible.settleTx">–</code> ·
+          status <span data-bind="eligible.settleStatus">–</span>
+        </p>
+      </section>
+
+      <!-- Negative + failure matrix -->
+      <section aria-labelledby="neg-h">
+        <h2 id="neg-h" class="section-h">Every other path refuses to pay</h2>
+        <p class="section-sub">
+          The same funded campaign, attacked and stressed from every angle. A legitimate refund is
+          terminal and pays zero. Duplicate, infrastructure-unknown, timeout, and error-status
+          outcomes are visibly distinct: they revert and stay retryable, so a genuine "no commission
+          owed" is never confused with "we could not decide".
+        </p>
+        <ul class="matrix" id="matrix" data-cards="negatives"></ul>
+      </section>
+
+      <!-- Limitations + evidence links -->
+      <section class="card" aria-labelledby="lim-h">
+        <h2 id="lim-h">Honest limitations</h2>
+        <ul class="limits">
+          <li>Runs on a local anvil devnet, not live Coston2. A production-attested FCC round trip
+            there is externally blocked; the verifier mode is labelled simulated-attestation.</li>
+          <li>The TEE signature scheme is proven byte-for-byte against real Flare library code
+            (<code>tools/tee-signer</code> + <code>contracts/test/FccRealSignature.t.sol</code>),
+            which is the self-contained substitute for that blocked round trip.</li>
+          <li>Jorqeth proves what the agreed merchant source records, not objective attribution
+            outside that source.</li>
+          <li>All amounts and records here are synthetic.</li>
+        </ul>
+        <h3>Evidence</h3>
+        <ul class="links" id="evidence-links">
+          <li><a href="../evidence/positive-proof.md">Positive proof (human)</a> · <a href="../evidence/positive-proof.json">json</a></li>
+          <li><a href="../evidence/negative-proof.md">Negative proof (human)</a> · <a href="../evidence/negative-proof.json">json</a></li>
+          <li><a href="../evidence/proof-gate.md">Proof gate (human)</a> · <a href="../evidence/proof-gate.json">json</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Jorqeth · Flare Summer Signal · read-only proof replay · synthetic data only.</p>
+      </div>
+    </footer>
+
+    <template id="card-tpl">
+      <li class="mcard" data-tone="">
+        <div class="mcard-head">
+          <span class="mlabel"></span>
+          <span class="pill"></span>
+        </div>
+        <p class="mexplain"></p>
+        <p class="moutcome"></p>
+      </li>
+    </template>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

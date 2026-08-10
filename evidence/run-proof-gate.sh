@@ -111,15 +111,21 @@ echo "    genuine vector: $GO_VECTOR"
 # ---------------------------------------------------------------- 5. privacy scan
 echo "==> [5/5] privacy scan of committed public evidence"
 SCAN_FILES="$(git ls-files evidence spec contracts script tools README.md 2>/dev/null | grep -vE '\.(log)$' || true)"
-# The card-shaped numeric class excludes Go dependency manifests: their pseudo-version
-# timestamps (e.g. v0.0.0-20251106012722-<hash>) are 14-digit build provenance, not
-# payment data, and a machine-generated lockfile carries no merchant/customer record.
-# Every other class (email, PII keyword, credential, private key) still scans them.
-CARD_FILES="$(echo "$SCAN_FILES" | grep -vE '(^|/)go\.(mod|sum)$' || true)"
+# This scanner is itself a tracked file under evidence/. Its own source necessarily
+# contains the very patterns it hunts for (the regex literals below, and a documented
+# example version timestamp), and it holds no merchant or customer data. So the content
+# classes below skip it; the private-key class further down still scans it, because a
+# real hardcoded key here WOULD be a leak.
+SCANNER_SELF='evidence/run-proof-gate.sh'
+PATTERN_FILES="$(echo "$SCAN_FILES" | grep -vF "$SCANNER_SELF" || true)"
+# The card-shaped numeric class additionally excludes Go dependency manifests: their
+# pseudo-version timestamps (14-digit build provenance) are not payment data, and a
+# machine-generated lockfile carries no merchant/customer record.
+CARD_FILES="$(echo "$PATTERN_FILES" | grep -vE '(^|/)go\.(mod|sum)$' || true)"
 PRIV_FINDINGS="$(mktemp)"; : > "$PRIV_FINDINGS"
-scan() { # label ; regex ; files(optional, default $SCAN_FILES)
+scan() { # label ; regex ; files(optional, default $PATTERN_FILES)
   # exclude the documented public anvil key line from any match
-  local files="${3:-$SCAN_FILES}"
+  local files="${3:-$PATTERN_FILES}"
   grep -rInE "$2" $files 2>/dev/null | grep -v "$ANVIL_PK0" \
     | while IFS= read -r line; do echo "[$1] $line"; done >> "$PRIV_FINDINGS" || true
 }

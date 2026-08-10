@@ -21,7 +21,7 @@ No judge-facing UI work may begin until this gate passes.
 | 5 | Negative proof exists and visibly produces zero payout. | PASS | negative-proof.json paths_that_transferred_value=1 (only the eligible order); refund settles zero and is terminal (true) |
 | 6 | Replay and wrong-domain attempts cannot pay. | PASS | negative-proof.json vectors: replay.paid=false, wrong_domain_chain.paid=false, wrong_domain_contract.paid=false |
 | 7 | FCC timeout or infrastructure uncertainty fails closed. | PASS | negative-proof.json: infra-unknown, fleet-outage, and error-status all revert (pay zero) and do NOT consume the digest (retryable): true/true/true |
-| 8 | Public evidence contains no raw merchant/customer record or credential. | PASS | privacy scan of 33 tracked files: 0 prohibited pattern(s); only the documented public anvil dev key is present |
+| 8 | Public evidence contains no raw merchant/customer record or credential. | PASS | privacy scan of 36 tracked files: 0 prohibited pattern(s); only the documented public anvil dev key is present |
 | 9 | The complete core flow is reproducible from documented steps. | PASS | this script re-ran forge test + both proofs from a fresh anvil boot; rerun: bash evidence/run-proof-gate.sh |
 
 ## Sources of truth
