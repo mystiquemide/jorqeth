@@ -139,6 +139,40 @@ contract FccVerifierTest is JorqethTestBase {
         vm.expectRevert(bytes("fcc: zero registry"));
         new FccResultVerifier(ITeeMachineRegistryZero(), EXTENSION_ID, "simulated-attestation");
     }
+
+    // --- Source-derived golden vector: the chain-id-bound payload hash matches
+    //     Flare's own go-flare-common signing test byte-for-byte. ---
+
+    /// @notice go-flare-common `pkg/signing/hash_test.go TestHash` fixes
+    ///         Payload{prefix, chainId, dataHash}.Hash() for
+    ///         prefix=0x1111…, chainId=14, dataHash=0x2222…. Running that exact Go
+    ///         code (tee-node v0.0.24's pinned dependency) yields the constant below.
+    ///         This asserts our Solidity `abi.encode(bytes32,uint256,bytes32)` payload
+    ///         construction reproduces the real signer's preimage exactly, with no Go
+    ///         toolchain required in CI. If this ever fails, the on-chain verifier has
+    ///         drifted from the TEE signing scheme.
+    function test_goldenVector_payloadHashMatchesFlareGoSource() public pure {
+        bytes32 prefix = 0x1111111111111111111111111111111111111111111111111111111111111111;
+        uint256 chainId = 14;
+        bytes32 dataHash = 0x2222222222222222222222222222222222222222222222222222222222222222;
+        bytes32 got = keccak256(abi.encode(prefix, chainId, dataHash));
+        assertEq(
+            got,
+            0x3927cb750d24611fdfbae3ac51b1eb509321ba5dd2907fd4cd86f0198bf77f7e,
+            "payload hash must match go-flare-common Payload.Hash()"
+        );
+    }
+
+    /// @notice The action-result domain prefix must be the left-aligned ASCII of
+    ///         "TEE_ACTION_RESULT", identical to go-flare-common
+    ///         `mustStringBytes32("TEE_ACTION_RESULT")`.
+    function test_goldenVector_actionResultPrefixMatchesGoSource() public pure {
+        assertEq(
+            TEE_ACTION_RESULT_PREFIX,
+            0x5445455f414354494f4e5f524553554c54000000000000000000000000000000,
+            "TEE_ACTION_RESULT prefix must match go source"
+        );
+    }
 }
 
 /// @dev Helper to pass address(0) as the registry without a cast warning.
