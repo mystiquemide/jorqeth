@@ -10,9 +10,10 @@ record shows, not universal attribution truth.
 Built for the Flare Summer Signal hackathon. Testnet (Coston2) and synthetic data only.
 
 > Status: work in progress. This repository is being built proof-first: the settlement
-> invariant is enforced and tested locally before the real Flare Confidential Compute
-> (FCC) integration is wired in. See "Current state" below for exactly what is and is
-> not proven yet. No claim here should be read as more than what the tests demonstrate.
+> invariant is enforced and tested locally, then the real Flare Confidential Compute
+> (FCC) result-authenticity boundary is reproduced on-chain and swapped in under the
+> same settlement contract. See "Current state" below for exactly what is and is not
+> proven yet. No claim here should be read as more than what the tests demonstrate.
 
 ## The idea
 
@@ -45,16 +46,28 @@ against the real FCC verifier later without changing settlement logic:
   the domain-bound result against a trusted evaluator key. Mode label:
   `local-signature-v1`. This proves the invariant end to end locally. It is **not** the
   sponsor primitive and never claims to be.
-- **Milestone 2 (next):** swap in the real Flare FCC result verifier. The settlement
-  contract, result schema, and tests stay unchanged.
+- **Milestone 2 (contract-side done):** `FccResultVerifier` reconstructs the exact hash
+  the Flare TEE node signs over an `ActionResult`, recovers the secp256k1 signer, and
+  accepts a result only if that signer is a currently-active TEE machine (`teeId`) for
+  Jorqeth's extension, read from the on-chain registry. Swapping it under
+  `JorqethSettlement` changes nothing about the settlement contract, schema, or its M1
+  tests. Mode label: `flare-fcc-v1/<attestation>`, where the attestation mode is
+  surfaced honestly (simulated vs production Confidential Space). The remaining step is
+  the live tee-node round trip on Coston2.
+
+The signing scheme reproduced in `FccResultVerifier` is frozen byte-for-byte from the
+pinned official sources (Flare `tee-node` and `go-flare-common`), so a genuine tee-node
+signature over `abi.encode(PayableResult)` verifies here unchanged.
 
 ## Contracts
 
 | Contract | Role |
 |---|---|
 | `JorqethSettlement` | Escrow, domain binding, replay guard, exact/zero payout. The enforcement point. |
-| `IResultVerifier` | Result-authenticity boundary (local signature now, FCC later). |
+| `IResultVerifier` | Result-authenticity boundary (local signature or FCC, swapped at deploy). |
 | `SignatureResultVerifier` | Milestone 1 local verifier (EIP-712 signature). |
+| `FccResultVerifier` | Milestone 2 real FCC verifier: reconstructs the TEE `ActionResult` signature and checks the signer against the active on-chain `teeId` set. |
+| `ITeeMachineRegistry` | Read-only view of the on-chain Flare TEE machine registry (active `teeId`s per extension). |
 | `JorqethResult` / `JorqethTypes` | Frozen `PayableResult` schema and struct hashing. |
 | `MockUSD` | Synthetic 6-decimal test escrow token. Not a real asset. |
 
@@ -63,16 +76,21 @@ identity, and all golden vectors live in [`spec/jorqeth-v1.json`](spec/jorqeth-v
 
 ## Current state
 
-Proven locally (30 passing tests):
+Proven locally (44 passing tests):
 
 - Eligible order pays the exact floor commission, once, to the bound creator.
 - Refunded / unmatched order is a valid evaluation that pays zero.
 - Replay, wrong chain, wrong contract, expiry, untrusted signer, tampered
   recipient/amount, and infrastructure-unknown all fail closed with no payout.
 - Escrow accounting, insufficient escrow, and token-transfer failure keep state intact.
+- With the real `FccResultVerifier` installed, an eligible order settles the exact
+  commission **only** because a registered TEE signed the result; a valid non-TEE key is
+  rejected at the boundary, and removing the TEE (empty active set) halts the payable
+  path entirely while escrow stays intact.
 
-Not yet done: real FCC integration (M2), Coston2 deployment and on-chain positive /
-negative proof (M3-M4), proof gate (M5), and the judge-facing surfaces (M6+).
+Not yet done: the live tee-node round trip on Coston2 (simulated attestation), Coston2
+deployment and on-chain positive / negative proof (M3-M4), proof gate (M5), and the
+judge-facing surfaces (M6+).
 
 ## Build and test
 
