@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jorqeth — trust and product brief</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23b4245a'/%3E%3Ctext x='8' y='12' font-size='11' text-anchor='middle' fill='white' font-family='sans-serif'%3EJ%3C/text%3E%3C/svg%3E" />
+    <meta name="description" content="What Jorqeth is, what was built during Summer Signal, its guarantees and limitations, and a three-step path beyond the hackathon." />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./surfaces.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="wrap">
+        <p class="eyebrow">Flare Confidential Compute · trust &amp; product brief</p>
+        <h1>Jorqeth: private commission settlement from a merchant's own records</h1>
+        <p class="lede" data-bind="model">
+          Jorqeth privately determines creator commission eligibility from an agreed
+          merchant record and releases the exact amount from merchant-funded escrow.
+        </p>
+        <div class="banner" role="note" aria-label="Claim boundary">
+          <p>
+            <strong>Claim boundary, above the fold.</strong> Jorqeth settles what the agreed
+            merchant record shows, not universal attribution truth. The participating
+            merchant stays the source of record. Synthetic records and testnet values only.
+          </p>
+        </div>
+        <p class="crumbs"><a href="./index.html">← Back to the proof replay</a></p>
+      </div>
+    </header>
+
+    <main id="main" class="wrap" tabindex="-1">
+      <div id="load-error" class="load-error" hidden role="alert">
+        Could not load the proof evidence.
+      </div>
+
+      <section class="card" aria-labelledby="what-h">
+        <h2 id="what-h">Target user and problem</h2>
+        <p><strong>Who:</strong> <span data-bind="targetUser">–</span></p>
+        <p><strong>Problem:</strong> <span data-bind="problem">–</span></p>
+        <p><strong>Model:</strong> <span data-bind="model">–</span></p>
+      </section>
+
+      <section class="two-col">
+        <div class="card scenario" data-tone="pay" aria-labelledby="pos-h">
+          <h2 id="pos-h">Positive guarantee</h2>
+          <p data-bind="positiveGuarantee">–</p>
+        </div>
+        <div class="card scenario" data-tone="zero" aria-labelledby="neg-h">
+          <h2 id="neg-h">Negative guarantee</h2>
+          <p data-bind="negativeGuarantee">–</p>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="status-h">
+        <h2 id="status-h">Current status</h2>
+        <dl class="kv">
+          <div><dt>Network</dt><dd data-bind="network">–</dd></div>
+          <div><dt>Verifier mode</dt><dd><span class="mode-tag" data-bind="verifierMode">–</span></dd></div>
+          <div><dt>Attestation</dt><dd data-bind="attestation">–</dd></div>
+          <div><dt>Settlement contract</dt><dd class="addr" data-bind-addr="settlement">–</dd></div>
+          <div><dt>Spec version</dt><dd data-bind="specVersion">–</dd></div>
+          <div><dt>Data source</dt><dd data-bind="dataSourceLabel">–</dd></div>
+        </dl>
+      </section>
+
+      <section class="two-col">
+        <div class="card" aria-labelledby="sec-h">
+          <h2 id="sec-h">Security controls</h2>
+          <ul id="security-list" class="tick"></ul>
+        </div>
+        <div class="card" aria-labelledby="lim-h">
+          <h2 id="lim-h">Known limitations</h2>
+          <ul id="limitations-list" class="limits"></ul>
+        </div>
+      </section>
+
+      <section class="two-col">
+        <div class="card" aria-labelledby="new-h">
+          <h2 id="new-h">Built during Summer Signal</h2>
+          <ul id="newwork-list" class="tick"></ul>
+        </div>
+        <div class="card" aria-labelledby="scaf-h">
+          <h2 id="scaf-h">Inherited FCC scaffold (reused, not modified)</h2>
+          <ul id="scaffold-list" class="limits"></ul>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="road-h">
+        <h2 id="road-h">Three-step roadmap</h2>
+        <ol id="roadmap-list" class="roadmap"></ol>
+      </section>
+
+      <section class="card" aria-labelledby="rlinks-h">
+        <h2 id="rlinks-h">Repository and reproduction</h2>
+        <ul class="links">
+          <li>Source repository: <a data-bind-href="links.repo" data-bind="links.repo" href="https://github.com/mystiquemide/jorqeth">https://github.com/mystiquemide/jorqeth</a></li>
+          <li><a data-bind-href="links.readme" href="../README.md">README</a> · <a data-bind-href="links.spec" href="../spec/jorqeth-v1.json">frozen spec</a></li>
+          <li><a data-bind-href="links.positiveEvidence" href="../evidence/positive-proof.md">Positive proof</a> · <a data-bind-href="links.negativeEvidence" href="../evidence/negative-proof.md">negative proof</a> · <a data-bind-href="links.proofGate" href="../evidence/proof-gate.md">proof gate</a></li>
+          <li>Reproduce: <code>bash evidence/run-proof-gate.sh</code></li>
+        </ul>
+        <p class="txline">
+          <a href="./receipt.html">See a settlement receipt</a> · <a href="./inspector.html">why FCC is load-bearing</a>
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Jorqeth · Flare Summer Signal · trust &amp; product brief · synthetic data only.</p>
+      </div>
+    </footer>
+
+    <script type="module">
+      import { renderBrief } from "./surfaces-ctl.js";
+      renderBrief();
+    </script>
+  </body>
+</html>

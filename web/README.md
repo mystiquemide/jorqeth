@@ -22,6 +22,29 @@ show a figure the proof does not contain.
    "we could not decide" (reverts, stays retryable) and from an attack (rejected).
 5. Honest limitations and direct links to the underlying evidence files.
 
+## Judge-amplifying surfaces
+
+Three read-only companion pages sit next to the main replay. They add no new
+behaviour, write path, actor, or metric: each is another lens over the same
+committed proof and frozen spec, so nothing on them can show a value the proof or
+`spec/jorqeth-v1.json` does not already contain.
+
+- `receipt.html` — a shareable settlement receipt for each approved run
+  (eligible, refund, replay, infrastructure-unknown). Deep-linkable with `?r=`
+  (`?r=infra`, `?r=replay`, ...). An eligible run shows the exact `+20.000000` mUSD
+  payout and the real settle tx; every other run reads as its own outcome and pays
+  zero, never as a success.
+- `inspector.html` — why Flare Confidential Compute is load-bearing: the five-step
+  verification chain, the exact on-chain `PayableResult` fields the TEE signature
+  binds (parsed from the frozen result-type string), the private fields it withholds,
+  and honest simulated-vs-production attestation copy.
+- `brief.html` — target user, problem, model, positive and negative guarantees,
+  security controls, limitations (merchant-source dependence stated first), what was
+  built during Summer Signal versus inherited FCC scaffold, and a three-step roadmap.
+
+The main replay links to all three under "Verify and understand it further". Each
+surface links back and cross-links the other two.
+
 ## Run it
 
 Zero dependencies. Node 18+ only.
@@ -50,14 +73,19 @@ rewrites `evidence/*.json`. Reload the page and the numbers move with it.
 ## Tests
 
 ```bash
-node --test web/test/view.test.mjs   # 15 pure state tests over the real evidence
-node web/smoke.mjs                    # headless-browser smoke: both scenarios,
-                                      # 360px, keyboard focus, link readback,
-                                      # rendered-DOM secret scan
+node --test web/test/view.test.mjs web/test/surfaces.test.mjs
+                                     # 27 pure state tests over the real evidence
+node web/smoke.mjs                    # headless-browser smoke of the main replay:
+                                      # both scenarios, 360px, keyboard focus,
+                                      # link readback, rendered-DOM secret scan
+node web/smoke-surfaces.mjs           # headless-browser smoke of the three surfaces:
+                                      # receipt (eligible/infra/replay deep links),
+                                      # inspector, brief, index cross-links, 360px,
+                                      # keyboard, link readback, secret scan
 ```
 
-The state tests import the same pure view-model the page uses and load the same
-committed JSON the page fetches, so a green suite means the states you see are the
+The state tests import the same pure view-models the pages use and load the same
+committed JSON the pages fetch, so a green suite means the states you see are the
 states that were proven.
 
 ## Honest disclosure
@@ -75,8 +103,8 @@ states that were proven.
 
 ## Design notes
 
-- No framework, no build step, no bundler, no external asset. One HTML file, one
-  stylesheet, two small ES modules, a static server, and a smoke test.
+- No framework, no build step, no bundler, no external asset. Static HTML, two
+  stylesheets, small ES modules, a static server, and smoke tests.
 - Every value enters the DOM through `textContent`, never `innerHTML`, so the
   evidence JSON is treated as untrusted data with no markup-injection surface.
 - Accessible by default: skip link, visible focus, semantic landmarks, reduced-motion

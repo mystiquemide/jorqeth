@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jorqeth — settlement receipt</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23b4245a'/%3E%3Ctext x='8' y='12' font-size='11' text-anchor='middle' fill='white' font-family='sans-serif'%3EJ%3C/text%3E%3C/svg%3E" />
+    <meta name="description" content="A read-only, shareable settlement receipt for an approved Jorqeth proof run, bound to the committed Milestone 5 evidence." />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./surfaces.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="wrap">
+        <p class="eyebrow">Flare Confidential Compute · settlement receipt</p>
+        <h1>Settlement receipt</h1>
+        <p class="lede">
+          A read-only, shareable receipt for one approved settlement run. Every field is
+          read from the committed proof and frozen campaign spec, so this receipt cannot
+          show an outcome the proof does not contain.
+        </p>
+        <p class="crumbs"><a href="./index.html">← Back to the proof replay</a></p>
+      </div>
+    </header>
+
+    <main id="main" class="wrap" tabindex="-1">
+      <div id="load-error" class="load-error" hidden role="alert">
+        Could not load the proof evidence.
+      </div>
+
+      <nav id="receipt-switch" class="rtabs" aria-label="Choose a settlement run"></nav>
+
+      <article id="receipt" class="card receipt" data-tone="" aria-labelledby="rc-h">
+        <div class="receipt-head">
+          <div>
+            <p class="rc-eyebrow"><span data-bind="campaignLabel">–</span></p>
+            <h2 id="rc-h"><span data-bind="outcome">–</span></h2>
+          </div>
+          <span class="pill" id="paid-flag" data-tone="">–</span>
+        </div>
+
+        <div class="payout-band" data-when-paid>
+          <span class="blabel">Exact payout to bound creator</span>
+          <span class="payout-amt"><span data-bind="payoutSigned">–</span> <span data-bind="escrowSymbol">mUSD</span></span>
+          <span class="payout-move">
+            creator <span data-bind="creatorBefore">–</span> → <span data-bind="creatorAfter">–</span>
+          </span>
+        </div>
+
+        <dl class="kv">
+          <div><dt>Outcome</dt><dd><span data-bind="outcome">–</span> (<span data-bind="outcomeKey">–</span>)</dd></div>
+          <div><dt>Payout</dt><dd><span data-bind="payout">–</span> <span data-bind="escrowSymbol">mUSD</span></dd></div>
+          <div data-when-revert><dt>Reverted with</dt><dd class="addr" data-bind="revertReason">–</dd></div>
+          <div><dt>Receipt version</dt><dd data-bind="receiptVersion">–</dd></div>
+          <div><dt>Schema version</dt><dd data-bind="schemaVersion">–</dd></div>
+          <div><dt>Campaign</dt><dd><span data-bind="campaignLabel">–</span> · <span class="addr" data-bind-addr="campaignId">–</span></dd></div>
+          <div><dt>Order digest</dt><dd class="addr" data-bind-addr="orderDigest">–</dd></div>
+          <div><dt>Creator (payee)</dt><dd class="addr" data-bind-addr="creator">–</dd></div>
+          <div><dt>Commission rule</dt><dd><span data-bind="commissionPercent">–</span>% · <span data-bind="ruleVersionLabel">–</span></dd></div>
+          <div><dt>Network</dt><dd data-bind="network">–</dd></div>
+          <div><dt>Settlement contract</dt><dd class="addr" data-bind-addr="settlement">–</dd></div>
+          <div><dt>Verifier mode</dt><dd><span class="mode-tag" data-bind="verifierMode">–</span></dd></div>
+          <div><dt>FCC extension</dt><dd data-bind="extensionId">–</dd></div>
+          <div data-when-paid><dt>FCC instruction</dt><dd class="addr" data-bind-addr="instructionId">–</dd></div>
+          <div data-when-paid><dt>Settle transaction</dt><dd class="addr" data-bind-addr="settleTx">–</dd></div>
+          <div data-when-paid><dt>Settle status</dt><dd data-bind="settleStatus">–</dd></div>
+          <div data-when-paid><dt>Gas used</dt><dd data-bind="settleGasUsed">–</dd></div>
+        </dl>
+
+        <p class="rc-note" data-bind="explorerNote">–</p>
+
+        <div class="labels">
+          <p class="rc-synthetic" data-bind="synthetic">–</p>
+          <p class="rc-boundary" data-bind="claimBoundary">–</p>
+        </div>
+
+        <p class="txline">
+          Full evidence: <a data-bind-href="evidenceHref" href="../evidence/positive-proof.md">this run's proof</a>
+          · <a href="./inspector.html">why FCC is load-bearing</a>
+          · <a href="./brief.html">product brief</a>
+        </p>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Jorqeth · Flare Summer Signal · read-only settlement receipt · synthetic data only.</p>
+      </div>
+    </footer>
+
+    <script type="module">
+      import { renderReceipt } from "./surfaces-ctl.js";
+      renderReceipt();
+    </script>
+  </body>
+</html>

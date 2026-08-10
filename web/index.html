@@ -10,6 +10,7 @@
       content="A read-only replay of Jorqeth's positive and negative settlement proof, bound to the committed Milestone 5 evidence."
     />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./surfaces.css" />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -126,6 +127,35 @@
           owed" is never confused with "we could not decide".
         </p>
         <ul class="matrix" id="matrix" data-cards="negatives"></ul>
+      </section>
+
+      <!-- Judge-amplifying surfaces (secondary; read-only views over the same proof) -->
+      <section aria-labelledby="amp-h">
+        <h2 id="amp-h" class="section-h">Verify and understand it further</h2>
+        <p class="section-sub">
+          Three read-only views over the same committed proof. They add no new behaviour;
+          the replay above is the primary demo.
+        </p>
+        <ul class="amplify">
+          <li>
+            <a href="./receipt.html">
+              <span class="a-title">Settlement receipt</span>
+              <span class="a-sub">A shareable receipt for each approved run: outcome, exact payout, and the on-chain reference.</span>
+            </a>
+          </li>
+          <li>
+            <a href="./inspector.html">
+              <span class="a-title">FCC proof inspector</span>
+              <span class="a-sub">Why Flare Confidential Compute is load-bearing: what the signed result binds and what it withholds.</span>
+            </a>
+          </li>
+          <li>
+            <a href="./brief.html">
+              <span class="a-title">Trust &amp; product brief</span>
+              <span class="a-sub">What was built, the guarantees and limitations, and a path beyond the hackathon.</span>
+            </a>
+          </li>
+        </ul>
       </section>
 
       <!-- Limitations + evidence links -->
