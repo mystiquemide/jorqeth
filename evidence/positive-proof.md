@@ -34,7 +34,7 @@ byte-for-byte, by `tools/tee-signer` and `contracts/test/FccRealSignature.t.sol`
 2. A registered TEE machine signed an ELIGIBLE result for order
    `0xbe4b0fa03136646a52108527f8dd4873c60796d246fe5dd610ec0d4a2f6a1a45` under the frozen ActionResult scheme.
 3. `settle()` verified authenticity and released the exact commission
-   (tx `0x693ffaa455af5cf8e124d3f8c0067361a3e901eaa55f5aee3c9ccfaa6b4816ee`, block 5, success, 138849 gas).
+   (tx `0x693ffaa455af5cf8e124d3f8c0067361a3e901eaa55f5aee3c9ccfaa6b4816ee`, block 9, success, 138849 gas).
 
 ## Exact-amount agreement (every independent source equal)
 

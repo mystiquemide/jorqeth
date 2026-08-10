@@ -65,7 +65,7 @@
       "item": "no_prohibited_fields",
       "requirement": "Public evidence contains no raw merchant/customer record or credential.",
       "status": "pass",
-      "evidence": "privacy scan of 36 tracked files: 0 prohibited pattern(s); only the documented public anvil dev key is present"
+      "evidence": "privacy scan of 37 tracked files: 0 prohibited pattern(s); only the documented public anvil dev key is present"
     },
     {
       "item": "core_reproducible",

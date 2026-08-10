@@ -46,8 +46,11 @@ done
 cast block-number --rpc-url "$RPC" >/dev/null
 
 echo "==> broadcasting script/PositiveProof.s.sol"
+# --slow: send each tx only after the previous receipt lands, so anvil mines exactly one
+# tx per block in a fixed order. The signed txs (and their hashes) are unchanged; this only
+# removes the auto-mine batching that made settleBlock drift between runs.
 forge script script/PositiveProof.s.sol:PositiveProof \
-  --rpc-url "$RPC" --broadcast --private-key "$DEPLOYER_PK" -vv \
+  --rpc-url "$RPC" --broadcast --slow --private-key "$DEPLOYER_PK" -vv \
   2>&1 | tee "$FORGE_LOG"
 
 # --- parse the console evidence block (tolerant to ':' or ' ' delimiters) ---
