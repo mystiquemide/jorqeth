@@ -40,6 +40,14 @@ contract FccResultVerifier is IResultVerifier {
     ///      matching go-flare-common `mustStringBytes32("TEE_ACTION_RESULT")`.
     bytes32 internal constant TEE_ACTION_RESULT_PREFIX = bytes32("TEE_ACTION_RESULT");
 
+    /// @dev The only ActionResult status that denotes a successful evaluation in
+    ///      tee-node v0.0.24: success paths set `Status: 1`, while `errorResult`
+    ///      / `processorutils.Invalid` set `Status: 0` and `DeadlineExceeded`
+    ///      sets `Status: 3` (all genuinely signed). A non-OK status is a real
+    ///      TEE artifact reporting failure or timeout, so it must never pay even
+    ///      though its signature is authentic.
+    uint8 internal constant STATUS_OK = 1;
+
     /// @notice On-chain registry listing active TEE signer addresses per extension
     ///         (the FlareTeeManager diamond on Coston2).
     ITeeMachineRegistry public immutable registry;
@@ -93,13 +101,21 @@ contract FccResultVerifier is IResultVerifier {
         bytes32 payload = keccak256(abi.encode(TEE_ACTION_RESULT_PREFIX, block.chainid, arHash));
         bytes32 digest = MessageHashUtils.toEthSignedMessageHash(payload);
 
-        // 2. Recover the signer.
+        // 2. Reject any non-OK evaluation. `status` is bound into the signature
+        //    above, so it cannot be swapped after signing; this rejects a genuinely
+        //    TEE-signed error (status 0) or timeout (status 3) result whose Data
+        //    still decodes to a payable outcome. Fail closed.
+        if (status != STATUS_OK) {
+            return false;
+        }
+
+        // 3. Recover the signer.
         (address recovered, ECDSA.RecoverError err,) = ECDSA.tryRecover(digest, signature);
         if (err != ECDSA.RecoverError.NoError) {
             return false;
         }
 
-        // 3. Accept only if the signer is a currently-active TEE machine for this
+        // 4. Accept only if the signer is a currently-active TEE machine for this
         //    extension. Fail closed on an empty active set.
         (address[] memory teeIds,) = registry.getActiveTeeMachines(extensionId);
         uint256 n = teeIds.length;

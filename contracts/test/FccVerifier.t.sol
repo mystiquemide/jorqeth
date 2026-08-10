@@ -63,6 +63,24 @@ contract FccVerifierTest is JorqethTestBase {
         return abi.encode(INSTRUCTION_ID, SUBMISSION_TAG, STATUS_OK, signature);
     }
 
+    /// @notice Sign a result with an arbitrary ActionResult `status` (the status is
+    ///         folded into arHash exactly as tee-node does, so the signature is
+    ///         authentic FOR that status). Used to prove the OK-status gate.
+    function _fccProofStatus(uint256 pk, PayableResult memory r, uint8 status)
+        internal
+        view
+        returns (bytes memory)
+    {
+        bytes32 dataHash = keccak256(abi.encode(r));
+        bytes32 arHash = keccak256(
+            abi.encodePacked(dataHash, INSTRUCTION_ID, keccak256(SUBMISSION_TAG), status)
+        );
+        bytes32 payload = keccak256(abi.encode(TEE_ACTION_RESULT_PREFIX, block.chainid, arHash));
+        bytes32 digest = MessageHashUtils.toEthSignedMessageHash(payload);
+        (uint8 v, bytes32 rr, bytes32 s) = vm.sign(pk, digest);
+        return abi.encode(INSTRUCTION_ID, SUBMISSION_TAG, status, abi.encodePacked(rr, s, v));
+    }
+
     // --- Positive: a genuine active-TEE signature verifies ---
 
     function test_verify_acceptsActiveTeeSignature() public view {
@@ -103,6 +121,26 @@ contract FccVerifierTest is JorqethTestBase {
         // Re-pack with a different status than what was signed.
         bytes memory proof = abi.encode(INSTRUCTION_ID, SUBMISSION_TAG, uint8(3), signature);
         assertFalse(fcc.verify(r, proof), "tampered status rejected");
+    }
+
+    // --- A genuinely TEE-signed non-OK status must never pay (the status gate) ---
+
+    /// @notice tee-node sets `Status: 0` on an error result (errorResult / Invalid)
+    ///         and `Status: 3` on DeadlineExceeded, both genuinely signed. If the
+    ///         Data still decodes to a payable eligible outcome, only the OK-status
+    ///         gate stops payment: the signature IS authentic for this status, so
+    ///         signer recovery alone would accept it. Distinct from the tampered
+    ///         envelope above (which fails on signer mismatch).
+    function test_verify_rejectsGenuineErrorStatus() public view {
+        PayableResult memory r = eligibleResultA();
+        bytes memory proof = _fccProofStatus(teePk, r, 0); // authentic signature, status = error
+        assertFalse(fcc.verify(r, proof), "genuine error-status result rejected");
+    }
+
+    function test_verify_rejectsGenuineTimeoutStatus() public view {
+        PayableResult memory r = eligibleResultA();
+        bytes memory proof = _fccProofStatus(teePk, r, 3); // authentic signature, status = timeout
+        assertFalse(fcc.verify(r, proof), "genuine timeout-status result rejected");
     }
 
     // --- Fail closed when the active TEE set is empty ---
