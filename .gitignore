@@ -1,0 +1,35 @@
+# --- Internal planning / state docs: never publish ---
+PROJECT_PLAN.md
+PROJECT_STATE.md
+flare summary*.md
+*.internal.md
+/internal/
+
+# --- Secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets*.json
+
+# --- Foundry ---
+/out/
+/cache/
+/broadcast/
+# keep dependency source, ignore nothing else under lib intentionally
+
+# --- Node / web (added in later milestones) ---
+node_modules/
+dist/
+.next/
+build/
+coverage/
+*.tsbuildinfo
+.pnpm-store/
+
+# --- OS / editor ---
+.DS_Store
+*.log
+.idea/
+.vscode/

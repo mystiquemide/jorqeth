@@ -1,0 +1,25 @@
+[profile.default]
+src = "contracts/src"
+test = "contracts/test"
+out = "out"
+libs = ["lib"]
+solc = "0.8.28"
+optimizer = true
+optimizer_runs = 200
+evm_version = "cancun"
+fs_permissions = [{ access = "read", path = "./spec" }]
+ffi = false
+gas_reports = ["JorqethSettlement"]
+
+[fmt]
+line_length = 100
+tab_width = 4
+bracket_spacing = false
+int_types = "long"
+
+# Coston2 (Flare testnet) — used from Milestone 2 onward. No secrets here.
+[rpc_endpoints]
+coston2 = "${COSTON2_RPC_URL}"
+
+[etherscan]
+coston2 = { key = "${FLARE_EXPLORER_API_KEY}", url = "https://coston2-explorer.flare.network/api", chain = 114 }
