@@ -355,6 +355,19 @@ export default function SettlementJourney() {
     }
   }
 
+  function resetCampaign() {
+    window.localStorage.removeItem("jorqeth.campaign");
+    setCampaign(undefined);
+    setEvaluation(undefined);
+    setSettlementHash(undefined);
+    setVerified(false);
+    setEscrowBalance(BigInt(0));
+    setTotalSettled(BigInt(0));
+    setRecordReference("");
+    setCreator(account || "");
+    clearMessages();
+  }
+
   const steps = [
     Boolean(account && chainId === coston2.id),
     Boolean(creator && isAddress(creator)),
@@ -433,10 +446,13 @@ export default function SettlementJourney() {
               <div className="field__unit"><input inputMode="decimal" value={commissionPercent} onChange={(event) => setCommissionPercent(event.target.value)} disabled={Boolean(campaign)} /><span>%</span></div>
             </label>
             {campaign ? (
-              <div className="journey-value">
-                <span>Campaign contract</span>
-                <a href={`${EXPLORER}/address/${campaign}`} target="_blank" rel="noopener noreferrer">{short(campaign)}</a>
-              </div>
+              <>
+                <div className="journey-value">
+                  <span>Campaign contract</span>
+                  <a href={`${EXPLORER}/address/${campaign}`} target="_blank" rel="noopener noreferrer">{short(campaign)}</a>
+                </div>
+                <button className="journey-reset" type="button" onClick={resetCampaign}>Start a new campaign</button>
+              </>
             ) : (
               <button className="btn btn--primary" onClick={createCampaign} disabled={!account || !deploymentConfigured || Boolean(busy)}>
                 {busy === "create" ? "Creating campaign…" : "Create campaign on Coston2"}
@@ -468,7 +484,8 @@ export default function SettlementJourney() {
             <p>Enter the reference shared with the merchant. The browser sends the reference, never the underlying sales record.</p>
             <label className="field">
               <span>Private record reference</span>
-              <input value={recordReference} onChange={(event) => { setRecordReference(event.target.value); setEvaluation(undefined); }} autoComplete="off" />
+              <input value={recordReference} onChange={(event) => { setRecordReference(event.target.value); setEvaluation(undefined); setSettlementHash(undefined); setVerified(false); }} autoComplete="off" />
+              <small>Testnet references: demo-eligible-001 or demo-refunded-001</small>
             </label>
           </div>
         </li>

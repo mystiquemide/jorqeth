@@ -715,6 +715,7 @@ table.data .t-err { font-family: var(--font-mono); font-size: 0.78rem; color: va
 .journey-step__content > .btn { margin-top: 18px; }
 .field { display: grid; gap: 7px; margin-top: 18px; max-width: 620px; }
 .field > span { font-size: var(--fs-xs); color: var(--text-muted); font-weight: 500; }
+.field small { color: var(--text-muted); font-size: var(--fs-xs); line-height: 1.45; }
 .field input {
   width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border-strong);
   border-radius: var(--r-sm); background: var(--bg); color: var(--ink); font: inherit;
@@ -734,6 +735,8 @@ table.data .t-err { font-family: var(--font-mono); font-size: 0.78rem; color: va
 .journey-value span { color: var(--text-muted); }
 .journey-value code, .journey-value b, .journey-value a { color: var(--ink); }
 .journey-value a { text-decoration: underline; text-underline-offset: 3px; }
+.journey-reset { margin-top: 10px; padding: 0; border: 0; background: none; color: var(--jade-deep); font: inherit; font-size: var(--fs-xs); font-weight: 500; cursor: pointer; }
+.journey-reset:hover { text-decoration: underline; text-underline-offset: 3px; }
 .calculation { margin-top: 18px; padding: 18px; border-radius: var(--r-md); background: var(--ink); color: var(--cream-70); }
 .calculation span, .calculation b, .calculation small { display: block; }
 .calculation span { font-size: var(--fs-xs); }
