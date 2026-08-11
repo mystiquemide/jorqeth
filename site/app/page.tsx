@@ -64,23 +64,6 @@ export function LandingPage({ scrollTo }: { scrollTo?: LandingSection }) {
                 <span>Built on <b>Flare</b>.</span>
               </div>
             </Reveal>
-
-            <Reveal className="hero__proof">
-              <div className="receipt-chip">
-                <div className="receipt-chip__icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="receipt-chip__amt mono">+{PAID} mUSD</div>
-                  <div className="receipt-chip__label">
-                    <span className="dot dot--pulse" style={{ verticalAlign: "middle", marginRight: 5 }} />
-                    settled in block 9
-                  </div>
-                </div>
-              </div>
-            </Reveal>
           </div>
         </section>
 
