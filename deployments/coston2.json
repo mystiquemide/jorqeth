@@ -2,7 +2,7 @@
   "network": "Coston2",
   "chainId": 114,
   "rpcUrl": "https://coston2-api.flare.network/ext/C/rpc",
-  "sourceCommit": "8090011b03c8d0a82998dd8daf783475179a9a8f",
+  "sourceCommit": "e88d66b24f6b564dacb0f30c5b03316434371172",
   "deployer": "0x85a15B970eec3B6ae8A4518595F1f79e204Fbd19",
   "contracts": {
     "mockUsd": {

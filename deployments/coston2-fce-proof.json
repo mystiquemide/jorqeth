@@ -1,6 +1,7 @@
 {
   "network": "Coston2",
   "chainId": 114,
+  "sourceCommit": "e88d66b24f6b564dacb0f30c5b03316434371172",
   "attestationMode": "simulated-attestation",
   "extensionId": "66159",
   "flareTeeManager": "0x1a9C4A0f9D76c0b1D91d22E24E573a9b377618aE",
