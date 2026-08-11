@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Jorqeth — confidential commission settlement, proven</title>
+    <title>Jorqeth: confidential commission settlement, proven</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23b4245a'/%3E%3Ctext x='8' y='12' font-size='11' text-anchor='middle' fill='white' font-family='sans-serif'%3EJ%3C/text%3E%3C/svg%3E" />
     <meta
       name="description"
-      content="A read-only replay of Jorqeth's positive and negative settlement proof, bound to the committed Milestone 5 evidence."
+      content="A read-only replay of Jorqeth's positive and negative settlement verification, bound to the committed evidence."
     />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./surfaces.css" />
@@ -35,9 +35,9 @@
           </p>
           <p>
             <strong>Synthetic data, testnet values only.</strong> No real merchant or customer
-            record is used or shown. Runs on a local anvil devnet; a fully live, production-attested
-            Coston2 round trip is externally blocked, so the verifier mode is honestly labelled
-            <span class="mode-tag" data-bind="verifierMode">simulated-attestation</span>.
+            record is used or shown. Runs locally on an anvil devnet with synthetic records. The
+            live Coston2 FCC attestation path is not yet connected, so the verifier mode is honestly
+            labelled <span class="mode-tag" data-bind="verifierMode">simulated-attestation</span>.
           </p>
         </div>
       </div>
@@ -49,9 +49,9 @@
         this page from the repository root.
       </div>
 
-      <!-- Winning invariant, one line, from real state -->
+      <!-- Settlement invariant, one line, from real state -->
       <section class="invariant" aria-labelledby="inv-h">
-        <h2 id="inv-h">The winning invariant</h2>
+        <h2 id="inv-h">The settlement invariant</h2>
         <p class="invariant-line">
           Across <strong data-bind="invariant.pathsAttempted">–</strong> attempts against one funded
           campaign, exactly <strong data-bind="invariant.pathsThatPaid">–</strong> path moved value.
@@ -129,7 +129,7 @@
         <ul class="matrix" id="matrix" data-cards="negatives"></ul>
       </section>
 
-      <!-- Judge-amplifying surfaces (secondary; read-only views over the same proof) -->
+      <!-- Verification views (secondary; read-only views over the same proof) -->
       <section aria-labelledby="amp-h">
         <h2 id="amp-h" class="section-h">Verify and understand it further</h2>
         <p class="section-sub">
@@ -145,14 +145,14 @@
           </li>
           <li>
             <a href="./inspector.html">
-              <span class="a-title">FCC proof inspector</span>
-              <span class="a-sub">Why Flare Confidential Compute is load-bearing: what the signed result binds and what it withholds.</span>
+              <span class="a-title">FCC verification details</span>
+              <span class="a-sub">How Flare Confidential Compute authenticates settlement: what the signed result binds and what it withholds.</span>
             </a>
           </li>
           <li>
             <a href="./brief.html">
-              <span class="a-title">Trust &amp; product brief</span>
-              <span class="a-sub">What was built, the guarantees and limitations, and a path beyond the hackathon.</span>
+              <span class="a-title">Product &amp; security overview</span>
+              <span class="a-sub">What was built, the guarantees and limitations, and where the live attestation path goes next.</span>
             </a>
           </li>
         </ul>
@@ -162,11 +162,11 @@
       <section class="card" aria-labelledby="lim-h">
         <h2 id="lim-h">Honest limitations</h2>
         <ul class="limits">
-          <li>Runs on a local anvil devnet, not live Coston2. A production-attested FCC round trip
-            there is externally blocked; the verifier mode is labelled simulated-attestation.</li>
-          <li>The TEE signature scheme is proven byte-for-byte against real Flare library code
+          <li>Runs locally on an anvil devnet with synthetic records, not live Coston2. The live
+            Coston2 FCC attestation path is not yet connected; the verifier mode is labelled simulated-attestation.</li>
+          <li>The TEE signature scheme is proven against real Flare library code
             (<code>tools/tee-signer</code> + <code>contracts/test/FccRealSignature.t.sol</code>),
-            which is the self-contained substitute for that blocked round trip.</li>
+            which is the self-contained substitute for that pending round trip.</li>
           <li>Jorqeth proves what the agreed merchant source records, not objective attribution
             outside that source.</li>
           <li>All amounts and records here are synthetic.</li>
@@ -175,14 +175,14 @@
         <ul class="links" id="evidence-links">
           <li><a href="../evidence/positive-proof.md">Positive proof (human)</a> · <a href="../evidence/positive-proof.json">json</a></li>
           <li><a href="../evidence/negative-proof.md">Negative proof (human)</a> · <a href="../evidence/negative-proof.json">json</a></li>
-          <li><a href="../evidence/proof-gate.md">Proof gate (human)</a> · <a href="../evidence/proof-gate.json">json</a></li>
+          <li><a href="../evidence/proof-gate.md">Verification report (human)</a> · <a href="../evidence/proof-gate.json">json</a></li>
         </ul>
       </section>
     </main>
 
     <footer class="site-footer">
       <div class="wrap">
-        <p>Jorqeth · Flare Summer Signal · read-only proof replay · synthetic data only.</p>
+        <p>Jorqeth · Flare Summer Signal · read-only verification replay · synthetic data only.</p>
       </div>
     </footer>
 

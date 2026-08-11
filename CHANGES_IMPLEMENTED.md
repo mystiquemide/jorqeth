@@ -13,7 +13,7 @@ in the working tree, uncommitted, awaiting review. Nothing was pushed or deploye
 
 | Finding | Severity | State | Where |
 |---|---|---|---|
-| REV-001 FCE path never executes | HIGH | Blocked (needs sponsor scaffold + scope call) | contracts / tools |
+| REV-001 FCE path never executes | HIGH | Done in code (evaluator derives the settled result); live Flare round trip still ops/scope-blocked | contracts / script / test |
 | REV-002 Repo and live app unreachable | HIGH | Blocked (ops: publish, DNS, deploy, video) | ops |
 | REV-003 Merchant can drain escrow pre-settlement | HIGH | Done | `contracts/src/JorqethSettlement.sol` |
 | REV-004 Public copy overstates what is live | MEDIUM | Done | site copy, README, tee-signer |
@@ -32,6 +32,42 @@ in the working tree, uncommitted, awaiting review. Nothing was pushed or deploye
 | Hallmark: uniform section padding | Minor | Not done (subjective spacing) | see below |
 
 ## What changed, finding by finding
+
+### REV-001 (HIGH) The settled result was fabricated, not evaluated (code portion)
+
+The proof scripts built `PayableResult` from constants, signed it, and settled, so the
+payout amount and eligibility code were asserted field by field, never derived from a
+record. The review's core objection was that no evaluation ran on the sponsor path.
+
+Fix, in Solidity, on the same devnet the proofs already use:
+- `contracts/src/JorqethEvaluator.sol` reproduces the confidential settlement rule an
+  FCE would run: an eligible order earns `floor(net * commissionBps / 10000)`; a refunded
+  or unmatched order is `INELIGIBLE` and pays zero; any class the evaluator cannot classify
+  fails closed as `INFRASTRUCTURE_UNKNOWN` with zero amount, which is never a payable
+  outcome. `toResult` wires that output straight into the domain-bound result.
+- `contracts/test/SyntheticMerchantSource.sol` stands in for the merchant's private order
+  feed, reading each canonical record and its expected golden from the frozen
+  `spec/jorqeth-v1.json` with the same cheatcodes the proof scripts use.
+- `script/PositiveProof.s.sol` (`_buildResult`) now derives the settled result from the
+  `ORDER-A` record through the evaluator and cross-checks the derived code and amount
+  against the spec's own golden before settling. `script/NegativeProof.s.sol` (`_derive`)
+  derives the eligible (`ORDER-A`) and refund (`ORDER-B`) outcomes the same way, and the
+  paying vector and the refund vector settle those derived values instead of hardcoded
+  ones. The settled `+20.000000` mUSD and its `ELIGIBLE` code are now the evaluator's
+  output, computed from a record, not constants copied into the result.
+- `contracts/test/JorqethEvaluator.t.sol` (7 tests) proves the derived `(code, amount)`
+  equals the spec golden for every canonical order, that the floor rule truncates toward
+  zero, and that an unrecognized class fails closed.
+
+Because the derivation is provably equal to the values the scripts previously asserted,
+the regenerated evidence is byte-identical to the committed proof, so the change adds a
+real evaluation step without moving any proven number. The review's "fail when the FCE or
+active TEE is removed" criterion is already met by NegativeProof's fleet-outage vector
+(empty active set, no payout, digest stays retryable).
+
+This is an in-Solidity simulation of the confidential rule, not a live Flare Compute
+Extension round trip against production attestation. That live round trip is the one piece
+that stays open, and it is ops/scope work (see the blocked section below).
 
 ### REV-003 (HIGH) Merchant could revoke prefunded escrow before settlement
 
@@ -122,13 +158,18 @@ If you want any of these three, say the word and I will treat it as its own desi
 
 ## Blocked, needs your call or an ops action
 
-### REV-001 (HIGH) The sponsor FCE path never executes a real evaluation
+### REV-001 (HIGH) Live Flare attestation round trip (remaining piece)
 
-The proof gate labels the FCC path real and load-bearing based on signature compatibility and registry tests, without running an extension or a merchant-record evaluation against a live attestation. Closing this needs two things I do not have or should not decide alone:
+The code portion is done: an evaluator now derives the settled result from a synthetic
+merchant record and the negative matrix already fails closed when the active TEE fleet is
+removed (see the REV-001 entry above). What stays open is running that rule inside a real
+Flare Compute Extension against production attestation, which needs two things I do not
+have or should not decide alone:
 - Access to the Flare sponsor scaffold to run a real FCE round trip.
-- A scope decision: build the real round trip now, or cut the claim and describe the path as simulated until it exists.
+- A scope decision: build the real round trip now, or keep the current
+  `simulated-attestation` label until it exists.
 
-The code-side honest-claim narrowing is already done under REV-004, so the site no longer overstates this. The remaining work is the actual round trip or an explicit scope cut. Your call.
+The public copy already frames this honestly under REV-004, so nothing overstates it.
 
 ### REV-002 (HIGH) Judges cannot reach the repo or the live app
 
@@ -148,7 +189,7 @@ All checks below were run against the current working tree.
 |---|---|---|
 | Site production build | `npm run build` (in `site/`) | Pass, all 6 routes prerendered static |
 | Type check | `npx tsc --noEmit` (in `site/`) | Pass, exit 0 |
-| Contract tests | `forge test -vvv` | 61 passed, 0 failed across 7 suites |
+| Contract tests | `forge test` | 68 passed, 0 failed across 8 suites |
 | Contract formatting | `forge fmt --check` | Pass, exit 0 |
 | Landing smoke | `node web/smoke.mjs` | Pass: both scenarios, 360px, keyboard, link readback, secret scan |
 | Surfaces smoke | `node web/smoke-surfaces.mjs` | Pass: receipt, inspector, brief, cross-links, 360px, keyboard, secret scan |
@@ -159,6 +200,9 @@ All checks below were run against the current working tree.
 ## Files touched
 
 New:
+- `contracts/src/JorqethEvaluator.sol`
+- `contracts/test/SyntheticMerchantSource.sol`
+- `contracts/test/JorqethEvaluator.t.sol`
 - `site/components/ProofStrip.tsx`
 - `web/smoke-server.mjs`
 - `LICENSE`
@@ -173,7 +217,8 @@ Modified (web and tools): `web/smoke.mjs`, `web/smoke-surfaces.mjs`, `web/serve.
 ## Re-review round (working tree)
 
 A follow-up re-review reopened three items as partial and flagged two hygiene issues. All
-are fixed and verified against a real check. This round is uncommitted, awaiting review.
+are fixed and verified against a real check. This round is committed as `956217a`
+("Close re-review items").
 
 - REV-003 (was partial): withdrawal unlocked exactly at `campaignEnd` while settlement was
   still reachable after it, so a late result could be stranded. Closed by capping a
@@ -207,8 +252,30 @@ Files changed this round: `contracts/src/JorqethSettlement.sol`,
 `evidence/proof-gate.json`, `evidence/proof-gate.md`, `site/data/positive-proof.json`,
 `site/data/proof-gate.json`, and this file.
 
+## REV-001 evaluator round (working tree)
+
+This round is uncommitted. It closes the code portion of REV-001: the settled result is
+now derived by an evaluator instead of asserted from constants. Full detail is in the
+REV-001 entry under "What changed" above; in short:
+- New `contracts/src/JorqethEvaluator.sol` (the confidential rule),
+  `contracts/test/SyntheticMerchantSource.sol` (synthetic private order feed reading the
+  frozen spec), and `contracts/test/JorqethEvaluator.t.sol` (7 tests).
+- `script/PositiveProof.s.sol` and `script/NegativeProof.s.sol` now derive the eligible
+  and refund outcomes through the evaluator and settle the derived values.
+
+Because the derived values equal the constants the scripts previously asserted, the
+regenerated proof evidence is byte-identical to the committed proof, so no proven number
+moved. Verified this round: `forge test` 68 passed / 0 failed across 8 suites,
+`forge fmt --check` exit 0, the proof gate 9/9, and all four `evidence` / `site/data`
+mirror pairs byte-identical (CI's `cmp` stays green).
+
+A separate hygiene sweep in this same working tree strips planner/reviewer vocabulary
+across the repo (many small one- to two-line edits, no behavior change); it is unrelated
+to the code-review findings.
+
 ## Commit state
 
-The first pass is committed as `ea6ccd2` under the repository owner's Git identity. The
-re-review round above is staged in the working tree, uncommitted. Say the word and I will
-commit it under your Git identity. I will not push, merge, or deploy unless you ask.
+The first pass is committed as `ea6ccd2` and the re-review round as `956217a`, both under
+the repository owner's Git identity. The REV-001 evaluator round above is in the working
+tree, uncommitted. Say the word and I will commit it under your Git identity. I will not
+push, merge, or deploy unless you ask.

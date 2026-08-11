@@ -5,7 +5,7 @@ import { useState } from "react";
 const ITEMS = [
   {
     q: "What is Jorqeth?",
-    a: "A way to settle creator and affiliate commissions privately and exactly. The merchant funds escrow and fixes the rule, a confidential step judges each sale against the agreed record, and the contract pays the exact commission on-chain. It settles what that agreed record shows.",
+    a: "A way to settle creator and affiliate commissions privately and exactly. The merchant funds escrow and fixes the rule, a confidential step evaluates each sale against the agreed record, and the contract pays the exact commission on-chain. It settles what that agreed record shows.",
   },
   {
     q: "Do I have to trust the merchant?",
@@ -21,7 +21,7 @@ const ITEMS = [
   },
   {
     q: "Is this live money?",
-    a: "Not yet. It runs on a test network with a synthetic escrow token and synthetic records. The settlement invariant and the Flare signature scheme are real and proven. The one remaining piece is a live production attestation round trip, which is honestly labelled where it appears.",
+    a: "Not yet. It runs locally on an anvil devnet with a synthetic escrow token and synthetic records. The live Coston2 FCC attestation path is not yet connected. The settlement invariant and the Flare signature scheme are real and proven. The one remaining piece is that live production attestation round trip, which is honestly labelled where it appears.",
   },
   {
     q: "How is the amount calculated?",

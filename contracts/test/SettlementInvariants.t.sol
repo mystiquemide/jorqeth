@@ -13,7 +13,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 ///         behaviour, and withdrawal beyond the frozen golden vectors. These prove
 ///         escrow safety and correctness properties the vectors assume.
 contract SettlementInvariantsTest is JorqethTestBase {
-    // --- Funding rules (BR-001) ---
+    // --- Funding rules ---
 
     function test_fund_onlyMerchant() public {
         token.mint(creator, 1_000000);

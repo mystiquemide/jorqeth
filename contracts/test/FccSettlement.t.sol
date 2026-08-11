@@ -10,12 +10,12 @@ import {MockUSD} from "../src/MockUSD.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 /// @title FCC settlement integration
-/// @notice Proves the winning invariant holds with the REAL FCC verifier installed,
-///         and that `JorqethSettlement` is byte-identical to the Milestone 1
-///         deployment (same bytecode, same constructor, same tests). This is the
-///         load-bearing-sponsor proof: an eligible order settles the exact
-///         commission ONLY because a registered TEE signed the result, and the
-///         payable path stops the instant that authenticity is missing.
+/// @notice Proves the settlement invariant holds with the REAL FCC verifier installed,
+///         and that `JorqethSettlement` is identical to the local-verifier
+///         deployment (same bytecode, same constructor, same tests): an eligible
+///         order settles the exact commission ONLY because a registered TEE signed
+///         the result, and the payable path stops the instant that authenticity is
+///         missing.
 contract FccSettlementTest is JorqethTestBase {
     bytes32 internal constant TEE_ACTION_RESULT_PREFIX = bytes32("TEE_ACTION_RESULT");
     uint256 internal constant EXTENSION_ID = 0x10000;
@@ -94,7 +94,7 @@ contract FccSettlementTest is JorqethTestBase {
         assertTrue(fccSettlement.isSettled(ORDER_A), "digest consumed");
     }
 
-    // --- Load-bearing: without a registered-TEE signature, no value moves ---
+    // --- Required for settlement authenticity: without a registered-TEE signature, no value moves ---
 
     function test_fcc_nonTeeSignatureIsRejected() public {
         PayableResult memory r = _eligibleForFcc();

@@ -1,4 +1,4 @@
-// Judge page controller. Fetches the committed Milestone 5 evidence, builds the
+// Verification replay controller. Fetches the committed evidence, builds the
 // pure view-model, and binds it into the static DOM. No framework, no build step.
 //
 // Security posture: every value goes into the DOM via textContent (never

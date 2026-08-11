@@ -1,7 +1,7 @@
-// State/component tests for the Milestone 8 amplification surfaces. Run: node --test
+// State/component tests for the three read-only verification views. Run: node --test
 //
-// Every value must come from the committed Milestone 5 evidence or the frozen spec, so
-// no surface can hardcode a success. These load the SAME JSON the surfaces fetch.
+// Every value must come from the committed evidence or the frozen spec, so
+// no view can hardcode a success. These load the SAME JSON the views fetch.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

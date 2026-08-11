@@ -1,4 +1,4 @@
-// Browser smoke test for the judge page. Boots the static server, loads the page
+// Browser smoke test for the verification replay page. Boots the static server, loads the page
 // in headless chromium, and asserts against BOTH scenarios, mobile width, keyboard
 // focus, and a rendered-DOM secret scan. Playwright is resolved from the global
 // install (no local node_modules in this repo).

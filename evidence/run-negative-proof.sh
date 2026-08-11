@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Milestone 4 negative and failure proofs: deploy the same funded campaign as the
-# positive proof, then deliberately attempt to violate the winning invariant from
+# Negative and failure proofs: deploy the same funded campaign as the
+# positive proof, then deliberately attempt to violate the settlement invariant from
 # every angle and prove enforcement as REAL on-chain state.
 #
 # Pipeline:
@@ -152,7 +152,7 @@ VECTORS="$(jq -s '.' "$VEC_JSON")"
 jq -n \
   --arg generated_by "evidence/run-negative-proof.sh" \
   --arg chain "local anvil devnet (chainId 31337)" \
-  --arg note "The mirror of the positive proof: same funded campaign, same real FCC verifier, every failure mode attempted against live state. Runs on local anvil 31337 for the same reason as the positive proof (BLK-001/BLK-002). Each attempt runs through NegativeProbe.runAll (try/catch per attempt) so one transaction records the whole matrix; the persisted on-chain balances then confirm, independently over RPC, that only the single eligible payout transferred value." \
+  --arg note "The mirror of the positive proof: same funded campaign, same real FCC verifier, every failure mode attempted against live state. Running locally on anvil 31337 with synthetic records, for the same reason as the positive proof. The live Coston2 FCC attestation path is not yet connected. Each attempt runs through NegativeProbe.runAll (try/catch per attempt) so one transaction records the whole matrix; the persisted on-chain balances then confirm, independently over RPC, that only the single eligible payout transferred value." \
   --arg settlement "$SETTLEMENT" --arg token "$TOKEN" --arg registry "$REGISTRY" \
   --arg verifier "$VERIFIER" --arg verifierMode "$VERIFIER_MODE" \
   --arg creator "$CREATOR" --arg teeId "$TEE_ID" --arg extensionId "$EXTENSION_ID" \
@@ -162,7 +162,7 @@ jq -n \
   --arg timeoutPaid "$T_PAID" --arg timeoutSel "$T_SEL" --argjson timeoutCreatorDelta "$T_CD" \
   --argjson vectors "$VECTORS" \
   '{
-    proof: "milestone-4-negative",
+    proof: "negative-verification",
     result: "PASS",
     generated_by: $generated_by,
     chain: $chain,
@@ -199,14 +199,14 @@ echo "==> wrote evidence/negative-proof.json"
 
 # --- human-readable evidence (evidence/negative-proof.md) ---
 {
-  echo "# Milestone 4 — Negative and Failure Proofs"
+  echo "# Failure-Path Verification"
   echo
   echo "**Result: PASS.** Against one funded campaign, eleven hostile or failure paths were"
   echo "attempted plus a forced TEE-fleet outage. Exactly one path, the single approved"
   echo "eligible order, moved value, and it moved exactly the commission. Every other path"
   echo "paid nothing, and each reverting path reverted for the expected reason."
   echo
-  echo "- **Chain:** local anvil devnet (chainId 31337), same rationale as the positive proof (BLK-001/BLK-002)"
+  echo "- **Chain:** local anvil devnet (chainId 31337) with synthetic records, same rationale as the positive proof"
   echo "- **Verifier mode:** \`$VERIFIER_MODE\` (honestly labelled; not production hardware)"
   echo "- **Regenerate:** \`bash evidence/run-negative-proof.sh\` (Foundry + jq; no secrets, no live systems)"
   echo
@@ -224,7 +224,7 @@ echo "==> wrote evidence/negative-proof.json"
   done
   echo "| 11 | fleet_outage (empty TEE set) | reverted | 0 | \`EmptyRegistry()\` |"
   echo
-  echo "## Winning invariant (read back over RPC)"
+  echo "## Settlement invariant (read back over RPC)"
   echo
   echo "- Paths that transferred value: **$PAYING_PATHS** (only \`eligible_positive\`)."
   echo "- Creator final balance: **$CREATOR_ONCHAIN** (= exact commission)."

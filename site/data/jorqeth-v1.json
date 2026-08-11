@@ -1,5 +1,5 @@
 {
-  "$comment": "Jorqeth frozen deterministic spec. Milestone 1 / CP-001. This file is the authoritative source for schema versions, eligibility codes, rounding, domain binding, replay identity, and golden vectors. Synthetic + testnet only. No customer fields appear in any public result.",
+  "$comment": "Jorqeth frozen deterministic spec. This file is the authoritative source for schema versions, eligibility codes, rounding, domain binding, replay identity, and golden vectors. Synthetic + testnet only. No customer fields appear in any public result.",
   "specVersion": "1.0.0",
   "schemaVersion": 1,
   "product": "Jorqeth",

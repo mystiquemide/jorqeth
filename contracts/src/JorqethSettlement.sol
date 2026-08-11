@@ -12,7 +12,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 ///         commission for an eligible, domain-bound, non-replayed confidential
 ///         result. Every negative, malformed, expired, wrong-domain, wrong-amount,
 ///         wrong-recipient, and duplicate case pays zero.
-/// @dev The winning invariant: no valid unexpired correctly-domain-bound result for
+/// @dev Settlement invariant: no valid unexpired correctly-domain-bound result for
 ///      an eligible record means no commission can leave escrow; a valid result can
 ///      release only the bound amount to the bound creator once.
 contract JorqethSettlement is ReentrancyGuard {
@@ -22,9 +22,9 @@ contract JorqethSettlement is ReentrancyGuard {
 
     /// @notice Escrow asset (a synthetic test ERC-20 in the prototype).
     IERC20 public immutable token;
-    /// @notice Result authenticity boundary (local signature verifier in M1,
-    ///         Flare FCC verifier in M2). Immutable so the trust root cannot be
-    ///         swapped after funding.
+    /// @notice Result verifier used to authenticate settlement results. The deployment
+    ///         may use the local signature verifier or the FCC verifier. Immutable so
+    ///         the trust root cannot be swapped after funding.
     IResultVerifier public immutable verifier;
     /// @notice Frozen schema version this deployment accepts.
     uint16 public immutable schemaVersion;
@@ -113,7 +113,7 @@ contract JorqethSettlement is ReentrancyGuard {
     }
 
     /// @notice Merchant funds campaign escrow. Escrow must exist before any
-    ///         settlement can release value (BR-001).
+    ///         settlement can release value.
     /// @dev Caller must have approved `amount` to this contract first.
     function fund(uint256 amount) external {
         if (msg.sender != merchant) revert NotMerchant();
@@ -150,7 +150,7 @@ contract JorqethSettlement is ReentrancyGuard {
         if (r.expiry > campaignEnd) revert ExpiryAfterCampaignEnd(r.expiry, campaignEnd);
 
         // 2. Replay guard. Reserve the digest before any external transfer so a
-        //    reentrant or duplicate call cannot pay twice (BR-006, checks-effects).
+        //    reentrant or duplicate call cannot pay twice (checks-effects).
         if (settled[r.orderDigest]) revert AlreadySettled(r.orderDigest);
 
         // 3. Authenticity: only a genuine result from the confidential evaluator
@@ -160,7 +160,7 @@ contract JorqethSettlement is ReentrancyGuard {
 
         // 4. Eligibility handling. Only ELIGIBLE and INELIGIBLE are terminal
         //    payable-path outcomes. INFRASTRUCTURE_UNKNOWN (or any other code)
-        //    fails closed and moves nothing (BR-005, fail-closed).
+        //    fails closed and moves nothing.
         if (r.eligibilityCode == Eligibility.INELIGIBLE) {
             if (r.amount != 0) revert AmountNotZeroForIneligible(r.amount);
             settled[r.orderDigest] = true;

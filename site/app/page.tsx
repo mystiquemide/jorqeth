@@ -120,7 +120,7 @@ export default function Home() {
           <div className="container">
             <Reveal className="head">
               <span className="eyebrow">How it works</span>
-              <h2>Funded up front. Judged privately. Paid exactly.</h2>
+              <h2>Funded up front. Evaluated privately. Paid exactly.</h2>
               <p>Three steps, one honest outcome. Customer data never leaves the merchant&apos;s side.</p>
             </Reveal>
             <div className="steps">
@@ -137,7 +137,7 @@ export default function Home() {
                 <h3>Merchant funds escrow</h3>
                 <p>
                   The merchant deposits the payout budget and fixes the commission rule, the
-                  fixed-rate floor formula, before any sale is judged.
+                  fixed-rate floor formula, before any sale is evaluated.
                 </p>
               </Reveal>
               <Reveal className="step">
@@ -150,7 +150,7 @@ export default function Home() {
                     </svg>
                   </div>
                 </div>
-                <h3>Judged in private</h3>
+                <h3>Evaluated in private</h3>
                 <p>
                   A confidential compute step on Flare checks each sale against the agreed record and
                   returns only a signed result and the exact amount. Nothing about the customer is
@@ -200,7 +200,7 @@ export default function Home() {
               <Reveal className="stat">
                 <div className="stat__value">{gate.checklistPassed} / {gate.checklistTotal}<span className="unit">checks</span></div>
                 <div className="stat__label">
-                  The full proof gate passes in one command, with five independent amount sources in
+                  The full verification suite passes in one command, with five independent amount sources in
                   agreement.
                 </div>
               </Reveal>

@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 /// @title Jorqeth shared types
 /// @notice The minimal, domain-bound settlement result produced by the confidential
 ///         evaluation boundary (a Flare Compute Extension in production; a trusted
-///         signer stand-in during the Milestone 1 local invariant proof).
+///         signer stand-in during the local settlement-invariant run).
 /// @dev No raw merchant or customer field appears here. `orderDigest` is an opaque
 ///      digest of the merchant order reference, never the reference itself.
 struct PayableResult {

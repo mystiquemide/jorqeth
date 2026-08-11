@@ -1,6 +1,6 @@
-// State/component tests for the judge page view-model. Run: node --test
+// State/component tests for the verification-replay view-model. Run: node --test
 //
-// These prove every visible state renders from real Milestone 5 evidence, so
+// These prove every visible state renders from real committed evidence, so
 // the page cannot show a hardcoded success label. They load the SAME committed
 // JSON the page fetches at runtime.
 
@@ -37,7 +37,7 @@ test("shortAddr keeps head and tail", () => {
   assert.equal(shortAddr("0x70997970C51812dc3A010C7d01b50e0d17dc79C8"), "0x7099…79C8");
 });
 
-test("classifyVector separates the load-bearing states", () => {
+test("classifyVector separates the distinct settlement states", () => {
   assert.equal(classifyVector({ label: "eligible_positive" }), STATES.ELIGIBLE);
   assert.equal(classifyVector({ label: "refund_ineligible" }), STATES.INELIGIBLE);
   assert.equal(classifyVector({ label: "replay" }), STATES.ALREADY_SETTLED);
@@ -118,7 +118,7 @@ test("fleet_outage card exists and is sourced from the separate evidence field",
   assert.equal(fo.revertedWith, "EmptyRegistry()");
 });
 
-test("invariantView reports the winning one-liner from real state", () => {
+test("invariantView reports the settlement invariant one-liner from real state", () => {
   const inv = invariantView(NEG);
   assert.equal(inv.pathsThatPaid, 1);
   assert.equal(inv.creatorFinal, "20.000000");

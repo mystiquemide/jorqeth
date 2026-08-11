@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { usd, deployment, payout, ledger, jorqethSpec } from "@/lib/evidence";
 
 export const metadata: Metadata = {
-  title: "Proof inspector",
+  title: "FCC verification details",
   description:
     "Walk the authenticity boundary in the order the contract checks it. Each guard maps to a real reject vector, so nothing here is illustrative.",
 };
@@ -54,7 +54,7 @@ export default function Inspector() {
   return (
     <>
       <div className="crumb">
-        <Link href="/app">Dashboard</Link> <span>/</span> Proof inspector
+        <Link href="/app">Dashboard</Link> <span>/</span> FCC verification details
       </div>
 
       <div className="panel">

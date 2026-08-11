@@ -48,7 +48,7 @@ contract VerifierModeTest is Test {
         assertEq(
             v.mode(),
             "local-signature-v1",
-            "M1 verifier must self-label as local, not production FCC"
+            "local verifier must self-label as local, not production FCC"
         );
     }
 

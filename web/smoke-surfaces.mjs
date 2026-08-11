@@ -1,5 +1,5 @@
-// Browser smoke for the three Milestone 8 amplification surfaces. Boots the static
-// server, loads each surface in headless chromium, and asserts real-data rendering,
+// Browser smoke for the three read-only verification views. Boots the static
+// server, loads each view in headless chromium, and asserts real-data rendering,
 // deep-link receipt state, signed-out link resolution, a rendered-DOM secret scan,
 // 360px no-overflow, and keyboard focus. Mirrors web/smoke.mjs.
 //
@@ -78,7 +78,7 @@ async function run() {
       }
       // no unresolved placeholder dash left in a VISIBLE data-bound slot. Hidden
       // conditional rows (e.g. a revert reason on a paid receipt) legitimately keep
-      // their placeholder; the judge never sees them, so only visible slots count.
+      // their placeholder; the viewer never sees them, so only visible slots count.
       const stale = await page.locator("[data-bind]").evaluateAll((els) =>
         els.filter((e) => e.offsetParent !== null && e.textContent.trim() === "–").length);
       ok(stale === 0, `${label}: ${stale} visible data-bind slot(s) left unbound`);
@@ -144,7 +144,7 @@ async function run() {
     ok(ready === "true", `brief not ready (${ready})`);
     body = await page.locator("body").innerText();
     ok(/merchant-source/i.test(body), "brief: merchant-source limitation missing");
-    ok(/Built during Summer Signal/i.test(body), "brief: new-work section missing");
+    ok(/What was built/i.test(body), "brief: new-work section missing");
     ok(/roadmap/i.test(body), "brief: roadmap missing");
     ok(/github\.com\/mystiquemide\/jorqeth/.test(body), "brief: repo link missing");
     const secN = await page.locator("#security-list li").count();

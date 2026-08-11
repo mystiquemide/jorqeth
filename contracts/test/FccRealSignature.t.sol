@@ -7,7 +7,7 @@ import {FccResultVerifier} from "../src/FccResultVerifier.sol";
 import {MockTeeMachineRegistry} from "./mocks/MockTeeMachineRegistry.sol";
 
 /// @title Genuine Flare TEE-node signature acceptance
-/// @notice The strongest achievable Milestone 2 round-trip proof without provisioning
+/// @notice The strongest achievable round-trip proof without provisioning
 ///         Flare's private e2e devnet: a signature minted by the REAL, pinned Flare
 ///         library code (tee-node v0.0.24 + go-flare-common) over
 ///         `abi.encode(PayableResult)` is accepted by `FccResultVerifier` with zero

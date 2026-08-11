@@ -553,7 +553,7 @@ table.data .t-title { font-weight: 500; color: var(--ink); }
 table.data .t-plain { color: var(--text-secondary); font-size: var(--fs-xs); margin-top: 3px; }
 table.data .t-err { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); }
 
-/* proof inspector: verified boundary steps */
+/* FCC verification details: verified boundary steps */
 .steps-v { display: grid; gap: 12px; }
 .step-v { display: flex; gap: 14px; align-items: flex-start; padding: 16px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); }
 .step-v__i { width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0; display: grid; place-items: center; background: var(--jade-14); color: var(--jade-deep); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; }

@@ -1,9 +1,9 @@
 {
-  "proof": "milestone-4-negative",
+  "proof": "negative-verification",
   "result": "PASS",
   "generated_by": "evidence/run-negative-proof.sh",
   "chain": "local anvil devnet (chainId 31337)",
-  "provenance_note": "The mirror of the positive proof: same funded campaign, same real FCC verifier, every failure mode attempted against live state. Runs on local anvil 31337 for the same reason as the positive proof (BLK-001/BLK-002). Each attempt runs through NegativeProbe.runAll (try/catch per attempt) so one transaction records the whole matrix; the persisted on-chain balances then confirm, independently over RPC, that only the single eligible payout transferred value.",
+  "provenance_note": "The mirror of the positive proof: same funded campaign, same real FCC verifier, every failure mode attempted against live state. Running locally on anvil 31337 with synthetic records, for the same reason as the positive proof. The live Coston2 FCC attestation path is not yet connected. Each attempt runs through NegativeProbe.runAll (try/catch per attempt) so one transaction records the whole matrix; the persisted on-chain balances then confirm, independently over RPC, that only the single eligible payout transferred value.",
   "deployment": {
     "settlement": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
     "escrowToken": "0x5FbDB2315678afecb367f032d93F642f64180aa3",

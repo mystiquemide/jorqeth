@@ -17,7 +17,7 @@ tab_width = 4
 bracket_spacing = false
 int_types = "long"
 
-# Coston2 (Flare testnet) — used from Milestone 2 onward. No secrets here.
+# Coston2 (Flare testnet) RPC endpoint for the live attestation path. No secrets here.
 [rpc_endpoints]
 coston2 = "${COSTON2_RPC_URL}"
 

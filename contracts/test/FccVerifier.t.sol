@@ -8,7 +8,7 @@ import {MockTeeMachineRegistry} from "./mocks/MockTeeMachineRegistry.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 /// @title FCC result verifier suite
-/// @notice Proves the Milestone 2 `FccResultVerifier` reconstructs the EXACT hash
+/// @notice Proves the `FccResultVerifier` reconstructs the EXACT hash
 ///         the real Flare TEE node signs over an `ActionResult`, and accepts a
 ///         result only when the recovered secp256k1 signer is a currently-active
 ///         `teeId` for Jorqeth's extension. The signing steps below mirror the

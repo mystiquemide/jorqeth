@@ -5,28 +5,30 @@ import {Script, console2} from "forge-std/Script.sol";
 import {PayableResult, Eligibility} from "../contracts/src/JorqethTypes.sol";
 import {JorqethSettlement} from "../contracts/src/JorqethSettlement.sol";
 import {FccResultVerifier} from "../contracts/src/FccResultVerifier.sol";
+import {JorqethEvaluator} from "../contracts/src/JorqethEvaluator.sol";
 import {MockUSD} from "../contracts/src/MockUSD.sol";
 import {MockTeeMachineRegistry} from "../contracts/test/mocks/MockTeeMachineRegistry.sol";
+import {SyntheticMerchantSource} from "../contracts/test/SyntheticMerchantSource.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-/// @title Milestone 3 positive-proof deployment + settlement
+/// @title Positive-proof deployment + settlement
 /// @notice Runs the complete successful path as REAL on-chain transactions on a local
 ///         devnet (chainId 31337, the chain the genuine tee-node vector targets):
 ///         deploy the invariant-tested settlement with the real FCC verifier installed,
 ///         fund one campaign, and settle one eligible order signed by a registered TEE
 ///         machine using the exact frozen FCC ActionResult scheme. Broadcasting this
-///         script produces observable transactions, logs, and balance deltas that a
-///         judge can read back over RPC and cross-check against the golden vector.
+///         script produces observable transactions, logs, and balance deltas that can
+///         be read back over RPC and cross-checked against the golden vector.
 ///
 ///         Coston2 was the plan's target chain, but a fully-live, production-attested
-///         FCC round trip there is externally blocked (no funded wallet available to
-///         the executor; public Coston2 rejects simulated attestation). This local
-///         run is the honest substitute: same contracts, same verifier scheme, same
+///         FCC round trip there remains pending (no funded wallet available to the
+///         executor; public Coston2 rejects simulated attestation). This local
+///         run stands in for it: same contracts, same verifier scheme, same
 ///         exact-payout invariant, on the chain the genuine signature was minted for.
 ///         The signature here is produced with the registered teeId's key via the
 ///         frozen scheme; that the scheme's bytes match real Flare library code is
-///         separately proven byte-for-byte by tools/tee-signer + FccRealSignature.t.sol.
+///         separately proven by tools/tee-signer + FccRealSignature.t.sol.
 contract PositiveProof is Script {
     // --- Frozen spec config (identical to contracts/test/JorqethTestBase.sol) ---
     uint16 internal constant SCHEMA_VERSION = 1;
@@ -124,20 +126,38 @@ contract PositiveProof is Script {
     }
 
     function _buildResult(address settlementAddr) internal view returns (PayableResult memory r) {
-        r = PayableResult({
-            schemaVersion: SCHEMA_VERSION,
-            campaignId: CAMPAIGN_ID,
-            orderDigest: ORDER_A,
-            creator: CREATOR,
-            amount: COMMISSION_A,
-            eligibilityCode: Eligibility.ELIGIBLE,
-            chainId: block.chainid,
-            settlementContract: settlementAddr,
-            ruleVersion: RULE_VERSION,
-            nonce: NONCE_A,
-            issuedAt: 1,
-            expiry: 2_000_000_000
-        });
+        // Derive the settled result from the synthetic merchant record instead of
+        // asserting it from constants. SyntheticMerchantSource stands in for the
+        // merchant's private order feed; JorqethEvaluator reproduces the confidential
+        // settlement rule a Flare Compute Extension runs in production. The eligibility
+        // code and payable amount are the evaluator's OUTPUT, so this proof settles a
+        // computed result, not one fabricated field-by-field in the script.
+        JorqethEvaluator.MerchantRecord memory rec = SyntheticMerchantSource.record("ORDER-A");
+        uint16 bps = SyntheticMerchantSource.commissionBps();
+        require(bps == COMMISSION_BPS, "spec commissionBps != configured campaign");
+
+        r = JorqethEvaluator.toResult(
+            rec,
+            SCHEMA_VERSION,
+            CAMPAIGN_ID,
+            CREATOR,
+            bps,
+            block.chainid,
+            settlementAddr,
+            RULE_VERSION,
+            NONCE_A,
+            1,
+            2_000_000_000
+        );
+
+        // Cross-check the derived output against the spec's own frozen golden reference,
+        // so any drift between the evaluator and the golden vector fails the proof here.
+        (uint8 goldenCode, uint256 goldenAmount) = SyntheticMerchantSource.expected("ORDER-A");
+        require(r.orderDigest == ORDER_A, "record digest != golden ORDER_A");
+        require(r.eligibilityCode == goldenCode, "derived code != golden");
+        require(r.amount == goldenAmount, "derived amount != golden");
+        require(r.eligibilityCode == Eligibility.ELIGIBLE, "eligible order not derived eligible");
+        require(r.amount == COMMISSION_A, "derived amount != configured commission");
     }
 
     /// @dev Reconstruct the exact TEE-signed digest (frozen FCC scheme) and sign it with

@@ -1,9 +1,9 @@
 {
-  "proof": "milestone-3-positive",
+  "proof": "positive-verification",
   "result": "PASS",
   "generated_by": "evidence/run-positive-proof.sh",
   "chain": "local anvil devnet (chainId 31337)",
-  "provenance_note": "Coston2 was the plan target; a live production-attested FCC round trip there is externally blocked (BLK-001/BLK-002). This is the honest local substitute: same contracts, same FCC verifier scheme, same exact-payout invariant, on the chain the genuine tee-node vector targets. Signature genuineness (bytes match real Flare code) is proven separately by tools/tee-signer + contracts/test/FccRealSignature.t.sol.",
+  "provenance_note": "Running locally on anvil 31337 with synthetic records, on the chain the genuine tee-node vector targets: same contracts, same FCC verifier scheme, same exact-payout invariant. The live Coston2 FCC attestation path is not yet connected. Signature genuineness (bytes match real Flare code) is proven separately by tools/tee-signer + contracts/test/FccRealSignature.t.sol.",
   "deployment": {
     "settlement": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
     "escrowToken": "0x5FbDB2315678afecb367f032d93F642f64180aa3",

@@ -1,18 +1,18 @@
-// Pure view-models for the three Milestone 8 judge-amplifying surfaces:
-//   1. Settlement receipt   (receipt.html)   — did the system produce the claimed outcome?
-//   2. FCC proof inspector   (inspector.html) — why is Flare Confidential Compute load-bearing?
-//   3. Trust / product brief (brief.html)     — what is the product and where can it go?
+// Pure view-models for the three read-only verification views:
+//   1. Settlement receipt      (receipt.html)   — did the system produce the claimed outcome?
+//   2. FCC verification details (inspector.html) — how Flare Confidential Compute authenticates settlement.
+//   3. Product & security view  (brief.html)     — what the product is and where it can go.
 //
 // Same rules as view.js: no DOM, no fetch, no framework. Every function takes the
-// committed Milestone 5 evidence (evidence/positive-proof.json,
-// evidence/negative-proof.json) plus the frozen campaign config
-// (spec/jorqeth-v1.json — the authoritative source M1-M5 already derive from, not a
-// second source of truth) and returns a plain object the surface renders through
-// textContent only. A surface can never show a number the proof/config does not contain.
+// committed evidence (evidence/positive-proof.json, evidence/negative-proof.json)
+// plus the frozen campaign config (spec/jorqeth-v1.json — the authoritative source
+// the demo derives from, not a second source of truth) and returns a plain object the
+// view renders through textContent only. A view can never show a number the
+// proof/config does not contain.
 //
-// These surfaces are READ-ONLY amplification. They add no write path, no new actor,
-// no fabricated metric, and never hardcode a transaction success: the eligible tx
-// status is read straight from the positive proof.
+// These are READ-ONLY views. They add no write path, no new actor, no fabricated
+// metric, and never hardcode a transaction success: the eligible tx status is read
+// straight from the positive proof.
 
 import { formatMusd, shortAddr, classifyVector, STATES } from "./view.js";
 
@@ -134,7 +134,7 @@ export function receiptView(key, pos, neg, spec) {
       revertReason: null,
       retryable: false,
       digestConsumed: true,
-      // Local anvil devnet has no public block explorer (BLK-001/BLK-002); the tx hash
+      // Local anvil devnet has no public block explorer; the tx hash
       // is the on-chain reference and the positive proof is the verifiable artifact.
       explorer: null,
       explorerNote: "Local anvil devnet — no public block explorer. Verify via the committed positive proof.",
@@ -178,9 +178,9 @@ export function allReceipts(pos, neg, spec) {
 }
 
 /**
- * The FCC proof inspector view-model: the minimal public verification chain, the fields
- * the signed result BINDS, the private fields it intentionally withholds, the honestly
- * labelled attestation mode, and the links a judge can follow. Bound fields are parsed
+ * The FCC verification-details view-model: the minimal public verification chain, the
+ * fields the signed result BINDS, the private fields it intentionally withholds, the
+ * honestly labelled attestation mode, and the links to follow. Bound fields are parsed
  * from the frozen result type string so they are exactly the on-chain schema, not prose.
  */
 export function inspectorView(pos, neg, spec) {
@@ -244,7 +244,7 @@ export function inspectorView(pos, neg, spec) {
     // when the run used a simulated TEE on the local devnet.
     attestationCopy:
       cfg.attestation === "simulated"
-        ? "Simulated attestation on a local anvil devnet. The TEE signature scheme is reproduced byte-for-byte from real Flare tee-node code and verified on-chain; a production Confidential Space round trip on Coston2 is externally blocked (BLK-001/BLK-002)."
+        ? "Simulated attestation on a local anvil devnet. The TEE signature scheme is reproduced from real Flare tee-node code and verified on-chain; the live Coston2 Confidential Space round trip is not yet connected."
         : "Production Confidential Space attestation.",
     genuineness:
       "Signature genuineness is proven separately and permanently: tools/tee-signer produces a real tee-node vector and contracts/test/FccRealSignature.t.sol verifies it against the same FccResultVerifier the demo uses.",
@@ -307,8 +307,8 @@ export function briefFacts(pos, spec) {
       "JorqethSettlement: escrow, domain binding, replay guard, exact/zero payout.",
       "FccResultVerifier: reconstructs and verifies the real TEE ActionResult signature against the active on-chain teeId set.",
       "The frozen spec, golden vectors, and the full positive/negative on-chain proofs.",
-      "tools/tee-signer and the FccRealSignature test that pin the signing scheme byte-for-byte.",
-      "The judge page and these three amplification surfaces.",
+      "tools/tee-signer and the FccRealSignature test that pin the signing scheme exactly.",
+      "The verification demo page and its three read-only verification views.",
     ],
     inheritedScaffold: [
       "The Flare tee-node / go-flare-common ActionResult signing scheme, reproduced and pinned (not modified).",

@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 #
-# Milestone 5: the Proof Gate.
+# The verification suite.
 #
 # One command that re-runs every core proof from a clean state and resolves each
-# of the nine mandatory Proof Gate Checklist items (PROJECT_PLAN.md) to a concrete
-# source-of-truth artifact, or fails loudly. No frontend, dashboard, or polish
-# work may begin until this prints "PROOF GATE PASSED".
+# verification check to a concrete source-of-truth artifact, or fails loudly.
 #
 # It executes, in order:
 #   1. forge test                    -- the full invariant + FCC + vector suite
@@ -14,11 +12,11 @@
 #   4. (best-effort) re-derive the genuine tee-node signature vector from real Flare code
 #   5. a privacy scan of the committed public evidence for prohibited fields
 #
-# then maps the nine checklist items to that evidence and writes:
+# then maps the verification checks to that evidence and writes:
 #   evidence/proof-gate.json  (machine)   and   evidence/proof-gate.md  (human)
 #
 # Reproducible with Foundry (forge/anvil/cast) + jq. Go is optional (item 2 is
-# load-bearing via the FccRealSignature forge suite regardless). No secrets, no
+# covered by the FccRealSignature forge suite regardless). No secrets, no
 # live systems: the only private key touched is the well-known public anvil dev key.
 set -uo pipefail
 
@@ -54,7 +52,7 @@ T_PASS="${T_PASS:-0}"; T_FAIL="${T_FAIL:-1}"
 FORGE_OK=false; [ "$T_FAIL" = "0" ] && [ "$T_PASS" -gt 0 ] && FORGE_OK=true
 echo "    forge: $T_PASS passed, $T_FAIL failed"
 
-# per-suite load-bearing FCC checks (real signature + settlement swap)
+# per-suite FCC authenticity checks (real signature + settlement swap)
 suite_ok() { # $1 = suite source substring
   awk -v s="$1" '
     $0 ~ s {seen=1}
@@ -146,16 +144,16 @@ echo "    privacy: $PRIV_COUNT prohibited pattern(s) found"
 # ============================================================ map the 9 checklist items
 ck() { [ "$1" = "true" ] && echo pass || echo fail; }
 
-# 1. winning invariant end to end
+# 1. settlement invariant end to end
 S1=fail; { $FORGE_OK && $POS_OK && $NEG_OK; } && S1=pass
-add_item "winning_invariant_end_to_end" \
-  "The winning invariant works end to end." "$S1" \
+add_item "settlement_invariant_end_to_end" \
+  "The settlement invariant works end to end." "$S1" \
   "forge test $T_PASS passed / $T_FAIL failed; positive-proof.json=$POS_RESULT; negative-proof.json only_eligible=$NEG_ONLY"
 
-# 2. real FCC path load-bearing
+# 2. real FCC path authenticates settlement
 S2=fail; { [ "$REALSIG_OK" = "ok" ] && [ "$FCCSET_OK" = "ok" ]; } && S2=pass
-add_item "real_fcc_load_bearing" \
-  "The current real FCC path works and is load-bearing." "$S2" \
+add_item "real_fcc_required" \
+  "The current real FCC path works and gates settlement." "$S2" \
   "FccRealSignatureTest=$REALSIG_OK (genuine Flare-code signature verifies); FccSettlementTest=$FCCSET_OK (eligible pays only on a registered-TEE signature); genuine vector: $GO_VECTOR"
 
 # 3. positive proof inspectable
@@ -210,14 +208,14 @@ jq -n \
   --arg result "$RESULT" \
   --arg generated_by "evidence/run-proof-gate.sh" \
   --arg chain "local anvil devnet (chainId 31337)" \
-  --arg note "The Milestone 5 Proof Gate. One command re-runs the full forge suite and both on-chain proofs from a clean state, then resolves each mandatory checklist item to a source-of-truth artifact. Runs on local anvil 31337 for the same reason as the positive/negative proofs (BLK-001/BLK-002). A fully-live production-attested Coston2 round trip remains externally blocked; the genuine Flare-code signature (CP-003) is the accepted self-contained substitute." \
+  --arg note "The verification suite. One command re-runs the full forge suite and both on-chain proofs from a clean state, then resolves each verification check to a source-of-truth artifact. Runs locally on anvil 31337 with synthetic records, for the same reason as the positive/negative proofs. The live Coston2 FCC attestation path is not yet connected; the genuine Flare-code signature is the self-contained substitute." \
   --argjson forgePassed "$T_PASS" --argjson forgeFailed "$T_FAIL" \
   --arg genuineVector "$GO_VECTOR" \
   --argjson passedItems "$PASSED_ITEMS" --argjson totalItems "$TOTAL_ITEMS" \
   --argjson privacyFindings "$PRIV_COUNT" \
   --argjson checklist "$ITEMS_JSON" \
   '{
-    proof: "milestone-5-proof-gate",
+    proof: "verification-suite",
     result: $result,
     generated_by: $generated_by,
     chain: $chain,
@@ -242,13 +240,12 @@ echo "==> wrote evidence/proof-gate.json"
 
 # ------------------------------------------------------------- human-readable record
 {
-  echo "# Milestone 5 — Proof Gate"
+  echo "# Verification Report"
   echo
-  echo "**Result: $RESULT.** $PASSED_ITEMS of $TOTAL_ITEMS mandatory checklist items pass, each"
+  echo "**Result: $RESULT.** $PASSED_ITEMS of $TOTAL_ITEMS verification checks pass, each"
   echo "resolved to a source-of-truth artifact re-run from a clean state by this script."
-  echo "No judge-facing UI work may begin until this gate passes."
   echo
-  echo "- **Chain:** local anvil devnet (chainId 31337), same rationale as the positive/negative proofs (BLK-001/BLK-002)"
+  echo "- **Chain:** local anvil devnet (chainId 31337) with synthetic records, same rationale as the positive/negative proofs"
   echo "- **Reproduce:** \`bash evidence/run-proof-gate.sh\` (Foundry + jq; Go optional; no secrets, no live systems)"
   echo "- **forge test:** $T_PASS passed, $T_FAIL failed"
   echo "- **Genuine signature vector:** $GO_VECTOR"
@@ -283,9 +280,9 @@ rm -f "$ITEMS" "$PRIV_FINDINGS"
 
 echo
 if [ "$pass" = true ]; then
-  echo "PROOF GATE PASSED ($PASSED_ITEMS/$TOTAL_ITEMS items)"
+  echo "VERIFICATION SUITE PASSED ($PASSED_ITEMS/$TOTAL_ITEMS checks)"
   exit 0
 else
-  echo "PROOF GATE FAILED ($PASSED_ITEMS/$TOTAL_ITEMS items) — remain on the winning core; do not start UI work"
+  echo "VERIFICATION SUITE FAILED ($PASSED_ITEMS/$TOTAL_ITEMS checks)"
   exit 1
 fi

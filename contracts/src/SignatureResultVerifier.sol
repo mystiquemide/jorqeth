@@ -6,10 +6,10 @@ import {JorqethResult} from "./JorqethResult.sol";
 import {IResultVerifier} from "./IResultVerifier.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-/// @title Local signature result verifier (Milestone 1)
+/// @title Local signature result verifier
 /// @notice Stand-in for the Flare Compute Extension result verifier. It recovers an
 ///         EIP-712 signature over the domain-bound result and checks it against a
-///         single trusted evaluator key. This proves the settlement invariant end
+///         single trusted evaluator key. This exercises the settlement invariant end
 ///         to end locally without claiming to be the sponsor primitive.
 /// @dev The EIP-712 domain is rebuilt here from the result's own chainId and
 ///      settlementContract fields, so a signature made for one (chain, contract)
@@ -25,7 +25,7 @@ contract SignatureResultVerifier is IResultVerifier {
     bytes32 private constant NAME_HASH = keccak256("Jorqeth");
     bytes32 private constant VERSION_HASH = keccak256("1");
 
-    /// @notice The trusted confidential-evaluator public key. In M1 this is a test
+    /// @notice The trusted confidential-evaluator public key. Here this is a test
     ///         key held only off-chain by the settlement operator's evaluator stub.
     address public immutable trustedSigner;
 

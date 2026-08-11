@@ -5,20 +5,22 @@ import {Script, console2} from "forge-std/Script.sol";
 import {PayableResult, Eligibility} from "../contracts/src/JorqethTypes.sol";
 import {JorqethSettlement} from "../contracts/src/JorqethSettlement.sol";
 import {FccResultVerifier} from "../contracts/src/FccResultVerifier.sol";
+import {JorqethEvaluator} from "../contracts/src/JorqethEvaluator.sol";
 import {MockUSD} from "../contracts/src/MockUSD.sol";
 import {MockTeeMachineRegistry} from "../contracts/test/mocks/MockTeeMachineRegistry.sol";
+import {SyntheticMerchantSource} from "../contracts/test/SyntheticMerchantSource.sol";
 import {NegativeProbe} from "../contracts/test/probes/NegativeProbe.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-/// @title Milestone 4 negative and failure proofs
+/// @title Negative and failure proofs
 /// @notice The mirror of PositiveProof: deploy the same funded campaign with the real
-///         FCC verifier installed, then deliberately attempt to violate the winning
+///         FCC verifier installed, then deliberately attempt to violate the settlement
 ///         invariant from every angle and prove enforcement as REAL on-chain state:
 ///         a refunded record settles zero (terminal), replay/wrong-domain/malformed/
 ///         tampered/expired/infra-unknown/fleet-timeout attempts all pay nothing, and
 ///         exactly one path (the approved eligible order) moves value. Runs on a local
-///         devnet (chainId 31337) for the same reason PositiveProof does (BLK-001/002).
+///         devnet (chainId 31337) for the same reason PositiveProof does.
 ///
 ///         Every attempt runs against the LIVE settlement via NegativeProbe.runAll,
 ///         which try/catches each settle so one transaction records the whole matrix.
@@ -95,12 +97,50 @@ contract NegativeProof is Script {
     uint256 internal timeoutCd;
     uint256 internal timeoutEd;
 
+    // Evaluator output derived from the synthetic merchant record source (set by
+    // _derive()). The one paying vector and the terminal refund vector settle these
+    // instead of hardcoded amount/code, so the matrix moves computed value, not
+    // fabricated value.
+    uint8 internal eligibleCode;
+    uint256 internal eligibleAmount;
+    uint8 internal refundCode;
+    uint256 internal refundAmount;
+
     function run() external {
+        _derive();
         _deployRegisterFund();
         _runMatrix1();
         _runTimeout();
         _assertInvariant();
         _emit();
+    }
+
+    /// @dev Derive the eligible and refund outcomes from the synthetic record source via
+    ///      the evaluator, the same record -> rule -> result path PositiveProof uses.
+    ///      Cross-checked against the spec's frozen golden reference so evaluator drift
+    ///      fails the proof before any settlement is attempted.
+    function _derive() internal {
+        uint16 bps = SyntheticMerchantSource.commissionBps();
+        require(bps == COMMISSION_BPS, "spec commissionBps != configured campaign");
+
+        JorqethEvaluator.MerchantRecord memory a = SyntheticMerchantSource.record("ORDER-A");
+        require(a.orderDigest == ORDER_A, "record digest != golden ORDER_A");
+        (eligibleCode, eligibleAmount) = JorqethEvaluator.evaluate(a, bps);
+        (uint8 gCodeA, uint256 gAmtA) = SyntheticMerchantSource.expected("ORDER-A");
+        require(eligibleCode == gCodeA && eligibleAmount == gAmtA, "eligible derive != golden");
+        require(
+            eligibleCode == Eligibility.ELIGIBLE && eligibleAmount == COMMISSION_A,
+            "eligible != configured commission"
+        );
+
+        JorqethEvaluator.MerchantRecord memory b = SyntheticMerchantSource.record("ORDER-B");
+        require(b.orderDigest == ORDER_B, "record digest != golden ORDER_B");
+        (refundCode, refundAmount) = JorqethEvaluator.evaluate(b, bps);
+        (uint8 gCodeB, uint256 gAmtB) = SyntheticMerchantSource.expected("ORDER-B");
+        require(refundCode == gCodeB && refundAmount == gAmtB, "refund derive != golden");
+        require(
+            refundCode == Eligibility.INELIGIBLE && refundAmount == 0, "refund != terminal-zero"
+        );
     }
 
     // --- deploy / register / fund (all real broadcast transactions) ---
@@ -170,7 +210,10 @@ contract NegativeProof is Script {
     }
 
     // --- vector construction ---
-    // Well-formed eligible result for `order`, bound to this deployment and a valid window.
+    // Well-formed eligible result for `order`, bound to this deployment and a valid
+    // window. `amount` and `eligibilityCode` are the evaluator's derived output for the
+    // eligible ORDER-A record (see _derive), not hardcoded, so every eligible-shaped
+    // vector starts from a computed result before any deliberate tamper is applied.
     function _eligible(bytes32 order, bytes32 nonce, address settlementAddr)
         internal
         view
@@ -181,8 +224,8 @@ contract NegativeProof is Script {
             campaignId: CAMPAIGN_ID,
             orderDigest: order,
             creator: CREATOR,
-            amount: COMMISSION_A,
-            eligibilityCode: Eligibility.ELIGIBLE,
+            amount: eligibleAmount,
+            eligibilityCode: eligibleCode,
             chainId: block.chainid,
             settlementContract: settlementAddr,
             ruleVersion: RULE_VERSION,
@@ -201,9 +244,10 @@ contract NegativeProof is Script {
         proofs = new bytes[](N);
 
         // 0: legitimate business negative (refund). Terminal, pays zero, marks settled.
+        //    Derived from the ORDER-B synthetic record: class "refunded" -> INELIGIBLE, 0.
         PayableResult memory r0 = _eligible(ORDER_B, NONCE_B, s);
-        r0.amount = 0;
-        r0.eligibilityCode = Eligibility.INELIGIBLE;
+        r0.amount = refundAmount;
+        r0.eligibilityCode = refundCode;
         rs[0] = r0;
         proofs[0] = _proof(TEE_PK, r0);
 
@@ -242,9 +286,11 @@ contract NegativeProof is Script {
         rs[6] = r6;
         proofs[6] = _proof(TEE_PK, r6);
 
-        // 7: infrastructure unknown -- evaluator returned code 2. Never payable, and it
-        //    does NOT consume the digest (retryable). This is what distinguishes an
-        //    infra-unknown from a legitimate ineligibility.
+        // 7: infrastructure unknown -- a result carrying INFRASTRUCTURE_UNKNOWN (code 2)
+        //    must never pay and must NOT consume the digest (retryable). A correct
+        //    evaluator never signs code 2 for a known order class, so this injects it
+        //    deliberately to prove the contract fails closed on it regardless. Reusing
+        //    ORDER_C's digest keeps the vector on its own non-colliding order.
         PayableResult memory r7 = _eligible(ORDER_C, NONCE_C, s);
         r7.amount = 0;
         r7.eligibilityCode = Eligibility.INFRASTRUCTURE_UNKNOWN;
@@ -293,7 +339,7 @@ contract NegativeProof is Script {
         return _proofStatus(pk, r, STATUS_OK);
     }
 
-    // --- the winning invariant, asserted on persisted state ---
+    // --- the settlement invariant, asserted on persisted state ---
     function _assertInvariant() internal view {
         // Exactly one path moved value, and it moved exactly the commission.
         uint256 payingPaths;

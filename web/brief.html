@@ -3,9 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Jorqeth — trust and product brief</title>
+    <title>Jorqeth: product and security overview</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23b4245a'/%3E%3Ctext x='8' y='12' font-size='11' text-anchor='middle' fill='white' font-family='sans-serif'%3EJ%3C/text%3E%3C/svg%3E" />
-    <meta name="description" content="What Jorqeth is, what was built during Summer Signal, its guarantees and limitations, and a three-step path beyond the hackathon." />
+    <meta name="description" content="What Jorqeth is, what was built, its guarantees and limitations, and where the live attestation path goes next." />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./surfaces.css" />
   </head>
@@ -14,7 +14,7 @@
 
     <header class="site-header">
       <div class="wrap">
-        <p class="eyebrow">Flare Confidential Compute · trust &amp; product brief</p>
+        <p class="eyebrow">Flare Confidential Compute · product &amp; security overview</p>
         <h1>Jorqeth: private commission settlement from a merchant's own records</h1>
         <p class="lede" data-bind="model">
           Jorqeth privately determines creator commission eligibility from an agreed
@@ -27,7 +27,7 @@
             merchant stays the source of record. Synthetic records and testnet values only.
           </p>
         </div>
-        <p class="crumbs"><a href="./index.html">← Back to the proof replay</a></p>
+        <p class="crumbs"><a href="./index.html">← Back to the verification replay</a></p>
       </div>
     </header>
 
@@ -79,11 +79,11 @@
 
       <section class="two-col">
         <div class="card" aria-labelledby="new-h">
-          <h2 id="new-h">Built during Summer Signal</h2>
+          <h2 id="new-h">What was built</h2>
           <ul id="newwork-list" class="tick"></ul>
         </div>
         <div class="card" aria-labelledby="scaf-h">
-          <h2 id="scaf-h">Inherited FCC scaffold (reused, not modified)</h2>
+          <h2 id="scaf-h">Reused components (not modified)</h2>
           <ul id="scaffold-list" class="limits"></ul>
         </div>
       </section>
@@ -98,18 +98,18 @@
         <ul class="links">
           <li>Source repository: <a data-bind-href="links.repo" data-bind="links.repo" href="https://github.com/mystiquemide/jorqeth">https://github.com/mystiquemide/jorqeth</a></li>
           <li><a data-bind-href="links.readme" href="../README.md">README</a> · <a data-bind-href="links.spec" href="../spec/jorqeth-v1.json">frozen spec</a></li>
-          <li><a data-bind-href="links.positiveEvidence" href="../evidence/positive-proof.md">Positive proof</a> · <a data-bind-href="links.negativeEvidence" href="../evidence/negative-proof.md">negative proof</a> · <a data-bind-href="links.proofGate" href="../evidence/proof-gate.md">proof gate</a></li>
+          <li><a data-bind-href="links.positiveEvidence" href="../evidence/positive-proof.md">Positive proof</a> · <a data-bind-href="links.negativeEvidence" href="../evidence/negative-proof.md">negative proof</a> · <a data-bind-href="links.proofGate" href="../evidence/proof-gate.md">verification report</a></li>
           <li>Reproduce: <code>bash evidence/run-proof-gate.sh</code></li>
         </ul>
         <p class="txline">
-          <a href="./receipt.html">See a settlement receipt</a> · <a href="./inspector.html">why FCC is load-bearing</a>
+          <a href="./receipt.html">See a settlement receipt</a> · <a href="./inspector.html">FCC verification details</a>
         </p>
       </section>
     </main>
 
     <footer class="site-footer">
       <div class="wrap">
-        <p>Jorqeth · Flare Summer Signal · trust &amp; product brief · synthetic data only.</p>
+        <p>Jorqeth · Flare Summer Signal · product &amp; security overview · synthetic data only.</p>
       </div>
     </footer>
 

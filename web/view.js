@@ -1,7 +1,7 @@
-// Pure view-model for the Jorqeth judge page.
+// Pure view-model for the Jorqeth verification replay.
 //
 // No DOM, no fetch, no framework. Every function here takes the committed
-// Milestone 5 evidence (evidence/positive-proof.json, evidence/negative-proof.json)
+// evidence (evidence/positive-proof.json, evidence/negative-proof.json)
 // and returns a plain object the page renders. Keeping this pure means every
 // visible state is unit-testable with `node --test` and no browser, and the page
 // can never show a number the evidence does not contain.
@@ -27,7 +27,7 @@ export function shortAddr(addr) {
 }
 
 /**
- * The finite set of judge-facing states. Each carries a stable `tone` the CSS
+ * The finite set of settlement outcome states. Each carries a stable `tone` the CSS
  * maps to a colour, and `terminal` (whether the order digest was consumed).
  * `paid` means value actually moved on-chain.
  */
@@ -40,9 +40,9 @@ export const STATES = {
 };
 
 /**
- * Classify one negative-proof vector (or the fleet_outage entry) into a judge
- * state. This is the single source of the "duplicate and infrastructure errors
- * are visibly distinct from legitimate ineligibility" acceptance rule.
+ * Classify one negative-proof vector (or the fleet_outage entry) into a
+ * settlement state. This is the single source of the "duplicate and infrastructure
+ * errors are visibly distinct from legitimate ineligibility" acceptance rule.
  */
 export function classifyVector(v) {
   switch (v.label) {
@@ -162,7 +162,7 @@ export function negativeScenarios(neg) {
   return cards;
 }
 
-/** The one-line winning invariant, read back from the negative proof. */
+/** The one-line settlement invariant, read back from the negative proof. */
 export function invariantView(neg) {
   const inv = neg.invariant;
   return {

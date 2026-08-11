@@ -1,8 +1,13 @@
 # Jorqeth site
 
-The judge-facing dashboard for Jorqeth: private, exact creator-affiliate commission
-settlement on Flare Confidential Compute. Every figure on these pages is read from the
-committed on-chain proof in [`../evidence`](../evidence), not from hand-written copy.
+The product website and interactive dashboard for Jorqeth: private, exact
+creator-affiliate commission settlement on Flare Confidential Compute. Every figure on
+these pages is read from the committed on-chain proof in [`../evidence`](../evidence), not
+from hand-written copy.
+
+This is the marketing landing page plus the guided settlement dashboard. For the
+standalone, dependency-free verification viewer (a single static page that replays the
+same committed evidence with no build step), see [`../web`](../web) instead.
 
 Built with Next.js 16 (App Router), React 19, and plain CSS. No Tailwind, no UI kit.
 Fonts are self-hosted (`public/fonts`), so there is no CDN dependency.
@@ -12,7 +17,7 @@ Fonts are self-hosted (`public/fonts`), so there is no CDN dependency.
 | Route | What it shows |
 | --- | --- |
 | `/` | Landing: what Jorqeth settles and why the number is trustworthy. |
-| `/app` | Settlement dashboard: the one eligible payout, escrow left intact, proof gate. |
+| `/app` | Settlement dashboard: the one eligible payout, escrow left intact, verification suite. |
 | `/app/activity` | The full 12-path settlement matrix, one outcome each. |
 | `/app/receipt` | The receipt for the single sale that released the exact commission. |
 | `/app/inspector` | The verification walk: five independent sources agreeing to the cent. |

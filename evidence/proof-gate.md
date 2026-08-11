@@ -1,12 +1,11 @@
-# Milestone 5 — Proof Gate
+# Verification Report
 
-**Result: PASS.** 9 of 9 mandatory checklist items pass, each
+**Result: PASS.** 9 of 9 verification checks pass, each
 resolved to a source-of-truth artifact re-run from a clean state by this script.
-No judge-facing UI work may begin until this gate passes.
 
-- **Chain:** local anvil devnet (chainId 31337), same rationale as the positive/negative proofs (BLK-001/BLK-002)
+- **Chain:** local anvil devnet (chainId 31337) with synthetic records, same rationale as the positive/negative proofs
 - **Reproduce:** `bash evidence/run-proof-gate.sh` (Foundry + jq; Go optional; no secrets, no live systems)
-- **forge test:** 61 passed, 0 failed
+- **forge test:** 68 passed, 0 failed
 - **Genuine signature vector:** go regen skipped (toolchain go1.25 unavailable offline); covered by forge FccRealSignatureTest
 - **Privacy scan:** 0 prohibited pattern(s) in committed public evidence
 
@@ -14,8 +13,8 @@ No judge-facing UI work may begin until this gate passes.
 
 | # | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | The winning invariant works end to end. | PASS | forge test 61 passed / 0 failed; positive-proof.json=PASS; negative-proof.json only_eligible=true |
-| 2 | The current real FCC path works and is load-bearing. | PASS | FccRealSignatureTest=ok (genuine Flare-code signature verifies); FccSettlementTest=ok (eligible pays only on a registered-TEE signature); genuine vector: go regen skipped (toolchain go1.25 unavailable offline); covered by forge FccRealSignatureTest |
+| 1 | The settlement invariant works end to end. | PASS | forge test 68 passed / 0 failed; positive-proof.json=PASS; negative-proof.json only_eligible=true |
+| 2 | The current real FCC path works and gates settlement. | PASS | FccRealSignatureTest=ok (genuine Flare-code signature verifies); FccSettlementTest=ok (eligible pays only on a registered-TEE signature); genuine vector: go regen skipped (toolchain go1.25 unavailable offline); covered by forge FccRealSignatureTest |
 | 3 | Positive proof exists and is independently inspectable. | PASS | evidence/positive-proof.{json,md}; RPC-re-verifiable via the cast calls in positive-proof.md |
 | 4 | The exact eligible payout and creator balance delta agree. | PASS | positive-proof.json exact_amount_agreement.all_equal=true; creatorBalanceDelta=20000000 across formula/FCC/event/balance |
 | 5 | Negative proof exists and visibly produces zero payout. | PASS | negative-proof.json paths_that_transferred_value=1 (only the eligible order); refund settles zero and is terminal (true) |
@@ -26,7 +25,7 @@ No judge-facing UI work may begin until this gate passes.
 
 ## Sources of truth
 
-- Full test suite: `forge test` (61 passing)
+- Full test suite: `forge test` (68 passing)
 - Positive proof: `evidence/positive-proof.{json,md}` (eligible order pays the exact commission, once)
 - Negative proof: `evidence/negative-proof.{json,md}` (every failure mode refuses to pay; escrow intact)
 - Genuine FCC signature: `tools/tee-signer/genuine-vector.json` + `contracts/test/FccRealSignature.t.sol`

@@ -1,13 +1,13 @@
 {
-  "proof": "milestone-5-proof-gate",
+  "proof": "verification-suite",
   "result": "PASS",
   "generated_by": "evidence/run-proof-gate.sh",
   "chain": "local anvil devnet (chainId 31337)",
-  "provenance_note": "The Milestone 5 Proof Gate. One command re-runs the full forge suite and both on-chain proofs from a clean state, then resolves each mandatory checklist item to a source-of-truth artifact. Runs on local anvil 31337 for the same reason as the positive/negative proofs (BLK-001/BLK-002). A fully-live production-attested Coston2 round trip remains externally blocked; the genuine Flare-code signature (CP-003) is the accepted self-contained substitute.",
+  "provenance_note": "The verification suite. One command re-runs the full forge suite and both on-chain proofs from a clean state, then resolves each verification check to a source-of-truth artifact. Runs locally on anvil 31337 with synthetic records, for the same reason as the positive/negative proofs. The live Coston2 FCC attestation path is not yet connected; the genuine Flare-code signature is the self-contained substitute.",
   "summary": {
     "checklist_items_passed": 9,
     "checklist_items_total": 9,
-    "forge_tests_passed": 61,
+    "forge_tests_passed": 68,
     "forge_tests_failed": 0,
     "genuine_signature_vector": "go regen skipped (toolchain go1.25 unavailable offline); covered by forge FccRealSignatureTest",
     "privacy_scan_findings": 0
@@ -20,14 +20,14 @@
   },
   "checklist": [
     {
-      "item": "winning_invariant_end_to_end",
-      "requirement": "The winning invariant works end to end.",
+      "item": "settlement_invariant_end_to_end",
+      "requirement": "The settlement invariant works end to end.",
       "status": "pass",
-      "evidence": "forge test 61 passed / 0 failed; positive-proof.json=PASS; negative-proof.json only_eligible=true"
+      "evidence": "forge test 68 passed / 0 failed; positive-proof.json=PASS; negative-proof.json only_eligible=true"
     },
     {
-      "item": "real_fcc_load_bearing",
-      "requirement": "The current real FCC path works and is load-bearing.",
+      "item": "real_fcc_required",
+      "requirement": "The current real FCC path works and gates settlement.",
       "status": "pass",
       "evidence": "FccRealSignatureTest=ok (genuine Flare-code signature verifies); FccSettlementTest=ok (eligible pays only on a registered-TEE signature); genuine vector: go regen skipped (toolchain go1.25 unavailable offline); covered by forge FccRealSignatureTest"
     },

@@ -1,11 +1,11 @@
-# Milestone 4 — Negative and Failure Proofs
+# Failure-Path Verification
 
 **Result: PASS.** Against one funded campaign, eleven hostile or failure paths were
 attempted plus a forced TEE-fleet outage. Exactly one path, the single approved
 eligible order, moved value, and it moved exactly the commission. Every other path
 paid nothing, and each reverting path reverted for the expected reason.
 
-- **Chain:** local anvil devnet (chainId 31337), same rationale as the positive proof (BLK-001/BLK-002)
+- **Chain:** local anvil devnet (chainId 31337) with synthetic records, same rationale as the positive proof
 - **Verifier mode:** `flare-fcc-v1/simulated-attestation` (honestly labelled; not production hardware)
 - **Regenerate:** `bash evidence/run-negative-proof.sh` (Foundry + jq; no secrets, no live systems)
 
@@ -26,7 +26,7 @@ paid nothing, and each reverting path reverted for the expected reason.
 | 10 | error_status | reverted | 0 | `BadResult()` |
 | 11 | fleet_outage (empty TEE set) | reverted | 0 | `EmptyRegistry()` |
 
-## Winning invariant (read back over RPC)
+## Settlement invariant (read back over RPC)
 
 - Paths that transferred value: **1** (only `eligible_positive`).
 - Creator final balance: **20000000** (= exact commission).

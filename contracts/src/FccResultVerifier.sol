@@ -7,14 +7,14 @@ import {ITeeMachineRegistry} from "./ITeeMachineRegistry.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-/// @title Flare Confidential Compute result verifier (Milestone 2)
-/// @notice The real FCC result-authenticity boundary. It reconstructs the exact
+/// @title Flare Confidential Compute result verifier
+/// @notice The FCC result-authenticity boundary. It reconstructs the exact
 ///         hash the Flare TEE node signs over an `ActionResult`, recovers the
 ///         secp256k1 signer, and accepts the result only if that signer is a
 ///         currently-active TEE machine (`teeId`) for Jorqeth's registered
-///         extension. This replaces the Milestone 1 `SignatureResultVerifier`
+///         extension. It is a drop-in replacement for `SignatureResultVerifier`
 ///         without any change to `JorqethSettlement`, its schema, or its tests.
-/// @dev The signing scheme is frozen byte-for-byte from the pinned official
+/// @dev The signing scheme is taken unchanged from the pinned official
 ///      sources and is reproduced here exactly:
 ///
 ///        Data    = abi.encode(PayableResult)                      // the extension's output

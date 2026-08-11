@@ -1,8 +1,8 @@
-// Controllers for the three Milestone 8 amplification surfaces. Each fetches the same
+// Controllers for the three read-only verification views. Each fetches the same
 // committed evidence + frozen spec the demo uses, builds a pure view-model from
 // surfaces.js, and binds it into static DOM through textContent only (never innerHTML),
 // so the evidence/config is treated as untrusted data and can inject no markup. No
-// surface writes anything, calls a chain, or triggers anything.
+// view writes anything, calls a chain, or triggers anything.
 
 import {
   receiptView,
@@ -139,7 +139,7 @@ export async function renderReceipt() {
   }
 }
 
-// ---- Surface 2: FCC proof inspector -------------------------------------------------
+// ---- View 2: FCC verification details -----------------------------------------------
 
 export async function renderInspector() {
   try {
@@ -204,7 +204,7 @@ export async function renderInspector() {
   }
 }
 
-// ---- Surface 3: trust / product brief -----------------------------------------------
+// ---- View 3: product & security overview --------------------------------------------
 
 export async function renderBrief() {
   try {

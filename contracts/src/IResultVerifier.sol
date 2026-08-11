@@ -6,17 +6,18 @@ import {PayableResult} from "./JorqethTypes.sol";
 /// @title Jorqeth result verification boundary
 /// @notice The settlement contract delegates "is this a genuine, domain-bound
 ///         result from the confidential evaluator?" to an implementation of this
-///         interface. Milestone 1 injects a local signature verifier. Milestone 2
-///         swaps in the real Flare Compute Extension result verifier WITHOUT
-///         changing the settlement contract.
+///         interface. The deployment injects either a local signature verifier or
+///         the Flare Compute Extension result verifier, WITHOUT changing the
+///         settlement contract.
 /// @dev The verifier is responsible only for origin authenticity of the result
 ///      bytes. Domain binding (chainId, settlementContract), expiry, replay, and
 ///      amount/recipient enforcement live in the settlement contract so they hold
 ///      regardless of which verifier is installed.
 interface IResultVerifier {
     /// @param result The decoded payable result.
-    /// @param proof  Verifier-specific attestation bytes (a signature in M1; the
-    ///               Flare-supplied verification material in M2).
+    /// @param proof  Verifier-specific attestation bytes (an EIP-712 signature for
+    ///               the local verifier; the Flare-supplied verification material
+    ///               for the FCC verifier).
     /// @return ok    True only if `result` genuinely originates from the trusted
     ///               confidential evaluator for this deployment.
     function verify(PayableResult calldata result, bytes calldata proof)

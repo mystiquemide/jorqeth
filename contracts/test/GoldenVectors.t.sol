@@ -8,7 +8,7 @@ import {JorqethSettlement} from "../src/JorqethSettlement.sol";
 /// @title Golden vector suite
 /// @notice One test per frozen vector in spec/jorqeth-v1.json. These freeze the
 ///         exact positive and zero outcomes and every rejected path, proving the
-///         winning invariant: no valid domain-bound eligible result means no
+///         settlement invariant: no valid domain-bound eligible result means no
 ///         payment, and a valid result pays only the bound amount to the bound
 ///         creator once.
 contract GoldenVectorsTest is JorqethTestBase {

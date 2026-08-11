@@ -1,4 +1,4 @@
-# Milestone 3 — Positive Proof
+# Positive Settlement Verification
 
 **Result: PASS.** One eligible order released the exact configured commission to the
 bound creator, once, as a real on-chain transaction, only because a registered TEE
@@ -8,12 +8,12 @@ machine signed the result under the frozen FCC scheme.
 - **Verifier mode:** `flare-fcc-v1/simulated-attestation` (honestly labelled; not production hardware)
 - **Regenerate:** `bash evidence/run-positive-proof.sh` (Foundry + jq; no secrets, no live systems)
 
-Coston2 was the plan's target chain. A fully-live, production-attested FCC round trip
-there is externally blocked (BLK-001/BLK-002): no funded Coston2 wallet is available to
-the executor and public Coston2 rejects simulated attestation. This local run is the
-honest substitute — same contracts, same FCC verifier scheme, same exact-payout
-invariant. That the signature *bytes* match real Flare library code is proven separately,
-byte-for-byte, by `tools/tee-signer` and `contracts/test/FccRealSignature.t.sol`.
+This run executes locally on anvil 31337 with synthetic records, on the chain the
+genuine tee-node vector targets: same contracts, same FCC verifier scheme, same
+exact-payout invariant. The live Coston2 FCC attestation path is not yet connected: no
+funded Coston2 wallet is available to the executor and public Coston2 rejects simulated
+attestation. That the signature bytes match real Flare library code is proven separately
+by `tools/tee-signer` and `contracts/test/FccRealSignature.t.sol`.
 
 ## Deployment
 

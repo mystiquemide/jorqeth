@@ -14,7 +14,7 @@ import {
 export const metadata: Metadata = {
   title: "Settlement dashboard",
   description:
-    "The one eligible sale paid exact, the escrow left intact, and the proof gate green. Every figure read from Jorqeth's committed on-chain proof.",
+    "The one eligible sale paid exact, the escrow left intact, and the verification suite green. Every figure read from Jorqeth's committed on-chain proof.",
 };
 
 export default function Dashboard() {
@@ -52,7 +52,7 @@ export default function Dashboard() {
 
         <div className="dash-hero__side">
           <div className="metric">
-            <div className="metric__k">Proof gate</div>
+            <div className="metric__k">Verification suite</div>
             <div className="metric__v">{gate.checklistPassed} / {gate.checklistTotal}<span className="u">checks</span></div>
             <div className="metric__note">{gate.result} · {gate.forgePassed} forge tests green · {gate.privacyFindings} privacy findings</div>
           </div>

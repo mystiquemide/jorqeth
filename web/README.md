@@ -1,18 +1,22 @@
-# Jorqeth judge page
+# Jorqeth verification viewer
 
-A single, read-only web page that replays Jorqeth's proven settlement behaviour for
-a judge. It is a **lens over evidence**, not a live app: every number on the page is
-read at load time from the committed Milestone 5 proof files, so the page can never
-show a figure the proof does not contain.
+A single, read-only web page that replays Jorqeth's proven settlement behaviour. It
+is a **lens over evidence**, not a live app: every number on the page is read at load
+time from the committed proof files, so the page can never show a figure the proof
+does not contain.
+
+This is the standalone, dependency-free verification viewer (static HTML, no build
+step). For the full product website and guided dashboard built on Next.js, see
+[`../site`](../site) instead.
 
 - `evidence/positive-proof.json` — the eligible sale that pays the exact commission
 - `evidence/negative-proof.json` — every other path (refund, replay, tampering,
   wrong-domain, untrusted signer, expiry, infrastructure-unknown, error-status,
-  fleet-outage) and the one-line winning invariant
+  fleet-outage) and the one-line settlement invariant
 
 ## What it shows
 
-1. The winning invariant, read back from real state: across every attempted path
+1. The settlement invariant, read back from real state: across every attempted path
    against one funded campaign, exactly one moved value.
 2. The funded campaign parameters and addresses.
 3. The eligible sale: creator balance before and after, the exact commission, and
@@ -22,7 +26,7 @@ show a figure the proof does not contain.
    "we could not decide" (reverts, stays retryable) and from an attack (rejected).
 5. Honest limitations and direct links to the underlying evidence files.
 
-## Judge-amplifying surfaces
+## Verification views
 
 Three read-only companion pages sit next to the main replay. They add no new
 behaviour, write path, actor, or metric: each is another lens over the same
@@ -34,16 +38,16 @@ committed proof and frozen spec, so nothing on them can show a value the proof o
   (`?r=infra`, `?r=replay`, ...). An eligible run shows the exact `+20.000000` mUSD
   payout and the real settle tx; every other run reads as its own outcome and pays
   zero, never as a success.
-- `inspector.html` — why Flare Confidential Compute is load-bearing: the five-step
-  verification chain, the exact on-chain `PayableResult` fields the TEE signature
-  binds (parsed from the frozen result-type string), the private fields it withholds,
-  and honest simulated-vs-production attestation copy.
+- `inspector.html` — how Flare Confidential Compute authenticates settlement: the
+  five-step verification chain, the exact on-chain `PayableResult` fields the TEE
+  signature binds (parsed from the frozen result-type string), the private fields it
+  withholds, and honest simulated-vs-production attestation copy.
 - `brief.html` — target user, problem, model, positive and negative guarantees,
   security controls, limitations (merchant-source dependence stated first), what was
-  built during Summer Signal versus inherited FCC scaffold, and a three-step roadmap.
+  built versus the reused FCC components, and a three-step roadmap.
 
 The main replay links to all three under "Verify and understand it further". Each
-surface links back and cross-links the other two.
+view links back and cross-links the other two.
 
 ## Run it
 
@@ -96,7 +100,7 @@ states that were proven.
   used or shown.
 - **Local anvil, simulated attestation.** A fully live, production-attested Coston2
   round trip is externally blocked, so the verifier mode is labelled
-  `simulated-attestation`. The TEE signature scheme itself is proven byte-for-byte
+  `simulated-attestation`. The TEE signature scheme itself is proven exactly
   against real Flare library code (`tools/tee-signer` +
   `contracts/test/FccRealSignature.t.sol`), which is the self-contained substitute
   for that blocked round trip.
