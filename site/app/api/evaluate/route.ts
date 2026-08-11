@@ -126,7 +126,9 @@ export async function POST(request: Request) {
       eligibilityCode === 1
         ? (BigInt(record.netAmount) * BigInt(commissionBps)) / BigInt(10_000)
         : BigInt(0);
-    const issuedAt = BigInt(Math.floor(Date.now() / 1000));
+    // Use the chain clock so a small host-to-chain skew cannot create a result
+    // whose issuance time appears to be in the future when it settles.
+    const issuedAt = (await publicClient.getBlock({ blockTag: "latest" })).timestamp;
     const oneHour = BigInt(3600);
     const expiry = issuedAt + oneHour < campaignEnd ? issuedAt + oneHour : campaignEnd;
     if (expiry <= issuedAt + BigInt(60)) {
