@@ -120,8 +120,8 @@ export default function Privacy() {
                 a wallet.
               </li>
               <li>
-                <b>No sales data.</b> The demo works from a fixed synthetic record. We don&apos;t upload
-                or store any real merchant data.
+                <b>No sales data in the browser.</b> The browser sends a record reference to the
+                private evaluator. It never receives the underlying merchant record.
               </li>
               <li>
                 <b>Standard hosting logs.</b> The host may keep basic request logs (like IP and

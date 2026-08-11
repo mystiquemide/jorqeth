@@ -21,7 +21,7 @@ const ITEMS = [
   },
   {
     q: "Is this live money?",
-    a: "No. The proof committed in this GitHub tree runs on a local Anvil chain with a synthetic mUSD token and synthetic records. The current Vercel production UI has a separate Coston2 testnet flow, but its source commit is not present on GitHub and production FCC attestation is not connected.",
+    a: "No. The interactive flow uses Coston2 test tokens with no cash value. Campaign creation, escrow funding, and settlement happen on Coston2 when the deployment is configured. The private evaluator currently uses a disclosed testnet signer. Production Flare Confidential Compute attestation is not connected yet.",
   },
   {
     q: "How is the amount calculated?",

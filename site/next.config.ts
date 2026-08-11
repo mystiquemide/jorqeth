@@ -2,11 +2,7 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
 
-// Content-Security-Policy for a static, read-only dashboard.
-//
-// Every page is prerendered from committed JSON. There is no user input, no
-// auth, no form submission, and no third-party subresource, so the XSS surface
-// is minimal. We keep a conservative policy anyway.
+// Content-Security-Policy for the public site and Coston2 settlement app.
 //
 // Why 'unsafe-inline' rather than a nonce: Next.js emits inline bootstrap
 // scripts (self.__next_f RSC payload) and the app uses React inline style
@@ -22,7 +18,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
-  `connect-src 'self'${isDev ? " ws:" : ""}`,
+  `connect-src 'self' https://coston2-api.flare.network${isDev ? " ws:" : ""}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

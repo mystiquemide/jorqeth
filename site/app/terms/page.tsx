@@ -7,7 +7,7 @@ import SkipLink from "@/components/SkipLink";
 export const metadata: Metadata = {
   title: "Terms of use",
   description:
-    "The terms for using Jorqeth. A testnet demo settling synthetic tokens on Flare Coston2. No real funds, no warranty.",
+    "The terms for using Jorqeth on Flare Testnet Coston2. No real funds, no warranty.",
 };
 
 const UPDATED = "August 2026";
@@ -34,8 +34,8 @@ export default function Terms() {
           </p>
 
           <p className="legal__note">
-            <b>This is a testnet demo, not a financial product.</b> It runs on Flare&apos;s Coston2
-            test network and moves synthetic test tokens with no cash value. Nothing here settles
+            <b>This is a testnet demo, not a financial product.</b> It uses Flare&apos;s Coston2
+            test network and test tokens with no cash value. Nothing here settles
             real money, and you should never send real funds to any address you see in this app.
           </p>
 
@@ -51,7 +51,7 @@ export default function Terms() {
           </section>
 
           <section>
-            <h2>Testnet and synthetic value</h2>
+            <h2>Testnet value</h2>
             <ul>
               <li>
                 <b>No real funds.</b> Escrow, payouts, and balances use test tokens on Coston2.

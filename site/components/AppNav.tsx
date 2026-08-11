@@ -10,7 +10,7 @@ const NAV = [
     links: [
       {
         href: "/app",
-        label: "Dashboard",
+        label: "Settle commission",
         icon: (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.6" stroke="currentColor" strokeWidth="1.7" /><rect x="13" y="3" width="8" height="5" rx="1.6" stroke="currentColor" strokeWidth="1.7" /><rect x="13" y="10" width="8" height="11" rx="1.6" stroke="currentColor" strokeWidth="1.7" /><rect x="3" y="13" width="8" height="8" rx="1.6" stroke="currentColor" strokeWidth="1.7" /></svg>
         ),
@@ -29,7 +29,7 @@ const NAV = [
       },
       {
         href: "/app/inspector",
-        label: "FCC compatibility details",
+        label: "Verification details",
         icon: (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.7" /><path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
         ),
@@ -39,6 +39,18 @@ const NAV = [
         label: "Settlement matrix",
         icon: (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
+        ),
+      },
+    ],
+  },
+  {
+    section: "Learn",
+    links: [
+      {
+        href: "/docs",
+        label: "How Jorqeth works",
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z" stroke="currentColor" strokeWidth="1.7" /><path d="M8 20a3 3 0 0 1 0-6h11M9 8h6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
         ),
       },
     ],
@@ -77,7 +89,7 @@ export default function AppNav() {
 
       <div className="appnav__foot">
         <span className="dot" />
-        Local devnet · chain 31337
+        Coston2 · chain 114
       </div>
     </aside>
   );

@@ -15,8 +15,11 @@ export default function SiteFooter() {
             tested settlement paths moved value.
           </p>
           <div className="footer__links">
+            <Link href="/docs">How Jorqeth works</Link>
             <Link href="/app/receipt">Settlement receipt</Link>
             <Link href="/app/activity">Settlement matrix</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/privacy">Privacy</Link>
             <a
               className="footer__icon"
               href="https://github.com/mystiquemide/jorqeth"

@@ -4,13 +4,24 @@ Private commission settlement for creators and affiliates, with raw merchant rec
 
 [Live demo](https://jorqeth.vercel.app) · [Flare Summer Signal](https://dorahacks.io/hackathon/flaresummersignal/detail)
 
-Jorqeth lets a merchant fund escrow and fix a commission rule before settlement. An evaluator derives a minimal `PayableResult` from an agreed merchant record, and the settlement contract releases only the exact bound amount to the bound creator, once.
+Built for the Flare Summer Signal hackathon. The interactive flow targets Coston2, while
+the deterministic proof suite runs on a local Anvil devnet, chain ID 31337.
 
-> **Submission status:** the committed repository proves the settlement invariant on a local Anvil chain with synthetic records and includes Flare `ActionResult` signature-format compatibility tests. Production Flare Confidential Compute attestation is **not connected yet**. The current Vercel production deployment also contains a newer Coston2 user flow whose source commit is not present on GitHub. That source/provenance gap must be reconciled before final submission.
+> The Coston2 deployment uses a disclosed testnet evaluator signer. The settlement
+> contracts and FCC signature-verification path are implemented and tested, while a live
+> Coston2 TEE round trip remains pending. See "Implementation status" below for exactly
+> what is and is not proven.
 
 ## Problem
 
-Creators and affiliates often depend on merchant-owned order data to verify commissions. Publishing the underlying customer and revenue ledger is not acceptable, while a merchant-provided screenshot or spreadsheet is not independently enforceable.
+A creator owed a commission cannot inspect a merchant's private order ledger, and the
+merchant cannot publish customer and revenue data just to make the payout credible. Both
+sides agree in advance on the record source and the settlement rule. In the target
+design a Flare Compute Extension evaluates that source confidentially and returns only a
+minimal, domain-bound result, and a Flare contract releases the exact eligible commission
+and pays zero for every negative or unknown case. The current interactive flow runs that
+evaluation through a server-side testnet signer, while the production FCC evaluation and
+attestation round trip remain to be connected.
 
 Jorqeth is designed around a narrower claim: both parties agree on the record source and payout rule, the eligibility calculation happens away from the public chain, and only the minimum settlement result is allowed to reach the contract.
 
@@ -90,7 +101,11 @@ spec/jorqeth-v1.json
                            exact escrow payout
 ```
 
-Important contracts:
+What runs today: the Next.js app connects an injected wallet to Coston2, creates a campaign
+through `JorqethCampaignFactory`, mints test mUSD, funds escrow, requests a signed private
+evaluation, settles, and verifies the replay guard. The deterministic Foundry proof still
+runs locally and drives every positive and negative path against funded settlement state.
+Production FCE evaluation and attestation remain to be connected.
 
 - `JorqethEvaluator.sol` derives eligibility and amount from a merchant record.
 - `JorqethSettlement.sol` enforces escrow, domain binding, expiry, replay protection, terminal eligibility states, and exact payout.
@@ -104,7 +119,16 @@ A commission cannot leave escrow unless the result is valid, unexpired, eligible
 
 The contract also prevents the merchant from reclaiming escrow before `campaignEnd`, and refuses results whose expiry extends beyond that escrow lock.
 
-## Reproducible local verification
+| Contract | Role |
+|---|---|
+| `JorqethSettlement` | Escrow, domain binding, replay guard, exact/zero payout. The enforcement point. |
+| `JorqethCampaignFactory` | Creates campaign settlement contracts and records approved campaign addresses. |
+| `IResultVerifier` | Result-authenticity boundary (local signature or FCC, swapped at deploy). |
+| `SignatureResultVerifier` | Local test verifier (EIP-712 signature). |
+| `FccResultVerifier` | FCC verifier: reconstructs the TEE `ActionResult` signature and checks the signer against the active on-chain `teeId` set. |
+| `ITeeMachineRegistry` | Read-only view of the on-chain Flare TEE machine registry (active `teeId`s per extension). |
+| `JorqethResult` / `JorqethTypes` | Frozen `PayableResult` schema and struct hashing. |
+| `MockUSD` | Synthetic 6-decimal test escrow token. Not a real asset. |
 
 ### Prerequisites
 
@@ -114,7 +138,44 @@ The contract also prevents the merchant from reclaiming escrow before `campaignE
 - npm
 - Go `1.25.1` only if regenerating the Flare signature compatibility vector
 
-### Clone
+### Working (70 passing tests)
+
+- Eligible order pays the exact floor commission, once, to the bound creator.
+- Refunded / unmatched order is a valid evaluation that pays zero.
+- Replay, wrong chain, wrong contract, expiry, untrusted signer, tampered
+  recipient/amount, and infrastructure-unknown all fail closed with no payout.
+- Escrow accounting, insufficient escrow, and token-transfer failure keep state intact.
+- With the real `FccResultVerifier` installed, an eligible order settles the exact
+  commission only because a registered TEE signed the result. A valid non-TEE key is
+  rejected at the boundary, and removing the TEE (empty active set) halts the payable
+  path entirely while escrow stays intact.
+- The campaign factory binds the merchant, creator, token, verifier, rule, percentage,
+  and settlement window for every new campaign.
+- The `/app` journey connects a wallet and carries a campaign through creation, funding,
+  private testnet evaluation, settlement, and replay verification on Coston2 when deployed.
+
+### Verified on-chain (local anvil)
+
+- A funded settlement contract is deployed and every path is driven against it: the
+  eligible sale pays the exact `+20.000000` mUSD commission, and every other path
+  (refund, replay, tampering, wrong domain, untrusted signer, expiry,
+  infrastructure-unknown, error status, fleet outage) leaves escrow untouched. Across the
+  whole matrix, exactly one path moves value.
+- One command re-runs the full Foundry suite, both on-chain proofs, and a privacy scan,
+  then rewrites the committed evidence: `bash evidence/run-proof-gate.sh`.
+- A zero-dependency, read-only page replays that evidence, alongside a settlement
+  receipt, FCC verification details, and a short trust and privacy overview. A cold-start
+  rehearsal runner drives the whole thing from a clean chain. See
+  [`web/README.md`](web/README.md).
+
+### Current limitation
+
+The live tee-node round trip on Coston2 remains pending. No funded Coston2 wallet is
+available, so the on-chain proofs run against a local chain and the verifier is labelled
+`simulated-attestation`. The TEE signature scheme itself is verified against real Flare
+library code, which stands in for that pending round trip.
+
+## Build and test
 
 ```bash
 git clone --recurse-submodules https://github.com/mystiquemide/jorqeth.git
@@ -135,7 +196,34 @@ forge build
 forge test -vvv
 ```
 
-### Proof viewer
+Foundry 1.7.x, Solidity 0.8.28.
+
+## Reproduce the proof
+
+Every claim above regenerates from a clean chain with one command:
+
+```bash
+bash evidence/run-proof-gate.sh
+```
+
+That re-runs the full Foundry suite, both on-chain proofs, and a privacy scan, then
+rewrites the committed evidence. It is deterministic: a fresh clone reproduces the same
+`evidence/*.json`, down to the settle transaction hash and block.
+
+Evidence index:
+
+| File | What it proves |
+|---|---|
+| [`evidence/positive-proof.md`](evidence/positive-proof.md) | The eligible sale pays the exact `+20.000000` mUSD commission, with five independent amount sources in agreement. |
+| [`evidence/negative-proof.md`](evidence/negative-proof.md) | Across every attempted path against one funded campaign, exactly one moves value; refund, replay, wrong domain, expiry, untrusted signer, tampering, and infrastructure-unknown all pay zero. |
+| [`evidence/proof-gate.md`](evidence/proof-gate.md) | All verification checks pass in one run. |
+| [`contracts/test/FccRealSignature.t.sol`](contracts/test/FccRealSignature.t.sol) | A genuine Flare tee-node signature over `abi.encode(PayableResult)` verifies against the real FCC scheme. |
+
+## The dashboard
+
+The primary review surface is the Next.js app in [`site/`](site/README.md). It includes
+the interactive Coston2 journey, plus the full 12-path reference matrix, receipt, and
+verification inspector backed by committed proof evidence.
 
 ```bash
 cd site
