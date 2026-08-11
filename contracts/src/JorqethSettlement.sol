@@ -23,8 +23,8 @@ contract JorqethSettlement is ReentrancyGuard {
     /// @notice Escrow asset (a synthetic test ERC-20 in the prototype).
     IERC20 public immutable token;
     /// @notice Result verifier used to authenticate settlement results. The deployment
-    ///         may use the local signature verifier or the FCC verifier. Immutable so
-    ///         the trust root cannot be swapped after funding.
+    ///         may use the local signature verifier or the FCC compatibility verifier.
+    ///         Immutable so the trust root cannot be swapped after funding.
     IResultVerifier public immutable verifier;
     /// @notice Frozen schema version this deployment accepts.
     uint16 public immutable schemaVersion;
@@ -39,7 +39,7 @@ contract JorqethSettlement is ReentrancyGuard {
     /// @notice Unix time at/after which the merchant may reclaim unspent escrow.
     ///         Before this the escrow is locked, and `settle` rejects any result
     ///         whose expiry exceeds it, so the settlement and withdrawal windows are
-    ///         disjoint and a valid in-window result can never be stranded (REV-003).
+    ///         disjoint and a valid in-window result cannot be stranded.
     uint64 public immutable campaignEnd;
 
     // --- State ---
@@ -143,19 +143,18 @@ contract JorqethSettlement is ReentrancyGuard {
         if (r.expiry <= block.timestamp) revert Expired(r.expiry, block.timestamp);
         // A settleable result must expire no later than the escrow lock lifts. This
         // makes the settlement window (now < expiry) and the withdrawal window
-        // (now >= campaignEnd) provably disjoint, so a valid result can never be
-        // stranded by a merchant withdrawal at campaignEnd (REV-003). Enforced here
-        // rather than relying on the off-chain convention that sets campaignEnd
-        // beyond every result's expiry.
+        // (now >= campaignEnd) provably disjoint, so a valid result cannot be
+        // stranded by a merchant withdrawal at campaignEnd. Enforced here instead
+        // of relying on an off-chain expiry convention.
         if (r.expiry > campaignEnd) revert ExpiryAfterCampaignEnd(r.expiry, campaignEnd);
 
         // 2. Replay guard. Reserve the digest before any external transfer so a
         //    reentrant or duplicate call cannot pay twice (checks-effects).
         if (settled[r.orderDigest]) revert AlreadySettled(r.orderDigest);
 
-        // 3. Authenticity: only a genuine result from the confidential evaluator
-        //    may move the state machine forward. Everything above is public data;
-        //    this is the origin proof.
+        // 3. Authenticity: only a result accepted by the immutable verifier may
+        //    move the state machine forward. Everything above is public data; this
+        //    boundary supplies the origin/authenticity proof for the selected mode.
         if (!verifier.verify(r, proof)) revert BadResult();
 
         // 4. Eligibility handling. Only ELIGIBLE and INELIGIBLE are terminal
@@ -184,8 +183,8 @@ contract JorqethSettlement is ReentrancyGuard {
     /// @notice Merchant reclaims unspent escrow after the campaign window closes.
     ///         Locked until `campaignEnd`, and `settle` bars any result expiring
     ///         after `campaignEnd`, so the two windows never overlap and a valid
-    ///         in-window result can never be stranded (REV-003). Never touches
-    ///         settled state or the creator's received funds.
+    ///         in-window result cannot be stranded. Never touches settled state or
+    ///         the creator's received funds.
     function withdrawEscrow(uint256 amount) external nonReentrant {
         if (msg.sender != merchant) revert NotMerchant();
         if (block.timestamp < campaignEnd) revert EscrowLocked(campaignEnd, block.timestamp);

@@ -11,8 +11,8 @@ export default function SiteFooter() {
             Jorqeth
           </Link>
           <p className="footer__proof">
-            Five independent sources agreed on the payout to the cent, and only one of twelve
-            tested paths moved value. Read it straight from the committed proof.
+            Five evidence sources agree on the committed local payout, and only one of twelve
+            tested settlement paths moved value.
           </p>
           <div className="footer__links">
             <Link href="/app/receipt">Settlement receipt</Link>
@@ -23,8 +23,7 @@ export default function SiteFooter() {
         <div className="footer__bottom">
           <span>© 2026 Jorqeth</span>
           <span className="tag">
-            <span className="dot" style={{ background: "var(--tone-retry)" }}></span> Testnet and
-            synthetic data only
+            <span className="dot" style={{ background: "var(--tone-retry)" }}></span> Local devnet proof · synthetic data
           </span>
         </div>
       </div>

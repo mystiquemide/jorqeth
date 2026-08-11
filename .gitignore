@@ -1,9 +1,11 @@
-# --- Internal planning / state docs: never publish ---
+# --- Internal planning / review output: never publish ---
 PROJECT_PLAN.md
 PROJECT_STATE.md
 flare summary*.md
 *.internal.md
 /internal/
+CODE_REVIEW.md
+CHANGES_IMPLEMENTED.md
 
 # --- Secrets ---
 .env
@@ -17,9 +19,8 @@ secrets*.json
 /out/
 /cache/
 /broadcast/
-# keep dependency source, ignore nothing else under lib intentionally
 
-# --- Node / web (added in later milestones) ---
+# --- Node / web ---
 node_modules/
 dist/
 .next/

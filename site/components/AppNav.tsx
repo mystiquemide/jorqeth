@@ -29,7 +29,7 @@ const NAV = [
       },
       {
         href: "/app/inspector",
-        label: "FCC verification details",
+        label: "FCC compatibility details",
         icon: (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.7" /><path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
         ),
@@ -77,7 +77,7 @@ export default function AppNav() {
 
       <div className="appnav__foot">
         <span className="dot" />
-        Testnet · chainId 31337
+        Local devnet · chain 31337
       </div>
     </aside>
   );

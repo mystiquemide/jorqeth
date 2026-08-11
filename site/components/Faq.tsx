@@ -5,27 +5,27 @@ import { useState } from "react";
 const ITEMS = [
   {
     q: "What is Jorqeth?",
-    a: "A way to settle creator and affiliate commissions privately and exactly. The merchant funds escrow and fixes the rule, a confidential step evaluates each sale against the agreed record, and the contract pays the exact commission on-chain. It settles what that agreed record shows.",
+    a: "A commission-settlement prototype for creators and affiliates. The merchant funds escrow and fixes the rule, an evaluator derives the outcome from an agreed record, and the contract enforces the exact bound payout once.",
   },
   {
     q: "Do I have to trust the merchant?",
-    a: "You both agree on the record source and the rule before anything runs. From there the payout is enforced by the contract, not by goodwill. The merchant can't quietly change the amount, and a result bound to the wrong chain, contract, or creator can't pay.",
+    a: "The merchant remains the agreed source of record, so Jorqeth does not prove universal attribution truth. Once the record source and rule are fixed, the settlement contract prevents a result bound to the wrong amount, chain, contract, rule, or creator from paying.",
   },
   {
-    q: "Is my customers' data exposed?",
-    a: "No. The confidential compute step returns only a minimal signed result and the exact amount. No customer field, revenue figure, or secret key appears in any result, event, or output. Order references are opaque digests. The only key in the repository is the public Anvil test account used to reproduce the signature scheme locally.",
+    q: "Is customer data exposed?",
+    a: "The committed proof uses synthetic merchant records and puts no raw customer or revenue fields on-chain. The target Flare Confidential Compute flow is designed to evaluate real private records inside a TEE and return only a minimal result, but that production FCC round trip is not connected in this repository yet.",
   },
   {
     q: "What happens if a sale is refunded?",
-    a: "A refunded sale is a valid evaluation that pays zero and is marked settled. It is treated differently from a case the system could not decide, which reverts and stays retryable. Neither one pays a commission.",
+    a: "A refunded sale is a valid evaluation that pays zero and is marked settled. An infrastructure-unknown result is different: settlement rejects it and leaves the digest retryable. Neither path can move commission value.",
   },
   {
     q: "Is this live money?",
-    a: "Not yet. It runs locally on an anvil devnet with a synthetic escrow token and synthetic records. The live Coston2 FCC attestation path is not yet connected. The settlement invariant and the Flare signature scheme are real and proven. The one remaining piece is that live production attestation round trip, which is honestly labelled where it appears.",
+    a: "No. The proof committed in this GitHub tree runs on a local Anvil chain with a synthetic mUSD token and synthetic records. The current Vercel production UI has a separate Coston2 testnet flow, but its source commit is not present on GitHub and production FCC attestation is not connected.",
   },
   {
     q: "How is the amount calculated?",
-    a: "A fixed-rate floor formula: the eligible net order amount times the agreed rate, rounded down. In the proven run that is floor(200.000000 times 10 percent) = exactly 20.000000 mUSD. Five independent sources are checked to agree on that figure.",
+    a: "A fixed-rate floor formula: the eligible net order amount times the agreed rate, rounded down. In the committed proof that is floor(200.000000 times 10 percent) = exactly 20.000000 mUSD, with five evidence sources checked for agreement.",
   },
 ];
 

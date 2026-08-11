@@ -1,62 +1,48 @@
-# tee-signer — genuine Flare TEE-node signature over a Jorqeth result
+# tee-signer - Flare ActionResult signature compatibility vector
 
-This tool mints a **real** Flare Confidential Compute (FCC) TEE-node signature over a
-Jorqeth `PayableResult` and proves the on-chain `FccResultVerifier` accepts it with
-**zero changes** to `JorqethSettlement`.
+This helper generates a deterministic Jorqeth `PayableResult` signature using the same public hashing and signing primitives imported from pinned Flare libraries.
 
-It is the strongest FCC round-trip evidence achievable without provisioning Flare's
-private e2e devnet (Hardhat + indexer DB + FTDC proxy + the `FlareTeeManager` diamond),
-none of which is self-provisionable inside a hackathon window. Instead of faking a
-signature, every cryptographic step here runs the **actual pinned Flare library code**.
+It proves a narrow, useful statement: Jorqeth's Solidity reconstruction of the pinned Flare `ActionResult` signature format agrees with those library functions for the committed test vector.
 
-## What it reproduces
+It does **not** prove that a Flare TEE executed Jorqeth, that a TEE was registered on Coston2, or that production attestation occurred.
 
-`internal/router.SignResult` in `tee-node@v0.0.24` is, in full:
+## Pinned primitives
 
-```go
-signHash, _ := csigning.NewPayload(csigning.TEEActionResult, chainID, common.BytesToHash(ar.Hash())).Hash()
-sig, _       := signer.Sign(signHash[:])   // Node.Sign == teeutils.Sign(hash, key)
-```
-
-`router` and `node` live under `internal/`, so they cannot be imported across modules.
-But the three primitives they call are **public**, and this driver calls those exact
-functions:
-
-| Step | Genuine function | Package (pinned) |
+| Step | Function | Package |
 | --- | --- | --- |
-| `Data = abi.encode(PayableResult)` | `abi.Arguments.Pack` | go-ethereum v1.17.4 |
-| `arHash = keccak256(keccak256(Data)‖id‖keccak256(tag)‖status)` | `teetypes.ActionResult.Hash()` | tee-node v0.0.24 |
-| `payload = keccak256(abi.encode("TEE_ACTION_RESULT", chainId, arHash))` | `csigning.NewPayload(...).Hash()` | go-flare-common 09a10067e6a4 |
-| `digest = EIP-191(payload); sig = secp256k1_sign(digest)` | `teeutils.Sign(...)` | tee-node v0.0.24 |
+| ABI encode the result | `abi.Arguments.Pack` | go-ethereum v1.17.4 |
+| Hash the result envelope | `teetypes.ActionResult.Hash()` | tee-node v0.0.24 |
+| Build the signing payload | `csigning.NewPayload(...).Hash()` | go-flare-common 09a10067e6a4 |
+| EIP-191 secp256k1 signing | `teeutils.Sign(...)` | tee-node v0.0.24 |
 
-So the emitted signature is byte-for-byte what a live Flare tee-node would produce for
-the same result on chain `31337`.
+The helper mirrors the public primitives used by the pinned `tee-node` signing path. The driver itself runs locally and signs with the well-known public Anvil account-0 key.
 
 ## Run
 
 ```bash
-go run .        # requires the Go 1.25 toolchain (auto-fetched via GOTOOLCHAIN)
+gofmt -d .
+go test ./...
+go vet ./...
+go run .
 ```
 
-Output is `genuine-vector.json` (committed): the result fields, the intermediate
-hashes, the signer (`teeId`), and the signature in both forms.
+Go `1.25.1` is declared in `go.mod`.
 
-## Two landmines this proof exposes (a mock `vm.sign` hides both)
+The command prints the result fields, intermediate hashes, signer address, and signatures with `v` in both `{0,1}` and `{27,28}` forms. The committed vector is consumed by `contracts/test/FccRealSignature.t.sol`.
 
-1. **v-byte.** go-ethereum `crypto.Sign` emits `v ∈ {0,1}`; OpenZeppelin `ECDSA` needs
-   `{27,28}`. The on-chain relayer applies the standard `+27` (r, s untouched). The
-   vector ships both `signatureRaw_v01` and `signature_v2728`.
-2. **chainId binding.** The signature is bound to the signer's configured `CHAIN_ID`
-   (`31337` here). It verifies only on a chain whose id matches.
+## What the Solidity test checks
 
-## Where it's asserted on-chain
+`FccRealSignature.t.sol` verifies that:
 
-`contracts/test/FccRealSignature.t.sol` hardcodes this vector and proves:
+- Solidity `abi.encode(result)` matches the Go-produced bytes.
+- The reconstructed `ActionResult` hash and signing payload match the helper output.
+- The normalized signature recovers the expected local test signer.
+- A wrong chain id fails.
+- A tampered amount fails.
+- A signer outside the deterministic local signer set fails.
 
-- Solidity `abi.encode(result)` equals the Go-produced `Data` byte-for-byte
-- the reconstructed `arHash` / `payload` equal the genuine captured hashes
-- `FccResultVerifier.verify(result, proof)` **accepts** the genuine signature
-- raw `v01` is rejected until normalized; a wrong chainId is rejected; a tampered
-  amount is rejected; acceptance requires recovering the registered `teeId`
+## Current FCC integration gap
 
-Regenerating the vector and updating those constants keeps the proof honest end to end.
+The current official FCE scaffold selects machines with `TeeMachineRegistry.getRandomTeeIds(extensionId, count)` and sends instructions through `TeeExtensionRegistry`. Jorqeth's `FccResultVerifier` currently uses a deterministic local signer-set adapter for membership testing, which is not the current Coston2 registry ABI.
+
+Closing the gap requires implementing the current official FCE instruction lifecycle and binding the selected/registered TEE result to settlement. This helper should remain a compatibility regression test after that integration exists.

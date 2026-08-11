@@ -1,22 +1,13 @@
-// Command jorqeth-sign produces a GENUINE Flare TEE-node signature over a Jorqeth
-// PayableResult, using the real, pinned Flare library code for every cryptographic
-// step. Its output is a static test vector consumed by the Jorqeth forge suite
-// (contracts/test/FccRealSignature.t.sol), proving that FccResultVerifier accepts a
-// signature minted by actual Flare code with zero changes to JorqethSettlement.
+// Command jorqeth-sign generates a deterministic Flare ActionResult signature
+// compatibility vector over a Jorqeth PayableResult. It uses the real, pinned Flare
+// library primitives for ActionResult hashing, payload construction, and EIP-191
+// signing, then emits values consumed by contracts/test/FccRealSignature.t.sol.
 //
-// Run it with `go run .` (self-contained module; the Go 1.25 toolchain is
-// auto-fetched via GOTOOLCHAIN). See README.md for the full provenance table.
+// This proves signature-format compatibility. It does NOT prove that a TEE executed
+// Jorqeth, that a machine was registered on Coston2, or that production attestation
+// occurred. The signer is the well-known public Anvil account-0 development key.
 //
-// It reproduces internal/router.SignResult line-for-line. That function is under
-// tee-node/internal so it cannot be imported across modules, but its body is only:
-//
-//	signHash, _ := csigning.NewPayload(csigning.TEEActionResult, chainID, ar.Hash()).Hash()
-//	sig, _       := signer.Sign(signHash[:])   // Node.Sign == teeutils.Sign(hash, key)
-//
-// Every hash and the signature below therefore run genuine Flare code:
-//   - teetypes.ActionResult.Hash()  (tee-node v0.0.24 pkg/types/actions.go)
-//   - csigning.NewPayload(...).Hash() (go-flare-common pkg/signing/hash.go)
-//   - teeutils.Sign(...)             (tee-node v0.0.24 pkg/utils/crypto.go, EIP-191)
+// Run with `go run .`. See README.md for the exact scope and provenance.
 package main
 
 import (
@@ -36,8 +27,7 @@ import (
 )
 
 // PayableResult mirrors contracts/src/JorqethTypes.sol byte-for-byte. Field order
-// and ABI types must match exactly, or abi.encode(result) diverges from Solidity
-// and the signature will not verify. ruleVersion and nonce are bytes32, NOT ints.
+// and ABI types must match exactly, or abi.encode(result) diverges from Solidity.
 type PayableResult struct {
 	SchemaVersion      uint16
 	CampaignId         [32]byte
@@ -88,15 +78,12 @@ func must[T any](v T, err error) T {
 }
 
 func main() {
-	// --- The well-known PUBLIC Anvil account-0 test key, shared by every Foundry
-	//     install and safe to commit. This is NOT a secret and is never used with real
-	//     funds. Its address is the teeId registered on-chain for the local FCC devnet. ---
+	// Well-known PUBLIC Anvil account-0 test key. It is shared by Foundry installs,
+	// must never hold real funds, and is used here only for deterministic test data.
 	const teeKeyHex = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 	key := must(crypto.HexToECDSA(teeKeyHex))
 	teeId := crypto.PubkeyToAddress(key.PublicKey)
 
-	// --- Fixed, self-contained result. Values chosen so the forge test can rebuild
-	//     an identical struct from constants. chainId is the local FCC devnet id. ---
 	const chainID = uint64(31337)
 	result := PayableResult{
 		SchemaVersion:      1,
@@ -113,39 +100,37 @@ func main() {
 		Expiry:             1_760_003_600,
 	}
 
-	// Data = abi.encode(PayableResult). All 12 fields static => 384 bytes, no offset,
-	// byte-identical to Solidity abi.encode(result).
+	// Data = abi.encode(PayableResult). All 12 fields are static, so the payload is
+	// 384 bytes and must be byte-identical to Solidity abi.encode(result).
 	data := must(payableResultArguments().Pack(result))
 	if len(data) != 12*32 {
 		panic(fmt.Sprintf("expected 384-byte Data, got %d", len(data)))
 	}
 
-	// --- Genuine SignResult reproduction (real Flare code below this line) ---
+	// Reproduce the pinned Flare public primitives used by the ActionResult signing
+	// path. This executes locally with the deterministic Anvil key above.
 	instructionID := common.HexToHash("0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef")
 	ar := &teetypes.ActionResult{
 		ID:            instructionID,
-		SubmissionTag: teetypes.End, // "end"
+		SubmissionTag: teetypes.End,
 		Status:        1,
 		Data:          data,
 	}
-	arHash := ar.Hash() // tee-node ActionResult.Hash()
+	arHash := ar.Hash()
 	payload := must(csigning.NewPayload(csigning.TEEActionResult, chainID, common.BytesToHash(arHash)).Hash())
-	sig := must(teeutils.Sign(payload[:], key)) // EIP-191 sign, v in {0,1}
+	sig := must(teeutils.Sign(payload[:], key))
 
-	// Sanity: the genuine library must accept its own signature at the address == teeId.
 	if err := teeutils.VerifySignature(payload[:], sig, teeId); err != nil {
-		panic(fmt.Sprintf("genuine self-verify failed: %v", err))
+		panic(fmt.Sprintf("library self-verify failed: %v", err))
 	}
 
-	// OpenZeppelin ECDSA needs v in {27,28}; go-ethereum crypto.Sign emits {0,1}.
-	// The relayer that submits the result on-chain applies this standard +27
-	// normalization (r and s untouched). Emit both so the test exercises both paths.
+	// OpenZeppelin ECDSA expects v in {27,28}; go-ethereum crypto.Sign emits {0,1}.
 	sig27 := make([]byte, 65)
 	copy(sig27, sig)
 	sig27[64] = sig[64] + 27
 
 	out := map[string]any{
-		"note":               "GENUINE tee-node signature over abi.encode(PayableResult); every hash/sign step is real Flare code.",
+		"note":               "Flare ActionResult signature-format compatibility vector generated locally with pinned Flare libraries and the public Anvil test key.",
 		"teeKeyHex":          teeKeyHex,
 		"teeId":              teeId.Hex(),
 		"chainId":            chainID,
