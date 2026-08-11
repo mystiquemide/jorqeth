@@ -13,24 +13,26 @@ that replay is rejected.
 
 ## Current status
 
-- The deployed Coston2 settlement flow uses a disclosed server-side evaluator signer.
-- The current Flare Compute Extension source is implemented in
+- The complete Flare Compute Extension source is implemented in
   [`JorqethInstructionSender.sol`](contracts/src/JorqethInstructionSender.sol) and
   [`fce-extension/`](fce-extension/). The sender uses `getRandomTeeIds` followed by
   `sendInstructions`, and the extension handles the official `POST /action` wire format.
-- A full Coston2 TEE, proxy, and signed `ActionResponse` round trip still needs Flare
-  indexer access. The live app does not claim hardware-backed attestation.
-- [`FccResultVerifier.sol`](contracts/src/FccResultVerifier.sol) is an ActionResult
-  signature-format compatibility adapter used by the local proof suite. Its injected
-  active-set interface is not presented as the current Flare registry ABI.
+- Extension `66159` has an active simulated TEE registered through FlareTeeManager on
+  Coston2. The committed proof records instruction `0x9bf8867c...`, its raw signed
+  `ActionResult`, and settlement transaction `0x6165197a...`.
+- [`FccResultVerifier.sol`](contracts/src/FccResultVerifier.sol) reconstructs Flare's
+  ActionResult signing hash and accepts the signer only when it is in the current
+  MachineManager active set for the Jorqeth extension.
+- The interactive app retains the disclosed-signer path as a separate test flow. It does
+  not weaken or stand in for the committed FCE proof.
 
 ## Architecture
 
 ```text
 wallet -> Coston2 campaign factory -> funded settlement -> exact payout or zero
                     |
-                    +-> current app: disclosed testnet evaluator signer
-                    +-> FCE path: instruction sender -> selected TEE -> /action -> ActionResult
+                    +-> FCE: instruction sender -> active TEE -> signed ActionResult -> verifier
+                    +-> demo: disclosed testnet evaluator signer
 ```
 
 Raw order references and merchant credentials stay inside the evaluation boundary. The
@@ -43,11 +45,16 @@ chain, settlement contract, rule version, nonce, and validity window.
 | --- | --- |
 | MockUSD | `0x4F928576d415298c260897Bd9b8CbF70D91c5Cd4` |
 | SignatureResultVerifier | `0xEA16d390d6278EBA9d4a856d32bEf9F9975463B6` |
-| JorqethCampaignFactory | `0x1f4F27be826ef7F12622FE6da1d86d04ffda3226` |
-| Verified campaign | `0x747d370dc806921c65830e1f3c9044ca6d464585` |
+| Demo campaign factory | `0x1f4F27be826ef7F12622FE6da1d86d04ffda3226` |
+| FCE instruction sender | `0x86bE7C32A5E566b105a224F94b3A2Ed3F751d097` |
+| FCE ActionResult verifier | `0xf314850e31970d8337372380D183aD17a93B7F88` |
+| FCE campaign factory | `0x9C685107E49a09760c5014031606D973aEA08C50` |
+| FCE verified campaign | `0x421856ed443fe7595e372ca508315e898d88fe24` |
 
 The manifest and verification command are in
 [`deployments/coston2.json`](deployments/coston2.json) and
+[`deployments/coston2-fce-proof.json`](deployments/coston2-fce-proof.json), with the
+on-chain checks in
 [`scripts/verify-coston2-deployment.sh`](scripts/verify-coston2-deployment.sh).
 
 The contract also prevents the merchant from reclaiming escrow before `campaignEnd`, and refuses results whose expiry extends beyond that escrow lock.
@@ -58,7 +65,7 @@ The contract also prevents the merchant from reclaiming escrow before `campaignE
 | `JorqethCampaignFactory` | Creates and records fixed campaign deployments |
 | `SignatureResultVerifier` | Disclosed trusted-signer verifier used on Coston2 today |
 | `JorqethInstructionSender` | Current FCE instruction selection and dispatch |
-| `FccResultVerifier` | Local ActionResult signature-format compatibility adapter |
+| `FccResultVerifier` | Raw Flare ActionResult verification against the active TEE set |
 | `MockUSD` | Six-decimal Coston2 test token with no cash value |
 
 The frozen result schema and golden vectors live in
@@ -93,10 +100,11 @@ settlement evidence.
 
 - Jorqeth settles what the agreed merchant record source reports. It does not prove
   attribution outside that source.
-- The token and records used in tests have no real-world value.
-- The Coston2 app currently trusts the disclosed evaluator signer.
-- Production use needs a live FCE deployment, confidential credential delivery, a real
-  commerce connector, operational monitoring, and legal and privacy review.
+- The token used on Coston2 has no real-world value.
+- The FCE proof uses Flare's supported simulated-TEE testnet mode, not hardware-backed
+  production attestation.
+- Production use needs confidential credential delivery, a real commerce connector,
+  operational monitoring, and legal and privacy review.
 
 ## License
 

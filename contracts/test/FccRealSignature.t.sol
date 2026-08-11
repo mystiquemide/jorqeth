@@ -7,7 +7,7 @@ import {FccResultVerifier} from "../src/FccResultVerifier.sol";
 import {MockTeeMachineRegistry} from "./mocks/MockTeeMachineRegistry.sol";
 
 /// @title Genuine Flare TEE-node signature acceptance
-/// @notice A signature-format compatibility check without provisioning
+/// @notice A captured signature check without provisioning
 ///         Flare's private e2e devnet: a signature minted by the REAL, pinned Flare
 ///         library code (tee-node v0.0.24 + go-flare-common) over
 ///         `abi.encode(PayableResult)` is accepted by `FccResultVerifier` with zero
@@ -21,8 +21,8 @@ import {MockTeeMachineRegistry} from "./mocks/MockTeeMachineRegistry.sol";
 ///
 ///         Because it is a captured local compatibility signature, this suite
 ///         exercises the two off-chain-tooling landmines a mock `vm.sign` hides:
-///           1. go-ethereum `crypto.Sign` emits v in {0,1}; OZ ECDSA needs {27,28}.
-///              The submitting relayer applies the standard +27 (r,s untouched).
+///           1. go-ethereum `crypto.Sign` emits v in {0,1}; the verifier normalizes
+///              it to Solidity's {27,28} convention at the trust boundary.
 ///           2. The signature is bound to the signer's configured CHAIN_ID (31337 for
 ///              the local devnet); it verifies only on a matching chain.
 contract FccRealSignatureTest is Test {
@@ -134,12 +134,12 @@ contract FccRealSignatureTest is Test {
         );
     }
 
-    // --- 4. The +27 landmine: raw v-in-{0,1} is rejected until normalized ---
+    // --- 4. Raw tee-node recovery ids are accepted without relayer mutation ---
 
-    function test_realSig_rawV01Rejected() public view {
-        assertFalse(
+    function test_realSig_rawV01Accepted() public view {
+        assertTrue(
             fcc.verify(capturedResult(), _proof(CAP_SIG_RAW_V01)),
-            "raw go-ethereum v must be +27 normalized before on-chain verify"
+            "raw go-ethereum recovery id is normalized by the verifier"
         );
     }
 

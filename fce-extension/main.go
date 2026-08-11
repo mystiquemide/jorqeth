@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/hex"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,46 +9,25 @@ import (
 	"math/big"
 	"net/http"
 	"os"
-	"strings"
+	"os/signal"
+	"strconv"
+	"syscall"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/flare-foundation/go-flare-common/pkg/tee/instruction"
+	"github.com/flare-foundation/tee-node/pkg/processorutils"
+	teeserver "github.com/flare-foundation/tee-node/pkg/server"
+	teetypes "github.com/flare-foundation/tee-node/pkg/types"
+	teeutils "github.com/flare-foundation/tee-node/pkg/utils"
 )
 
 const (
-	version   = "0.1.0"
+	version   = "0.2.0"
 	opType    = "COMMISSION"
 	opCommand = "EVALUATE"
 )
-
-type action struct {
-	Data actionData `json:"data"`
-}
-
-type actionData struct {
-	ID            string `json:"id"`
-	SubmissionTag string `json:"submissionTag"`
-	Message       string `json:"message"`
-}
-
-type dataFixed struct {
-	OPType          string `json:"opType"`
-	OPCommand       string `json:"opCommand"`
-	OriginalMessage string `json:"originalMessage"`
-}
-
-type actionResult struct {
-	ID                     string `json:"id"`
-	SubmissionTag          string `json:"submissionTag"`
-	Status                 uint8  `json:"status"`
-	Log                    string `json:"log"`
-	OPType                 string `json:"opType"`
-	OPCommand              string `json:"opCommand"`
-	AdditionalResultStatus string `json:"additionalResultStatus"`
-	Version                string `json:"version"`
-	Data                   string `json:"data"`
-}
 
 type evaluationRequest struct {
 	SchemaVersion      uint16 `json:"schemaVersion"`
@@ -94,15 +73,29 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	configPort := intEnv("CONFIG_PORT", 5501)
+	signPort := intEnv("SIGN_PORT", 7701)
+	extensionPort := intEnv("EXTENSION_PORT", 7702)
+
+	go teeserver.StartServerExtension(configPort, signPort, extensionPort)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /action", ext.handleAction)
 	mux.HandleFunc("GET /state", ext.handleState)
-	addr := ":7702"
-	if port := os.Getenv("EXTENSION_PORT"); port != "" {
-		addr = ":" + port
+	server := &http.Server{Addr: fmt.Sprintf(":%d", extensionPort), Handler: mux}
+	errCh := make(chan error, 1)
+	go func() { errCh <- server.ListenAndServe() }()
+
+	log.Printf("Jorqeth FCE TEE running (config=%d sign=%d extension=%d)", configPort, signPort, extensionPort)
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+	select {
+	case <-signals:
+		return
+	case err := <-errCh:
+		log.Fatal(err)
 	}
-	log.Printf("Jorqeth FCE extension listening on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, mux))
 }
 
 func newExtension(raw string) (*extension, error) {
@@ -124,52 +117,50 @@ func newExtension(raw string) (*extension, error) {
 
 func (e *extension) handleState(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
-		"stateVersion": bytes32Hex(version),
+		"stateVersion": teeutils.ToHash(version),
 		"state":        map[string]any{"recordCount": len(e.records)},
 	})
 }
 
 func (e *extension) handleAction(w http.ResponseWriter, r *http.Request) {
-	var a action
-	if err := json.NewDecoder(r.Body).Decode(&a); err != nil {
-		http.Error(w, "invalid action", http.StatusBadRequest)
+	var action teetypes.Action
+	if err := json.NewDecoder(r.Body).Decode(&action); err != nil {
+		http.Error(w, fmt.Sprintf("decoding action: %v", err), http.StatusBadRequest)
 		return
 	}
-	dfBytes, err := decodeHex(a.Data.Message)
+
+	dataFixed, err := processorutils.Parse[instruction.DataFixed](action.Data.Message)
 	if err != nil {
-		http.Error(w, "invalid DataFixed hex", http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("decoding fixed data: %v", err), http.StatusBadRequest)
 		return
 	}
-	var df dataFixed
-	if err := json.Unmarshal(dfBytes, &df); err != nil {
-		http.Error(w, "invalid DataFixed JSON", http.StatusBadRequest)
-		return
-	}
-	if !equalBytes32(df.OPType, opType) || !equalBytes32(df.OPCommand, opCommand) {
+	if dataFixed.OPType != teeutils.ToHash(opType) || dataFixed.OPCommand != teeutils.ToHash(opCommand) {
 		http.Error(w, "unsupported operation", http.StatusNotImplemented)
 		return
 	}
 
-	result := actionResult{
-		ID: a.Data.ID, SubmissionTag: a.Data.SubmissionTag, OPType: df.OPType,
-		OPCommand: df.OPCommand, AdditionalResultStatus: "0x", Version: version,
+	result := teetypes.ActionResult{
+		ID:            action.Data.ID,
+		SubmissionTag: action.Data.SubmissionTag,
+		Version:       version,
+		OPType:        dataFixed.OPType,
+		OPCommand:     dataFixed.OPCommand,
 	}
-	data, err := e.evaluate(df.OriginalMessage)
+	data, err := e.evaluate(dataFixed.OriginalMessage)
 	if err != nil {
-		result.Status, result.Log, result.Data = 0, "error: "+err.Error(), "0x"
+		result.Status = 0
+		result.Log = "error: " + err.Error()
 	} else {
-		result.Status, result.Log, result.Data = 1, "ok", "0x"+hex.EncodeToString(data)
+		result.Status = 1
+		result.Log = "ok"
+		result.Data = data
 	}
 	writeJSON(w, http.StatusOK, result)
 }
 
-func (e *extension) evaluate(message string) ([]byte, error) {
-	raw, err := decodeHex(message)
-	if err != nil {
-		return nil, errors.New("invalid evaluation message hex")
-	}
+func (e *extension) evaluate(raw []byte) ([]byte, error) {
 	var req evaluationRequest
-	dec := json.NewDecoder(strings.NewReader(string(raw)))
+	dec := json.NewDecoder(bytes.NewReader(raw))
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(&req); err != nil {
 		return nil, fmt.Errorf("invalid evaluation request: %w", err)
@@ -217,18 +208,12 @@ func encodePayableResult(result payableResult) ([]byte, error) {
 	return abi.Arguments{{Type: tuple}}.Pack(result)
 }
 
-func decodeHex(value string) ([]byte, error) {
-	return hex.DecodeString(strings.TrimPrefix(value, "0x"))
-}
-
-func bytes32Hex(value string) string {
-	var out [32]byte
-	copy(out[:], value)
-	return "0x" + hex.EncodeToString(out[:])
-}
-
-func equalBytes32(encoded, plain string) bool {
-	return strings.EqualFold(encoded, bytes32Hex(plain))
+func intEnv(name string, fallback int) int {
+	value, err := strconv.Atoi(os.Getenv(name))
+	if err != nil {
+		return fallback
+	}
+	return value
 }
 
 func writeJSON(w http.ResponseWriter, status int, value any) {

@@ -94,7 +94,7 @@ export function LandingPage({ scrollTo }: { scrollTo?: LandingSection }) {
             <Reveal className="head">
               <span className="eyebrow">How it works</span>
               <h2>Funded up front. Evaluated privately. Paid exactly.</h2>
-              <p>The interactive path runs on Coston2 with a disclosed evaluator signer. The current FCE sender and extension handler are implemented while live TEE registration remains pending.</p>
+              <p>A funded Coston2 campaign now has a complete FCE proof: instruction dispatch, active TEE evaluation, signed ActionResult, and exact on-chain payout.</p>
             </Reveal>
             <div className="steps">
               <Reveal className="step">
@@ -105,7 +105,7 @@ export function LandingPage({ scrollTo }: { scrollTo?: LandingSection }) {
               <Reveal className="step">
                 <div className="step__flow"><div className="step__n">STEP 02</div><div className="step__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /><path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></div></div>
                 <h3>Evaluated in private</h3>
-                <p>The current testnet evaluator returns only the minimal signed result. The FCE path uses the same result boundary and is ready for live TEE registration.</p>
+                <p>An active Coston2 TEE reads the private record inside the extension and returns only the minimal signed payout result.</p>
               </Reveal>
               <Reveal className="step">
                 <div className="step__flow"><div className="step__n">STEP 03</div><div className="step__icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" /><path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></div></div>
@@ -129,7 +129,7 @@ export function LandingPage({ scrollTo }: { scrollTo?: LandingSection }) {
               <Reveal className="stat"><div className="stat__value">{gate.checklistPassed} / {gate.checklistTotal}<span className="unit">checks</span></div><div className="stat__label">The committed proof gate checks the evidence and five amount sources for agreement.</div></Reveal>
             </div>
             <Reveal className="outcomes__note">
-              <p>Configured formula, signed result, on-chain event, creator balance delta, and escrow delta agree on the same local test amount.</p>
+              <p>The FCE instruction, raw signed ActionResult, Coston2 settlement event, creator payout, and remaining escrow agree on the same amount.</p>
               <Link className="btn btn--primary" href="/app/receipt">Open the settlement proof <span className="arrow">→</span></Link>
             </Reveal>
           </div>
@@ -165,9 +165,8 @@ export function LandingPage({ scrollTo }: { scrollTo?: LandingSection }) {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </span>
                   <span>
-                    <b>Signed, not screenshotted.</b> The current Coston2 flow verifies a disclosed
-                    testnet evaluator signature over every result. The FCE instruction and extension
-                    path is implemented separately while live TEE registration remains pending.
+                    <b>Signed, not screenshotted.</b> The live Coston2 proof verifies the raw Flare
+                    ActionResult signature against the active TEE set before any escrow can move.
                   </span>
                 </li>
                 <li>

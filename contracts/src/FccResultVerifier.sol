@@ -7,12 +7,11 @@ import {IActiveTeeSet} from "./IActiveTeeSet.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-/// @title Flare ActionResult signature compatibility verifier
-/// @notice A local compatibility boundary. It reconstructs the exact
-///         hash the Flare TEE node signs over an `ActionResult`, recovers the
-///         secp256k1 signer, and accepts the result only if that signer is a
-///         signer present in an injected active-set adapter. It is a drop-in replacement for `SignatureResultVerifier`
-///         without any change to `JorqethSettlement`, its schema, or its tests.
+/// @title Flare ActionResult verifier
+/// @notice Reconstructs the exact hash the Flare TEE node signs over an
+///         `ActionResult`, recovers the secp256k1 signer, and accepts the result
+///         only when that signer is active for Jorqeth's extension in the current
+///         Flare MachineManager registry.
 /// @dev The signing scheme is taken unchanged from the pinned official
 ///      sources and is reproduced here exactly:
 ///
@@ -32,21 +31,15 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 ///        - tee-node v0.0.24 pkg/utils/crypto.go
 ///        - go-flare-common 09a10067e6a4 pkg/signing/hash.go, prefixes.go
 ///
-///      The active-set adapter is test-only because the current Flare registry ABI
-///      exposes `getRandomTeeIds`, not `getActiveTeeMachines`. Production FCE traffic
-///      uses `JorqethInstructionSender` and the official result returned by the proxy.
 contract FccResultVerifier is IResultVerifier {
     bytes32 internal constant TEE_ACTION_RESULT_PREFIX = bytes32("TEE_ACTION_RESULT");
     uint8 internal constant STATUS_OK = 1;
 
-    /// @notice On-chain registry listing active TEE signer addresses per extension
-    ///         (the FlareTeeManager diamond on Coston2).
+    /// @notice Current MachineManager facet, exposed by FlareTeeManager on Coston2.
     IActiveTeeSet public immutable registry;
     /// @notice The public extension id assigned to Jorqeth's instruction sender.
     uint256 public immutable extensionId;
-    /// @notice Declared test mode, e.g. `simulated-attestation`.
-    /// @dev The string is descriptive metadata. It is not proof of a real TEE or
-    ///      production attestation.
+    /// @notice Declared attestation mode, e.g. `simulated-attestation`.
     string internal attestationMode;
 
     error EmptyRegistry();
@@ -60,10 +53,9 @@ contract FccResultVerifier is IResultVerifier {
     }
 
     /// @inheritdoc IResultVerifier
-    /// @dev e.g. "action-result-compat-v1/simulated-attestation". This label
-    ///      identifies a local compatibility boundary, not production hardware.
+    /// @dev e.g. "fcc-action-result-v1/simulated-attestation".
     function mode() external view returns (string memory) {
-        return string.concat("action-result-compat-v1/", attestationMode);
+        return string.concat("fcc-action-result-v1/", attestationMode);
     }
 
     /// @inheritdoc IResultVerifier
@@ -91,13 +83,20 @@ contract FccResultVerifier is IResultVerifier {
             return false;
         }
 
+        // go-ethereum emits recovery ids as 0/1. OpenZeppelin's bytes-signature
+        // overload follows the Ethereum RPC convention and expects 27/28, so
+        // normalize the raw tee-node response at the verification boundary.
+        if (signature.length == 65) {
+            uint8 recoveryId = uint8(signature[64]);
+            if (recoveryId < 27) signature[64] = bytes1(recoveryId + 27);
+        }
+
         (address recovered, ECDSA.RecoverError err,) = ECDSA.tryRecover(digest, signature);
         if (err != ECDSA.RecoverError.NoError) {
             return false;
         }
 
-        // Local compatibility proof: recovered signer must belong to the deterministic
-        // test set for this logical extension id.
+        // The recovered signer must be active for this extension in FlareTeeManager.
         (address[] memory teeIds,) = registry.getActiveTeeMachines(extensionId);
         uint256 n = teeIds.length;
         if (n == 0) revert EmptyRegistry();

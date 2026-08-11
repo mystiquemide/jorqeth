@@ -1,0 +1,4 @@
+CREATE DATABASE IF NOT EXISTS `indexer`;
+CREATE USER IF NOT EXISTS 'jorqeth'@'%' IDENTIFIED BY 'jorqeth-fce-local';
+GRANT ALL PRIVILEGES ON `indexer`.* TO 'jorqeth'@'%';
+FLUSH PRIVILEGES;

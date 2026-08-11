@@ -30,6 +30,12 @@ export const deployment = {
   token: publicAddress(process.env.NEXT_PUBLIC_JORQETH_TOKEN_ADDRESS),
   verifier: publicAddress(process.env.NEXT_PUBLIC_JORQETH_VERIFIER_ADDRESS),
   factory: publicAddress(process.env.NEXT_PUBLIC_JORQETH_FACTORY_ADDRESS),
+  fceVerifier: publicAddress(process.env.NEXT_PUBLIC_JORQETH_FCE_VERIFIER_ADDRESS),
+  fceFactory: publicAddress(process.env.NEXT_PUBLIC_JORQETH_FCE_FACTORY_ADDRESS),
+  fceInstructionSender: publicAddress(
+    process.env.NEXT_PUBLIC_JORQETH_FCE_INSTRUCTION_SENDER_ADDRESS,
+  ),
+  fceExtensionId: process.env.NEXT_PUBLIC_JORQETH_FCE_EXTENSION_ID || "66159",
 };
 
 export const deploymentConfigured = Boolean(

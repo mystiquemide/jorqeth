@@ -41,7 +41,7 @@ contract JorqethInstructionSender {
         revert("extension id not found");
     }
 
-    /// @notice Sends an ABI-encoded evaluation request to one registered TEE machine.
+    /// @notice Sends a JSON evaluation request to one registered TEE machine.
     /// @dev The message contains public bindings and an opaque order digest. Raw merchant
     ///      records and credentials belong inside the extension environment.
     function sendEvaluation(bytes calldata message)

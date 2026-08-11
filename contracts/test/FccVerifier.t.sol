@@ -88,6 +88,14 @@ contract FccVerifierTest is JorqethTestBase {
         assertTrue(fcc.verify(r, _fccProof(teePk, r)), "active teeId signature accepted");
     }
 
+    function test_verify_acceptsRawTeeNodeRecoveryId() public view {
+        PayableResult memory r = eligibleResultA();
+        (uint8 v, bytes32 rr, bytes32 s) = vm.sign(teePk, _teeDigest(r));
+        bytes memory rawSignature = abi.encodePacked(rr, s, v - 27);
+        bytes memory proof = abi.encode(INSTRUCTION_ID, SUBMISSION_TAG, STATUS_OK, rawSignature);
+        assertTrue(fcc.verify(r, proof), "raw tee-node recovery id accepted");
+    }
+
     // --- Signer not in the active set is rejected ---
 
     function test_verify_rejectsUnregisteredSigner() public view {
@@ -167,8 +175,8 @@ contract FccVerifierTest is JorqethTestBase {
     function test_mode_disclosesAttestation() public view {
         assertEq(
             fcc.mode(),
-            "action-result-compat-v1/simulated-attestation",
-            "mode discloses compatibility boundary"
+            "fcc-action-result-v1/simulated-attestation",
+            "mode discloses FCE verification boundary"
         );
     }
 

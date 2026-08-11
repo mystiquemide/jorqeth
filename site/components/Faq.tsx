@@ -13,7 +13,7 @@ const ITEMS = [
   },
   {
     q: "Is customer data exposed?",
-    a: "The committed proof uses synthetic merchant records and puts no raw customer or revenue fields on-chain. The target Flare Confidential Compute flow is designed to evaluate real private records inside a TEE and return only a minimal result, but that production FCC round trip is not connected in this repository yet.",
+    a: "No raw customer, order, or revenue fields are sent on-chain. The Coston2 FCE proof sends an opaque order digest to an active TEE, which reads the private record inside the extension and returns only the minimal domain-bound payout result.",
   },
   {
     q: "What happens if a sale is refunded?",
@@ -21,7 +21,7 @@ const ITEMS = [
   },
   {
     q: "Is this live money?",
-    a: "No. The interactive flow uses Coston2 test tokens with no cash value. Campaign creation, escrow funding, and settlement happen on Coston2 when the deployment is configured. The private evaluator currently uses a disclosed testnet signer. Production Flare Confidential Compute attestation is not connected yet.",
+    a: "No. Jorqeth is deployed on Coston2 and uses a test token with no cash value. The proof covers a live FCE instruction, an active simulated TEE ActionResult, and an on-chain payout. Hardware-backed production attestation and a real commerce connector remain separate deployment requirements.",
   },
   {
     q: "How is the amount calculated?",

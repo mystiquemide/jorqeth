@@ -5,10 +5,9 @@ for Jorqeth.
 
 Built with Next.js 16, React 19, viem, and plain CSS. Fonts are self-hosted.
 
-The source includes the interactive Coston2 settlement journey and the local Anvil
-reference proof. The deployed app uses a disclosed server-side evaluator signer. The
-current FCE instruction sender and extension handler are included, while live TEE
-registration and attestation remain pending.
+The source includes the interactive Coston2 settlement journey, local invariant evidence,
+and a complete Coston2 FCE proof. The proof selects an active TEE, evaluates the private
+record in the extension, verifies the raw signed ActionResult, and releases escrow once.
 
 | Route | What it shows |
 | --- | --- |
@@ -42,6 +41,10 @@ Public build variables:
 - `NEXT_PUBLIC_JORQETH_TOKEN_ADDRESS`
 - `NEXT_PUBLIC_JORQETH_VERIFIER_ADDRESS`
 - `NEXT_PUBLIC_JORQETH_FACTORY_ADDRESS`
+- `NEXT_PUBLIC_JORQETH_FCE_VERIFIER_ADDRESS`
+- `NEXT_PUBLIC_JORQETH_FCE_FACTORY_ADDRESS`
+- `NEXT_PUBLIC_JORQETH_FCE_INSTRUCTION_SENDER_ADDRESS`
+- `NEXT_PUBLIC_JORQETH_FCE_EXTENSION_ID`
 
 Server-only variables:
 
@@ -95,11 +98,10 @@ and leaves `/api/evaluate` as a server route.
 ## Trust boundary
 
 Campaign creation, escrow funding, settlement, balances, and replay protection run on
-Coston2 when contract addresses are configured. The evaluator is a disclosed server-side
-testnet signer. It is not production Flare Confidential Compute attestation. Live FCE
-attestation and confidential secret delivery remain future work. The repository
-contains the current instruction sender and extension handler, but the deployed app still
-uses the disclosed Coston2 evaluator signer.
+Coston2. The committed FCE proof uses Flare's supported simulated-TEE testnet mode and the
+current MachineManager active set. Hardware-backed production attestation, confidential
+credential delivery, and a real commerce connector remain production requirements. The
+interactive demo route remains available as a separate disclosed-signer test path.
 
 The proof pages read their figures from `data/*.json`, mirrored from the repository's
 committed Foundry evidence. They remain reference evidence and do not pretend to be the

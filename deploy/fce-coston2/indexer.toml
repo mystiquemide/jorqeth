@@ -1,0 +1,31 @@
+[indexer]
+mode = "fsp"
+history_epochs = 0
+rpc_concurrency = 5
+batch_size = 25
+log_range = 200
+new_block_check_millis = 1000
+confirmations = 1
+no_new_blocks_delay_warning = 60
+
+[logger]
+level = "INFO"
+console = true
+
+[chain]
+node_url = "https://coston2-api.flare.network/ext/C/rpc"
+chain_type = 1
+
+[db]
+host = "mysql"
+port = 3306
+database = "indexer"
+username = "jorqeth"
+password = "jorqeth-fce-local"
+log_queries = false
+drop_table_at_start = false
+history_drop = 0
+
+[timeout]
+backoff_max_elapsed_time_seconds = 300
+rpc_timeout_millis = 60000
