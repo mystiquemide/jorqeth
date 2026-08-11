@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import "./landing-bleed.css";
 
 // Self-hosted display / body / mono fonts. No CDN, nothing to break through a tunnel.
 const generalSans = localFont({

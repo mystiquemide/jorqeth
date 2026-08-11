@@ -1,0 +1,85 @@
+/* Landing-page full-bleed image/text sections.
+   Keeps the image flush to the viewport edge while the copy remains readable. */
+
+.section--split-bleed {
+  padding-block: 0;
+  overflow: hidden;
+}
+
+.split--bleed,
+.secure--bleed {
+  width: 100%;
+  min-height: clamp(580px, 48vw, 720px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0;
+  align-items: stretch;
+}
+
+.split--bleed .split__media,
+.secure--bleed .secure__media {
+  min-width: 0;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+.split--bleed .split__media img,
+.secure--bleed .secure__media img {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+  border-radius: 0;
+}
+
+.split--bleed .split__body,
+.secure--bleed .secure__body {
+  width: 100%;
+  max-width: 760px;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(64px, 7vw, 120px) clamp(36px, 6.5vw, 112px);
+}
+
+.split--bleed .split__body h2,
+.secure--bleed .secure__body h2 {
+  margin-top: 0;
+  max-width: 19ch;
+}
+
+.split--bleed .split__body p {
+  max-width: 35rem;
+}
+
+.secure--bleed .checklist {
+  max-width: 38rem;
+}
+
+@media (max-width: 1100px) and (min-width: 821px) {
+  .split--bleed .split__body,
+  .secure--bleed .secure__body {
+    padding: 56px 44px;
+  }
+}
+
+@media (max-width: 820px) {
+  .split--bleed,
+  .secure--bleed {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .split--bleed .split__media,
+  .secure--bleed .secure__media {
+    min-height: clamp(300px, 72vw, 430px);
+    order: -1;
+  }
+
+  .split--bleed .split__body,
+  .secure--bleed .secure__body {
+    max-width: none;
+    padding: 52px 24px 64px;
+  }
+}

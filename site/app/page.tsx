@@ -82,8 +82,8 @@ export default function Home() {
 
         <ProofStrip items={MARQUEE} />
 
-        <section className="section" id="problem">
-          <div className="container split">
+        <section className="section section--split-bleed" id="problem">
+          <div className="split split--bleed">
             <Reveal className="split__media">
               <Image src="/assets/problem.jpg" alt="A payment happening at a counter" width={1200} height={801} />
             </Reveal>
@@ -158,8 +158,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="section section--proof" id="security">
-          <div className="container secure">
+        <section className="section section--proof section--split-bleed" id="security">
+          <div className="secure secure--bleed">
             <Reveal className="secure__media"><Image src="/assets/security.jpg" alt="A calm, quiet workspace" width={1200} height={801} /></Reveal>
             <Reveal className="secure__body">
               <h2>Private inputs are the goal. Public claims stay narrow.</h2>
