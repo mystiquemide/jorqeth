@@ -5,6 +5,8 @@ import SiteFooter from "@/components/SiteFooter";
 import Reveal from "@/components/Reveal";
 import ProofStrip from "@/components/ProofStrip";
 import Faq from "@/components/Faq";
+import ScrollToSection from "@/components/ScrollToSection";
+import SkipLink from "@/components/SkipLink";
 import { usd, ledgerSummary, gateSummary } from "@/lib/evidence";
 
 // Figures are read at build time from the committed local proof artifacts.
@@ -22,14 +24,27 @@ const MARQUEE = [
   <>Five sources <b>agree</b></>,
 ];
 
-export default function Home() {
+export type LandingSection = "how" | "outcomes" | "security" | "faq";
+
+export function LandingPage({ scrollTo }: { scrollTo?: LandingSection }) {
   return (
     <>
-      <a className="skip-link" href="#main">Skip to content</a>
-      <SiteNav />
+      <ScrollToSection target={scrollTo} />
+      <SkipLink />
+      <SiteNav overlay />
 
-      <main id="main">
+      <main id="main" tabIndex={-1}>
+        {/* HERO */}
         <section className="hero">
+          <Image
+            className="hero__image"
+            src="/assets/hero.jpg"
+            alt="Two people celebrating a successful payout"
+            fill
+            sizes="100vw"
+            priority
+          />
+          <div className="hero__scrim" aria-hidden="true" />
           <div className="container hero__grid">
             <Reveal className="hero__copy">
               <h1 className="hero__title">Get paid exactly what you earned.</h1>
@@ -41,12 +56,8 @@ export default function Home() {
                 <Link className="btn btn--primary" href="/app/receipt">
                   See the settlement proof <span className="arrow">→</span>
                 </Link>
-                <a className="btn btn--tinted" href="#how">How it works</a>
+                <Link className="btn btn--tinted" href="/how">How it works</Link>
               </div>
-              <p className="hero__note" style={{ marginTop: 12, fontSize: "var(--fs-sm)", color: "var(--text-muted)" }}>
-                This GitHub build replays a local Anvil proof with synthetic records. The
-                production FCC TEE round trip is not connected in this source tree.
-              </p>
               <div className="hero__trust">
                 <span><b>Exact to the cent.</b> Five evidence sources agree.</span>
                 <span><b>{s.paid} of {s.total}</b> tested paths moved value.</span>
@@ -54,14 +65,7 @@ export default function Home() {
               </div>
             </Reveal>
 
-            <Reveal className="hero__media">
-              <Image
-                src="/assets/hero.jpg"
-                alt="Two creators celebrating a payout at a laptop"
-                width={1400}
-                height={933}
-                priority
-              />
+            <Reveal className="hero__proof">
               <div className="receipt-chip">
                 <div className="receipt-chip__icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -193,4 +197,8 @@ export default function Home() {
       <SiteFooter />
     </>
   );
+}
+
+export default function Home() {
+  return <LandingPage />;
 }
