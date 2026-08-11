@@ -25,7 +25,7 @@ const ITEMS = [
   },
   {
     q: "How is the amount calculated?",
-    a: "A fixed-rate floor formula: the eligible net order amount times the agreed rate, rounded down. In the committed proof that is floor(200.000000 times 10 percent) = exactly 20.000000 mUSD, with five evidence sources checked for agreement.",
+    a: "A fixed-rate floor formula: the eligible net order amount times the agreed rate, rounded down. In the live Coston2 FCE proof that is floor(100.000000 times 20 percent) = exactly 20.000000 mUSD. The signed result, settlement event, payout, and escrow state all agree.",
   },
 ];
 

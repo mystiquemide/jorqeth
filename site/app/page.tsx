@@ -13,6 +13,8 @@ import { usd, ledgerSummary, gateSummary } from "@/lib/evidence";
 const s = ledgerSummary();
 const gate = gateSummary();
 const PAID = usd(20000000);
+const LIVE_SETTLEMENT_URL =
+  "https://coston2-explorer.flare.network/tx/0x6165197afcfb0c4b66bb9f4d7e8e732bafa403d11f034af504556f69dae5700a";
 
 const MARQUEE = [
   <><b>Exact to the cent</b></>,
@@ -53,9 +55,9 @@ export function LandingPage({ scrollTo }: { scrollTo?: LandingSection }) {
                 to the cent, and settles it on-chain. No exposed ledgers, no trust-me math.
               </p>
               <div className="hero__actions">
-                <Link className="btn btn--primary" href="/app/receipt">
+                <a className="btn btn--primary" href={LIVE_SETTLEMENT_URL} target="_blank" rel="noreferrer">
                   See the settlement proof <span className="arrow">→</span>
-                </Link>
+                </a>
                 <Link className="btn btn--tinted" href="/how">How it works</Link>
               </div>
               <div className="hero__trust">
@@ -130,7 +132,7 @@ export function LandingPage({ scrollTo }: { scrollTo?: LandingSection }) {
             </div>
             <Reveal className="outcomes__note">
               <p>The FCE instruction, raw signed ActionResult, Coston2 settlement event, creator payout, and remaining escrow agree on the same amount.</p>
-              <Link className="btn btn--primary" href="/app/receipt">Open the settlement proof <span className="arrow">→</span></Link>
+              <a className="btn btn--primary" href={LIVE_SETTLEMENT_URL} target="_blank" rel="noreferrer">Open the Coston2 settlement <span className="arrow">→</span></a>
             </Reveal>
           </div>
         </section>
@@ -193,7 +195,7 @@ export function LandingPage({ scrollTo }: { scrollTo?: LandingSection }) {
               <h2>Earned it. Prove it. Get paid it.</h2>
               <p>See the committed settlement, exact to the cent, before you take our word for anything.</p>
               <div className="hero__actions">
-                <Link className="btn btn--primary" href="/app/receipt">See the settlement proof <span className="arrow">→</span></Link>
+                <a className="btn btn--primary" href={LIVE_SETTLEMENT_URL} target="_blank" rel="noreferrer">See the Coston2 settlement <span className="arrow">→</span></a>
                 <Link className="btn btn--tinted" href="/app">Open the app</Link>
               </div>
             </Reveal>
