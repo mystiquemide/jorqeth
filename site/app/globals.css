@@ -331,7 +331,18 @@ h1, h2, h3, h4 {
 .proofstrip__toggle:hover { background: var(--cream-20); }
 .proofstrip__toggle svg { display: block; }
 @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@media (max-width: 560px) { .proofstrip__toggle { display: none; } }
+/* Keep the pause control reachable below 560px instead of hiding it: a solid
+   pill plus a right-edge fade stops the scrolling text bleeding under the
+   button, so the marquee never moves without an accessible way to stop it. */
+@media (max-width: 560px) {
+  .proofstrip__toggle { right: 10px; padding: 6px 11px; background: var(--ink); }
+  .proofstrip__toggle:hover { background: var(--ink); }
+  .proofstrip::after {
+    content: ''; position: absolute; inset: 0 0 0 auto; width: 92px;
+    background: linear-gradient(to right, transparent, var(--ink) 68%);
+    pointer-events: none; z-index: 1;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .marquee { animation: none; transform: none; }
 }

@@ -38,14 +38,14 @@ contract SettlementInvariantsTest is JorqethTestBase {
     // --- Insufficient escrow ---
 
     function test_insufficientEscrow_reverts() public {
-        // Drain escrow to below the commission via merchant withdrawal. Withdrawal is
-        // locked until campaign end, so warp past it first, then settle an in-window
-        // result minted at the new time.
-        vm.warp(CAMPAIGN_END);
-        vm.prank(merchant);
-        settlement.withdrawEscrow(ESCROW_AMOUNT - (COMMISSION_A - 1)); // leaves COMMISSION_A - 1
+        // Under-fund a fresh deployment to one below the commission, then settle a
+        // valid in-window result against it. Settlement stays inside the campaign
+        // window (no warp past campaignEnd), so this isolates the escrow shortfall
+        // from the withdrawal lock and the expiry cap.
+        JorqethSettlement lean = deployFunded(COMMISSION_A - 1);
 
         PayableResult memory r = eligibleResultA();
+        r.settlementContract = address(lean);
         bytes memory proof = sign(r);
 
         uint256 creatorBefore = token.balanceOf(creator);
@@ -54,9 +54,9 @@ contract SettlementInvariantsTest is JorqethTestBase {
                 JorqethSettlement.InsufficientEscrow.selector, COMMISSION_A, COMMISSION_A - 1
             )
         );
-        settlement.settle(r, proof);
+        lean.settle(r, proof);
         assertEq(token.balanceOf(creator), creatorBefore, "no partial payout");
-        assertFalse(settlement.isSettled(ORDER_A), "digest not consumed on failed settle");
+        assertFalse(lean.isSettled(ORDER_A), "digest not consumed on failed settle");
     }
 
     // --- Wrong static bindings ---
@@ -221,6 +221,64 @@ contract SettlementInvariantsTest is JorqethTestBase {
         settlement.settle(r, sign(r));
         assertEq(token.balanceOf(creator), COMMISSION_A, "creator paid exact while locked");
         assertEq(settlement.escrowBalance(), ESCROW_AMOUNT - COMMISSION_A, "escrow remains funded");
+    }
+
+    // A result may not outlive the escrow lock. settle rejects any expiry past
+    // campaignEnd, so no settleable result can survive into the withdrawal window
+    // (REV-003, enforced invariant rather than off-chain convention).
+    function test_settle_rejectsExpiryAfterCampaignEnd() public {
+        PayableResult memory r = eligibleResultA();
+        r.expiry = CAMPAIGN_END + 1;
+        bytes memory proof = sign(r);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                JorqethSettlement.ExpiryAfterCampaignEnd.selector, CAMPAIGN_END + 1, CAMPAIGN_END
+            )
+        );
+        settlement.settle(r, proof);
+    }
+
+    // The boundary is inclusive: a result expiring exactly at campaignEnd is the
+    // longest-lived result the campaign can settle, and it still pays. Guards against
+    // an off-by-one that would reject legitimate max-expiry results.
+    function test_settle_allowsExpiryAtCampaignEnd() public {
+        PayableResult memory r = eligibleResultA();
+        r.expiry = CAMPAIGN_END;
+        settlement.settle(r, sign(r));
+        assertEq(token.balanceOf(creator), COMMISSION_A, "max-expiry result pays exact");
+    }
+
+    // The reviewer's stranding scenario, now impossible: the merchant withdraws all
+    // escrow at campaignEnd, and no result can be settled at or after that instant.
+    // A longer expiry is barred by the cap; an earlier or equal one is already
+    // expired. The settlement and withdrawal windows never overlap (REV-003).
+    function test_withdrawAtCampaignEnd_cannotStrandResult() public {
+        vm.warp(CAMPAIGN_END);
+        vm.prank(merchant);
+        settlement.withdrawEscrow(ESCROW_AMOUNT);
+        assertEq(settlement.escrowBalance(), 0, "merchant reclaimed all escrow at end");
+
+        // Expiry beyond the lock: rejected by the cap.
+        PayableResult memory late = eligibleResultA();
+        late.expiry = CAMPAIGN_END + 1 hours;
+        bytes memory lateProof = sign(late);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                JorqethSettlement.ExpiryAfterCampaignEnd.selector,
+                CAMPAIGN_END + 1 hours,
+                CAMPAIGN_END
+            )
+        );
+        settlement.settle(late, lateProof);
+
+        // Expiry at the lock: already expired at this instant.
+        PayableResult memory atEnd = eligibleResultA();
+        atEnd.expiry = CAMPAIGN_END;
+        bytes memory atEndProof = sign(atEnd);
+        vm.expectRevert(
+            abi.encodeWithSelector(JorqethSettlement.Expired.selector, CAMPAIGN_END, CAMPAIGN_END)
+        );
+        settlement.settle(atEnd, atEndProof);
     }
 
     // --- Positive then negative on the same campaign share escrow correctly ---

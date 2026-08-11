@@ -1,10 +1,13 @@
 # Changes implemented from CODE_REVIEW.md
 
 Date: 2026-08-11
-Source: `CODE_REVIEW.md` (findings REV-001 to REV-008 plus the Hallmark UI audit)
+Source: `CODE_REVIEW.md` (findings REV-001 to REV-008 plus the Hallmark UI audit), then a
+follow-up re-review that reopened REV-003, REV-004, and the Hallmark marquee as partial.
 Scope of this pass: implement every finding that is fixable in code, verify each with a real check, and record the rest as blocked with the reason.
 
-Nothing here was committed, pushed, or deployed. All changes sit in the working tree awaiting review.
+Two rounds are recorded here. The first pass was committed as `ea6ccd2` ("Implement code
+review fixes and Hallmark UI pass"). The re-review round (see "Re-review round" below) sits
+in the working tree, uncommitted, awaiting review. Nothing was pushed or deployed.
 
 ## Status at a glance
 
@@ -37,12 +40,15 @@ The merchant funded escrow but could withdraw all of it before a valid in-window
 Fix in `contracts/src/JorqethSettlement.sol`:
 - Added an immutable `campaignEnd` set at construction, required to be in the future.
 - `withdrawEscrow` now reverts `EscrowLocked(campaignEnd, now)` while `block.timestamp < campaignEnd`. Escrow is only withdrawable once the campaign window closes, so a valid result can always settle first.
-- Settlement stays allowed while escrow is locked.
+- `settle` now also rejects any result whose `expiry` exceeds `campaignEnd`, reverting `ExpiryAfterCampaignEnd(expiry, campaignEnd)`. Combined with the existing `expiry > now` check, every settleable result satisfies `now < expiry <= campaignEnd`, so the settlement window and the withdrawal window (`now >= campaignEnd`) are provably disjoint. A merchant withdrawal at `campaignEnd` can no longer strand a valid result. This turns the earlier off-chain "set campaignEnd beyond every expiry" convention into an enforced on-chain invariant, which is the liability reservation the re-review asked for.
 
 Tests added in `contracts/test/SettlementInvariants.t.sol`:
 - `test_withdrawEscrow_lockedBeforeCampaignEnd`
 - `test_withdrawEscrow_atBoundaryUnlocks`
 - `test_validResultSettlesWhileEscrowLocked`
+- `test_settle_rejectsExpiryAfterCampaignEnd` (expiry past `campaignEnd` reverts)
+- `test_settle_allowsExpiryAtCampaignEnd` (inclusive boundary still pays exact)
+- `test_withdrawAtCampaignEnd_cannotStrandResult` (withdraw all at end, no result can settle at or after it)
 
 ### REV-004 (MEDIUM) Public copy overstated what is live, private, and proven
 
@@ -142,10 +148,12 @@ All checks below were run against the current working tree.
 |---|---|---|
 | Site production build | `npm run build` (in `site/`) | Pass, all 6 routes prerendered static |
 | Type check | `npx tsc --noEmit` (in `site/`) | Pass, exit 0 |
-| Contract tests | `forge test -vvv` | 58 passed, 0 failed across 7 suites |
+| Contract tests | `forge test -vvv` | 61 passed, 0 failed across 7 suites |
+| Contract formatting | `forge fmt --check` | Pass, exit 0 |
 | Landing smoke | `node web/smoke.mjs` | Pass: both scenarios, 360px, keyboard, link readback, secret scan |
 | Surfaces smoke | `node web/smoke-surfaces.mjs` | Pass: receipt, inspector, brief, cross-links, 360px, keyboard, secret scan |
 | Hallmark UI, real chromium | headless chromium against `next start` | Pass: 2 eyebrows only, keyboard pause toggles `aria-pressed` and stops the marquee, proof-close footer present, no reveal block stuck hidden, zero console errors |
+| Marquee pause on mobile, real chromium | headless chromium at 320/360/375/414/559/560px | Pass: pause control rendered, inside the viewport, keyboard-focusable, and stops the marquee at every width |
 | Security headers, real chromium | headless chromium (REV-008) | Pass: headers on every route, zero CSP violations |
 
 ## Files touched
@@ -162,6 +170,45 @@ Modified (contracts and proof): `contracts/src/JorqethSettlement.sol`, `contract
 
 Modified (web and tools): `web/smoke.mjs`, `web/smoke-surfaces.mjs`, `web/serve.mjs`, `tools/tee-signer/main.go`, `README.md`.
 
-## Not committed
+## Re-review round (working tree)
 
-Everything is uncommitted on purpose. Say the word and I will stage and commit under your Git identity. I will not push, merge, or deploy unless you ask.
+A follow-up re-review reopened three items as partial and flagged two hygiene issues. All
+are fixed and verified against a real check. This round is uncommitted, awaiting review.
+
+- REV-003 (was partial): withdrawal unlocked exactly at `campaignEnd` while settlement was
+  still reachable after it, so a late result could be stranded. Closed by capping a
+  settleable result's `expiry` at `campaignEnd` in `settle`, making the settle and
+  withdraw windows provably disjoint. Details and the three new tests are in the REV-003
+  section above.
+- REV-004 (was partial): the root `README.md` still read "judge-ready" and drew an FCE,
+  orchestrator, synthetic merchant API, and Coston2 contract as live architecture. Dropped
+  "judge-ready", reframed "The idea" and "Architecture" so those pieces are marked target
+  design with a "what runs today" line beside them, and corrected the stale "55 passing
+  tests" to the real 61.
+- Hallmark marquee (was partial): the pause control worked on desktop but CSS hid it below
+  560px while the marquee kept moving, leaving mobile users with no accessible stop. The
+  `display: none` rule is gone. The control now stays reachable below 560px with a solid
+  pill and a right-edge fade so the scrolling text does not bleed under it. Verified across
+  320/360/375/414/559/560px.
+- `forge fmt --check` failed on the two proof scripts. Reformatted
+  `script/PositiveProof.s.sol` and `script/NegativeProof.s.sol`; `forge fmt --check` now
+  exits 0.
+- This changelog was stale (claimed everything uncommitted while the first round was
+  committed as `ea6ccd2`). Corrected here.
+
+The `+349` gas on `settle` from the new expiry check made the committed evidence drift, so
+the positive-proof and proof-gate evidence were regenerated against the fixed contract and
+the `site/data` mirror re-synced byte-identical (CI's `cmp` check stays green).
+
+Files changed this round: `contracts/src/JorqethSettlement.sol`,
+`contracts/test/JorqethTestBase.sol`, `contracts/test/SettlementInvariants.t.sol`,
+`script/PositiveProof.s.sol`, `script/NegativeProof.s.sol`, `site/app/globals.css`,
+`README.md`, `evidence/positive-proof.json`, `evidence/positive-proof.md`,
+`evidence/proof-gate.json`, `evidence/proof-gate.md`, `site/data/positive-proof.json`,
+`site/data/proof-gate.json`, and this file.
+
+## Commit state
+
+The first pass is committed as `ea6ccd2` under the repository owner's Git identity. The
+re-review round above is staged in the working tree, uncommitted. Say the word and I will
+commit it under your Git identity. I will not push, merge, or deploy unless you ask.

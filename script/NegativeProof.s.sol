@@ -112,7 +112,15 @@ contract NegativeProof is Script {
         reg = new MockTeeMachineRegistry();
         FccResultVerifier fcc = new FccResultVerifier(reg, EXTENSION_ID, "simulated-attestation");
         settlement = new JorqethSettlement(
-            token, fcc, SCHEMA_VERSION, CAMPAIGN_ID, merchant, CREATOR, COMMISSION_BPS, RULE_VERSION, CAMPAIGN_END
+            token,
+            fcc,
+            SCHEMA_VERSION,
+            CAMPAIGN_ID,
+            merchant,
+            CREATOR,
+            COMMISSION_BPS,
+            RULE_VERSION,
+            CAMPAIGN_END
         );
 
         address[] memory ids = new address[](1);

@@ -23,8 +23,9 @@ abstract contract JorqethTestBase is Test {
         0xa865c645c1901fa821cc0ea91db46d39b4cfe7e81f927863d51387ab8c947a4d;
     uint16 internal constant COMMISSION_BPS = 1000;
     uint256 internal constant ESCROW_AMOUNT = 100_000000; // 100.000000 mUSD
-    // Escrow unlock time. Set beyond every result expiry window so a valid in-window
-    // result can never be stranded by a merchant withdrawal (REV-003).
+    // Escrow unlock time. `settle` rejects any result expiring after this, so the
+    // settlement and withdrawal windows stay disjoint (REV-003). Every builder here
+    // emits results expiring ~1 hour out, well inside this bound.
     uint64 internal constant CAMPAIGN_END = 2_100_000_000;
 
     bytes32 internal constant ORDER_A =
@@ -88,6 +89,28 @@ abstract contract JorqethTestBase is Test {
         vm.startPrank(merchant);
         token.approve(address(settlement), ESCROW_AMOUNT);
         settlement.fund(ESCROW_AMOUNT);
+        vm.stopPrank();
+    }
+
+    /// @notice Deploy a fresh settlement wired to the shared token, verifier, and
+    ///         actors, funded with `escrow`. Lets escrow-boundary paths be exercised
+    ///         without disturbing the fully funded instance from setUp.
+    function deployFunded(uint256 escrow) internal returns (JorqethSettlement s) {
+        s = new JorqethSettlement(
+            token,
+            verifier,
+            SCHEMA_VERSION,
+            CAMPAIGN_ID,
+            merchant,
+            creator,
+            COMMISSION_BPS,
+            RULE_VERSION,
+            CAMPAIGN_END
+        );
+        token.mint(merchant, escrow);
+        vm.startPrank(merchant);
+        token.approve(address(s), escrow);
+        s.fund(escrow);
         vm.stopPrank();
     }
 

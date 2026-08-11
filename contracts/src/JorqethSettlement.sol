@@ -37,9 +37,9 @@ contract JorqethSettlement is ReentrancyGuard {
     uint16 public immutable commissionBps; // informational bound; amount is verified per result
     bytes32 public immutable ruleVersion; // commission rule identity
     /// @notice Unix time at/after which the merchant may reclaim unspent escrow.
-    ///         Before this the escrow is locked, so a valid in-window result can
-    ///         never be stranded by a merchant withdrawal (REV-003). Set beyond the
-    ///         validity horizon of every result the campaign can emit.
+    ///         Before this the escrow is locked, and `settle` rejects any result
+    ///         whose expiry exceeds it, so the settlement and withdrawal windows are
+    ///         disjoint and a valid in-window result can never be stranded (REV-003).
     uint64 public immutable campaignEnd;
 
     // --- State ---
@@ -76,6 +76,7 @@ contract JorqethSettlement is ReentrancyGuard {
     error WrongCreator(address got, address want);
     error WrongRuleVersion(bytes32 got, bytes32 want);
     error Expired(uint64 expiry, uint256 nowTs);
+    error ExpiryAfterCampaignEnd(uint64 expiry, uint64 campaignEnd); // result outlives the escrow lock
     error NotYetIssued(uint64 issuedAt, uint256 nowTs);
     error AlreadySettled(bytes32 orderDigest);
     error BadResult(); // verifier rejected authenticity
@@ -140,6 +141,13 @@ contract JorqethSettlement is ReentrancyGuard {
         if (r.ruleVersion != ruleVersion) revert WrongRuleVersion(r.ruleVersion, ruleVersion);
         if (r.issuedAt > block.timestamp) revert NotYetIssued(r.issuedAt, block.timestamp);
         if (r.expiry <= block.timestamp) revert Expired(r.expiry, block.timestamp);
+        // A settleable result must expire no later than the escrow lock lifts. This
+        // makes the settlement window (now < expiry) and the withdrawal window
+        // (now >= campaignEnd) provably disjoint, so a valid result can never be
+        // stranded by a merchant withdrawal at campaignEnd (REV-003). Enforced here
+        // rather than relying on the off-chain convention that sets campaignEnd
+        // beyond every result's expiry.
+        if (r.expiry > campaignEnd) revert ExpiryAfterCampaignEnd(r.expiry, campaignEnd);
 
         // 2. Replay guard. Reserve the digest before any external transfer so a
         //    reentrant or duplicate call cannot pay twice (BR-006, checks-effects).
@@ -174,9 +182,10 @@ contract JorqethSettlement is ReentrancyGuard {
     }
 
     /// @notice Merchant reclaims unspent escrow after the campaign window closes.
-    ///         Locked until `campaignEnd` so a valid in-window result can never be
-    ///         stranded by a withdrawal (REV-003). Never touches settled state or
-    ///         the creator's received funds.
+    ///         Locked until `campaignEnd`, and `settle` bars any result expiring
+    ///         after `campaignEnd`, so the two windows never overlap and a valid
+    ///         in-window result can never be stranded (REV-003). Never touches
+    ///         settled state or the creator's received funds.
     function withdrawEscrow(uint256 amount) external nonReentrant {
         if (msg.sender != merchant) revert NotMerchant();
         if (block.timestamp < campaignEnd) revert EscrowLocked(campaignEnd, block.timestamp);

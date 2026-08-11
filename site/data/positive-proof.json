@@ -22,10 +22,10 @@
   },
   "transactions": {
     "fund": "0x19a353c9fa2ec31734423368819d1f961a57f9e456a8e8bba0d71dc76250ce7a",
-    "settle": "0x693ffaa455af5cf8e124d3f8c0067361a3e901eaa55f5aee3c9ccfaa6b4816ee",
+    "settle": "0x0585c38b2aa088e8d6756b5d87cfc0f168a2f4043c0a3b670c147f38b548c9e6",
     "settleBlock": 9,
     "settleStatus": "success",
-    "settleGasUsed": 138849
+    "settleGasUsed": 139198
   },
   "balances": {
     "escrowBefore": 100000000,

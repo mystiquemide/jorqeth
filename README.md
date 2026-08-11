@@ -11,7 +11,7 @@ Built for the Flare Summer Signal hackathon. Coston2 is the target chain; the co
 proofs run on a local anvil devnet (chainId 31337) with synthetic data only. See the
 status note below for what is and is not live.
 
-> Status: proof-first build, judge-ready. The settlement invariant is enforced and
+> Status: proof-first build. The settlement invariant is enforced and
 > tested locally, the real Flare Confidential Compute (FCC) result-authenticity boundary
 > is reproduced byte-for-byte and swapped in under the same settlement contract, and both
 > the positive and negative on-chain proofs plus a one-command proof gate run green. The
@@ -24,10 +24,13 @@ status note below for what is and is not live.
 
 A creator owed a commission cannot inspect a merchant's private order ledger, and the
 merchant cannot publish customer and revenue data just to make the payout credible.
-Both sides agree in advance on the record source and the settlement rule. A Flare
-Compute Extension evaluates that source confidentially and returns only a minimal,
-domain-bound result. A Coston2 contract releases the exact eligible commission and pays
-zero for every negative or unknown case.
+Both sides agree in advance on the record source and the settlement rule. In the target
+design a Flare Compute Extension evaluates that source confidentially and returns only a
+minimal, domain-bound result, and a Flare contract releases the exact eligible commission
+and pays zero for every negative or unknown case. Today that boundary is proven locally:
+the settlement contract and its result-authenticity check run on a local devnet against
+synthetic records, with the extension's signature reproduced byte-for-byte. The extension
+evaluation and the Coston2 round trip are the parts still to build (see "Current state").
 
 ## Winning invariant
 
@@ -37,11 +40,20 @@ bound creator, once.
 
 ## Architecture
 
+Target design:
+
 ```
-Judge page → orchestrator → Jorqeth settlement contract  ← minimal result ← FCE ← synthetic merchant API
-                                     │
-                              merchant-funded escrow → exact creator payout / zero
+client → orchestrator → Jorqeth settlement contract  ← minimal result ← FCE ← merchant record source
+                                 │
+                          merchant-funded escrow → exact creator payout / zero
 ```
+
+What runs today (local anvil, chainId 31337): a Foundry proof script builds the synthetic
+domain-bound results, signs them with the trusted evaluator key through
+`SignatureResultVerifier`, and drives every path against a funded `JorqethSettlement`. The
+dashboard and the zero-dependency page replay the committed evidence. There is no live
+orchestrator, FCE, merchant API, or Coston2 deployment yet: the confidential extension
+evaluation, the orchestration, and the Coston2 round trip are the parts still to build.
 
 The settlement contract delegates result authenticity to an injectable
 `IResultVerifier` boundary. This lets the same contract be proven locally now and run
@@ -81,7 +93,7 @@ identity, and all golden vectors live in [`spec/jorqeth-v1.json`](spec/jorqeth-v
 
 ## Current state
 
-Proven locally (55 passing tests):
+Proven locally (61 passing tests):
 
 - Eligible order pays the exact floor commission, once, to the bound creator.
 - Refunded / unmatched order is a valid evaluation that pays zero.
