@@ -1,5 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { usd, payout, deployment, amountAgreement, campaign, invariant } from "@/lib/evidence";
+
+export const metadata: Metadata = {
+  title: "Payout receipt",
+  description:
+    "The real settled commission, block and transaction, with five independent amount sources shown agreeing to the cent.",
+};
 
 export default function Receipt() {
   const { order, tx, balances } = payout();

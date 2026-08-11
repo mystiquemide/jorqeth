@@ -284,11 +284,6 @@ export default function Home() {
                   </span>
                 </li>
               </ul>
-              <p className="honest-note">
-                <b>Honest status.</b> Running on a test network with synthetic records while the live
-                Flare attestation round trip is finalized. The signature scheme is the real Flare one,
-                proven byte-for-byte against the official sources.
-              </p>
             </Reveal>
           </div>
         </section>

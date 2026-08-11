@@ -242,6 +242,7 @@ h1, h2, h3, h4 {
 .nav__cta { display: flex; align-items: center; gap: 14px; }
 .nav__toggle { display: none; background: none; border: 0; padding: 8px; color: var(--ink); }
 .nav__desktop-cta { display: inline-flex; }
+.nav__menu > .btn { display: none; }
 
 @media (max-width: 860px) {
   .nav__links { display: none; }
@@ -256,7 +257,7 @@ h1, h2, h3, h4 {
   .nav__menu.open { display: flex; }
   .nav__menu .nav__links { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
   .nav__menu a { padding: 13px 0; border-bottom: 1px solid var(--border); color: var(--text); }
-  .nav__menu .btn { margin-top: 14px; justify-content: center; }
+  .nav__menu > .btn { display: inline-flex; margin-top: 14px; justify-content: center; }
 }
 
 /* ---------- hero ---------- */

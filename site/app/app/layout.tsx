@@ -3,7 +3,12 @@ import AppNav from "@/components/AppNav";
 import { shortHash, deployment } from "@/lib/evidence";
 
 export const metadata: Metadata = {
-  title: "Jorqeth app: live proof",
+  title: {
+    default: "Live proof",
+    template: "%s · Jorqeth",
+  },
+  description:
+    "The live Jorqeth settlement proof, read straight from the committed on-chain evidence. One eligible sale paid exact, everything else zero.",
 };
 
 // The signed-in shell. Wallet address shown is the real proof creator account,
@@ -22,7 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <div className="apptop__right">
-            <span className="wallet">
+            <span className="wallet" title={`Connected creator account ${d.creator}`}>
               <span className="dot" style={{ background: "var(--jade)" }} />
               Creator <span className="mono">{shortHash(d.creator, 6, 4)}</span>
             </span>

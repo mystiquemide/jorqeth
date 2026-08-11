@@ -37,19 +37,18 @@ export default function SiteFooter() {
           <div>
             <h4>Resources</h4>
             <ul>
-              <li><a href="https://github.com/mystiquemide/jorqeth" rel="noopener">GitHub</a></li>
-              <li><a href="https://github.com/mystiquemide/jorqeth#readme" rel="noopener">README</a></li>
-              <li><a href="https://flare.network" rel="noopener">Flare</a></li>
+              <li><a href="https://github.com/mystiquemide/jorqeth" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+              <li><a href="https://github.com/mystiquemide/jorqeth#readme" target="_blank" rel="noopener noreferrer">README</a></li>
+              <li><a href="https://flare.network" target="_blank" rel="noopener noreferrer">Flare</a></li>
             </ul>
           </div>
         </div>
         <div className="footer__bottom">
-          <span>© 2026 Jorqeth. MIT licensed.</span>
+          <span>© 2026 Jorqeth</span>
           <span className="tag">
             <span className="dot" style={{ background: "var(--tone-retry)" }}></span> Testnet and
             synthetic data only
           </span>
-          <span>Photography via Unsplash</span>
         </div>
       </div>
     </footer>

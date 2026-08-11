@@ -1,5 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { usd, ledger, ledgerSummary, invariant, CATEGORY_LABEL, type Category } from "@/lib/evidence";
+
+export const metadata: Metadata = {
+  title: "Settlement matrix",
+  description:
+    "All twelve tested settlement paths in one view. One paid the exact commission, every other path settled to zero.",
+};
 
 const PILL: Record<Category, string> = {
   paid: "pill--paid",

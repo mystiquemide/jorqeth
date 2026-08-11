@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   usd,
   ledgerSummary,
@@ -9,6 +10,12 @@ import {
   CATEGORY_LABEL,
   ledger,
 } from "@/lib/evidence";
+
+export const metadata: Metadata = {
+  title: "Settlement dashboard",
+  description:
+    "The one eligible sale paid exact, the escrow left intact, and the proof gate green. Every figure read from Jorqeth's committed on-chain proof.",
+};
 
 export default function Dashboard() {
   const s = ledgerSummary();

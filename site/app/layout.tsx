@@ -26,7 +26,10 @@ const jbMono = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://jorqeth.app"),
-  title: "Jorqeth: get paid exactly what you earned",
+  title: {
+    default: "Jorqeth: get paid exactly what you earned",
+    template: "%s · Jorqeth",
+  },
   description:
     "Jorqeth reads the merchant's own record privately, works out the commission you're owed to the cent, and pays it out on-chain. No exposed ledgers, no trust-me math.",
   applicationName: "Jorqeth",
@@ -41,7 +44,25 @@ export const metadata: Metadata = {
     title: "Jorqeth: get paid exactly what you earned",
     description:
       "Private, exact creator commission settlement. Proven on-chain, exact to the cent.",
+    url: "/",
+    siteName: "Jorqeth",
+    locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/assets/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Jorqeth: get paid exactly what you earned. Private, exact creator commission settlement.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Jorqeth: get paid exactly what you earned",
+    description:
+      "Private, exact creator commission settlement. Proven on-chain, exact to the cent.",
+    images: ["/assets/og.png"],
   },
 };
 

@@ -1,5 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { usd, deployment, payout, ledger, jorqethSpec } from "@/lib/evidence";
+
+export const metadata: Metadata = {
+  title: "Proof inspector",
+  description:
+    "Walk the authenticity boundary in the order the contract checks it. Each guard maps to a real reject vector, so nothing here is illustrative.",
+};
 
 // The authenticity boundary, in the order the contract checks it. Each step maps
 // to a real reject vector from the negative proof, so the "what breaks it" column
