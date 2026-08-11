@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "npm --prefix site ci",
+  "installCommand": "npm --prefix site ci && npm --prefix site install next@16.3.0-canary.97 --no-save --package-lock=false",
   "buildCommand": "npm --prefix site run build",
   "outputDirectory": "site/.next"
 }
