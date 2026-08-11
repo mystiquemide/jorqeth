@@ -18,8 +18,8 @@ jobs:
         with:
           submodules: recursive
       - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1
-      - name: Format
+        uses: foundry-rs/foundry-toolchain@v1
+      - name: Check Solidity formatting
         run: forge fmt --check
       - name: Build
         run: forge build
@@ -46,21 +46,22 @@ jobs:
       - name: Build
         run: npm run build
 
-  tee-signature-compat:
-    name: Flare signature compatibility helper
+  go:
+    name: Go tests and vet
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: [fce-extension, tools/tee-signer]
     defaults:
       run:
-        working-directory: tools/tee-signer
+        working-directory: ${{ matrix.module }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
-          go-version-file: tools/tee-signer/go.mod
-          cache-dependency-path: tools/tee-signer/go.sum
-      - name: Format
-        run: test -z "$(gofmt -d .)"
-      - name: Test compile
+          go-version-file: ${{ matrix.module }}/go.mod
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+      - name: Test
         run: go test ./...
       - name: Vet
         run: go vet ./...

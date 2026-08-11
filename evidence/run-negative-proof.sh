@@ -152,7 +152,7 @@ VECTORS="$(jq -s '.' "$VEC_JSON")"
 jq -n \
   --arg generated_by "evidence/run-negative-proof.sh" \
   --arg chain "local anvil devnet (chainId 31337)" \
-  --arg note "The mirror of the positive proof: same funded campaign, same real FCC verifier, every failure mode attempted against live state. Running locally on anvil 31337 with synthetic records, for the same reason as the positive proof. The live Coston2 FCC attestation path is not yet connected. Each attempt runs through NegativeProbe.runAll (try/catch per attempt) so one transaction records the whole matrix; the persisted on-chain balances then confirm, independently over RPC, that only the single eligible payout transferred value." \
+  --arg note "Local Anvil failure-path proof using the ActionResult compatibility adapter and a local development signer. This is not a live FCE or TEE attestation. Each attempt runs against funded local state and only the eligible vector transfers value." \
   --arg settlement "$SETTLEMENT" --arg token "$TOKEN" --arg registry "$REGISTRY" \
   --arg verifier "$VERIFIER" --arg verifierMode "$VERIFIER_MODE" \
   --arg creator "$CREATOR" --arg teeId "$TEE_ID" --arg extensionId "$EXTENSION_ID" \
@@ -206,8 +206,8 @@ echo "==> wrote evidence/negative-proof.json"
   echo "eligible order, moved value, and it moved exactly the commission. Every other path"
   echo "paid nothing, and each reverting path reverted for the expected reason."
   echo
-  echo "- **Chain:** local anvil devnet (chainId 31337) with synthetic records, same rationale as the positive proof"
-  echo "- **Verifier mode:** \`$VERIFIER_MODE\` (honestly labelled; not production hardware)"
+  echo "- **Chain:** local Anvil devnet (chainId 31337)"
+  echo "- **Verifier mode:** \`$VERIFIER_MODE\` (format compatibility only)"
   echo "- **Regenerate:** \`bash evidence/run-negative-proof.sh\` (Foundry + jq; no secrets, no live systems)"
   echo
   echo "## Outcome per attempt"
@@ -240,13 +240,13 @@ echo "==> wrote evidence/negative-proof.json"
   echo "- Fleet outage (\`fleet_outage\`, ORDER_E, empty TEE set): \`settle()\` **reverts**, pays"
   echo "  zero, and the digest is **not consumed** (\`isSettled\` = $SETTLED_E), retryable"
   echo "  once infra recovers."
-  echo "- Error status (\`error_status\`, ORDER_F): a genuinely TEE-signed result whose"
+  echo "- Error status (\`error_status\`, ORDER_F): a locally signed compatibility result whose"
   echo "  ActionResult status is error (tee-node status 0), not success. The signature is"
   echo "  authentic and the Data decodes to a payable eligible outcome, but the verifier"
   echo "  pins status to OK, so \`settle()\` **reverts** (\`BadResult()\`), pays zero, and the"
   echo "  digest is **not consumed** (\`isSettled\` = $SETTLED_F), retryable like a timeout."
   echo
-  echo "That difference, settled-zero versus reverted-and-retryable, is how a genuine"
+  echo "That difference, settled-zero versus reverted-and-retryable, is how a terminal"
   echo "\"no commission owed\" is told apart from \"we could not decide\"."
   echo
   echo "Machine-readable form: \`evidence/negative-proof.json\`. Regenerate the raw script log"

@@ -1,0 +1,35 @@
+{
+  "network": "Coston2",
+  "chainId": 114,
+  "rpcUrl": "https://coston2-api.flare.network/ext/C/rpc",
+  "sourceCommit": "8090011b03c8d0a82998dd8daf783475179a9a8f",
+  "deployer": "0x85a15B970eec3B6ae8A4518595F1f79e204Fbd19",
+  "contracts": {
+    "mockUsd": {
+      "address": "0x4F928576d415298c260897Bd9b8CbF70D91c5Cd4",
+      "deploymentTx": "0x8d617d0f20730a9a00ac554ded0a8f5681c2504bd8aaa54543b071b59edfd5fc"
+    },
+    "signatureResultVerifier": {
+      "address": "0xEA16d390d6278EBA9d4a856d32bEf9F9975463B6",
+      "deploymentTx": "0xc2578811a0cfcef11c62d32e9d00a5270e0549420fd0d8fe76de8451a7d41fb4",
+      "trustedSigner": "0x4BC515fbb9003710aE6d92679606d9d7c1e554E2"
+    },
+    "campaignFactory": {
+      "address": "0x1f4F27be826ef7F12622FE6da1d86d04ffda3226",
+      "deploymentTx": "0xa462de08b30122306de4e8e5db2713c504d5635a66d2faf211283e5a2ac456ef"
+    }
+  },
+  "proof": {
+    "campaign": "0x747d370dc806921c65830e1f3c9044ca6d464585",
+    "campaignCreationTx": "0x96970a800469d661c62e440e54a8ec8a3b605eeec5f93f7bea5586eb102a3106",
+    "settlementTx": "0xca5160a0d74a3b6fc00577cd1a6c8de8260d7bf42ec454a3d4413a7aa110204f",
+    "paidAmount": "20000000",
+    "asset": "mUSD",
+    "remainingEscrow": "80000000",
+    "replayRejected": true
+  },
+  "fce": {
+    "flareTeeManager": "0x1a9C4A0f9D76c0b1D91d22E24E573a9b377618aE",
+    "status": "source-complete, live TEE registration and round trip pending Flare indexer access"
+  }
+}

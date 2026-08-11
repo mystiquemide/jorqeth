@@ -71,7 +71,7 @@ export const VECTOR_EXPLAIN = {
   wrong_domain_contract:
     "A genuine result bound to a different settlement contract. Rejected on the domain check.",
   untrusted_signer:
-    "A well-formed result signed by a key that is not a registered TEE machine. Signer recovery fails the active-set check.",
+    "A well-formed result signed by a key outside the injected local active set. Signer recovery fails the compatibility check.",
   tampered_amount:
     "An authentic result whose amount was inflated after signing. The signature is bound to every field, so recovery fails.",
   tampered_creator:
@@ -85,7 +85,7 @@ export const VECTOR_EXPLAIN = {
   replay:
     "The already-paid eligible order, submitted again. The consumed digest makes settle() revert; it cannot pay twice.",
   error_status:
-    "A genuinely TEE-signed result whose ActionResult status is error, not success. The data still decodes to a payable outcome, but the verifier pins status to OK, so it reverts and stays retryable.",
+    "A locally signed compatibility result whose ActionResult status is error, not success. The data still decodes to a payable outcome, but the verifier pins status to OK, so it reverts and stays retryable.",
   fleet_outage:
     "The whole TEE fleet is offline (empty active set). settle() reverts, pays zero, and does NOT consume the digest, so it is retryable.",
 };

@@ -5,8 +5,8 @@ attempted plus a forced TEE-fleet outage. Exactly one path, the single approved
 eligible order, moved value, and it moved exactly the commission. Every other path
 paid nothing, and each reverting path reverted for the expected reason.
 
-- **Chain:** local anvil devnet (chainId 31337) with synthetic records, same rationale as the positive proof
-- **Verifier mode:** `flare-fcc-v1/simulated-attestation` (honestly labelled; not production hardware)
+- **Chain:** local Anvil devnet (chainId 31337)
+- **Verifier mode:** `action-result-compat-v1/simulated-attestation` (format compatibility only)
 - **Regenerate:** `bash evidence/run-negative-proof.sh` (Foundry + jq; no secrets, no live systems)
 
 ## Outcome per attempt
@@ -42,13 +42,13 @@ paid nothing, and each reverting path reverted for the expected reason.
 - Fleet outage (`fleet_outage`, ORDER_E, empty TEE set): `settle()` **reverts**, pays
   zero, and the digest is **not consumed** (`isSettled` = false), retryable
   once infra recovers.
-- Error status (`error_status`, ORDER_F): a genuinely TEE-signed result whose
+- Error status (`error_status`, ORDER_F): a locally signed compatibility result whose
   ActionResult status is error (tee-node status 0), not success. The signature is
   authentic and the Data decodes to a payable eligible outcome, but the verifier
   pins status to OK, so `settle()` **reverts** (`BadResult()`), pays zero, and the
   digest is **not consumed** (`isSettled` = false), retryable like a timeout.
 
-That difference, settled-zero versus reverted-and-retryable, is how a genuine
+That difference, settled-zero versus reverted-and-retryable, is how a terminal
 "no commission owed" is told apart from "we could not decide".
 
 Machine-readable form: `evidence/negative-proof.json`. Regenerate the raw script log

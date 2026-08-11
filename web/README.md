@@ -9,8 +9,8 @@ This is the standalone, dependency-free verification viewer (static HTML, no bui
 step). For the full product website and guided dashboard built on Next.js, see
 [`../site`](../site) instead.
 
-- `evidence/positive-proof.json` — the eligible sale that pays the exact commission
-- `evidence/negative-proof.json` — every other path (refund, replay, tampering,
+- `evidence/positive-proof.json` - the eligible sale that pays the exact commission
+- `evidence/negative-proof.json` - every other path (refund, replay, tampering,
   wrong-domain, untrusted signer, expiry, infrastructure-unknown, error-status,
   fleet-outage) and the one-line settlement invariant
 
@@ -33,16 +33,16 @@ behaviour, write path, actor, or metric: each is another lens over the same
 committed proof and frozen spec, so nothing on them can show a value the proof or
 `spec/jorqeth-v1.json` does not already contain.
 
-- `receipt.html` — a shareable settlement receipt for each approved run
+- `receipt.html` - a shareable settlement receipt for each approved run
   (eligible, refund, replay, infrastructure-unknown). Deep-linkable with `?r=`
   (`?r=infra`, `?r=replay`, ...). An eligible run shows the exact `+20.000000` mUSD
   payout and the real settle tx; every other run reads as its own outcome and pays
   zero, never as a success.
-- `inspector.html` — how Flare Confidential Compute authenticates settlement: the
+- `inspector.html` - how Flare Confidential Compute authenticates settlement: the
   five-step verification chain, the exact on-chain `PayableResult` fields the TEE
   signature binds (parsed from the frozen result-type string), the private fields it
   withholds, and honest simulated-vs-production attestation copy.
-- `brief.html` — target user, problem, model, positive and negative guarantees,
+- `brief.html` - target user, problem, model, positive and negative guarantees,
   security controls, limitations (merchant-source dependence stated first), what was
   built versus the reused FCC components, and a three-step roadmap.
 

@@ -104,7 +104,7 @@ export default function Receipt() {
           <div className="kv__row"><span className="kv__k">Settlement contract</span><span className="kv__v mono">{d.settlement}</span></div>
           <div className="kv__row"><span className="kv__k">Escrow token</span><span className="kv__v mono">{d.escrowToken}</span></div>
           <div className="kv__row"><span className="kv__k">Creator</span><span className="kv__v mono">{d.creator}</span></div>
-          <div className="kv__row"><span className="kv__k">FCC verifier</span><span className="kv__v mono">{d.fccVerifier}</span></div>
+          <div className="kv__row"><span className="kv__k">Compatibility verifier</span><span className="kv__v mono">{d.fccVerifier}</span></div>
           <div className="kv__row"><span className="kv__k">Verifier mode</span><span className="kv__v">{d.verifierMode}</span></div>
         </div>
       </div>

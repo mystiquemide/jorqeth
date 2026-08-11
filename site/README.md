@@ -5,7 +5,10 @@ for Jorqeth.
 
 Built with Next.js 16, React 19, viem, and plain CSS. Fonts are self-hosted.
 
-The source in this GitHub tree is a proof viewer over a **local Anvil chain (31337)** with synthetic records. It does not contain the newer interactive Coston2 settlement journey currently served by the Vercel production deployment. That deployment was created from a local CLI worktree whose source commit is not present on GitHub and must be reconciled separately.
+The source includes the interactive Coston2 settlement journey and the local Anvil
+reference proof. The deployed app uses a disclosed server-side evaluator signer. The
+current FCE instruction sender and extension handler are included, while live TEE
+registration and attestation remain pending.
 
 | Route | What it shows |
 | --- | --- |
@@ -93,8 +96,10 @@ and leaves `/api/evaluate` as a server route.
 
 Campaign creation, escrow funding, settlement, balances, and replay protection run on
 Coston2 when contract addresses are configured. The evaluator is a disclosed server-side
-testnet signer. It is not production Flare Confidential Compute attestation. Production
-FCC attestation and confidential secret delivery remain future work.
+testnet signer. It is not production Flare Confidential Compute attestation. Live FCE
+attestation and confidential secret delivery remain future work. The repository
+contains the current instruction sender and extension handler, but the deployed app still
+uses the disclosed Coston2 evaluator signer.
 
 The proof pages read their figures from `data/*.json`, mirrored from the repository's
 committed Foundry evidence. They remain reference evidence and do not pretend to be the

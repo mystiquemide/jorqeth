@@ -13,7 +13,7 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 ///         result only when the recovered secp256k1 signer is a currently-active
 ///         `teeId` for Jorqeth's extension. The signing steps below mirror the
 ///         pinned official sources byte-for-byte (see FccResultVerifier dev notes),
-///         so a genuine tee-node signature over `abi.encode(PayableResult)` verifies
+///         so a pinned-library compatibility signature over `abi.encode(PayableResult)` verifies
 ///         here unchanged. This is the swap-in that keeps `JorqethSettlement`
 ///         untouched.
 contract FccVerifierTest is JorqethTestBase {
@@ -81,7 +81,7 @@ contract FccVerifierTest is JorqethTestBase {
         return abi.encode(INSTRUCTION_ID, SUBMISSION_TAG, status, abi.encodePacked(rr, s, v));
     }
 
-    // --- Positive: a genuine active-TEE signature verifies ---
+    // --- Positive: a configured compatibility signer verifies ---
 
     function test_verify_acceptsActiveTeeSignature() public view {
         PayableResult memory r = eligibleResultA();
@@ -165,7 +165,11 @@ contract FccVerifierTest is JorqethTestBase {
     // --- Mode label is honest about attestation ---
 
     function test_mode_disclosesAttestation() public view {
-        assertEq(fcc.mode(), "flare-fcc-v1/simulated-attestation", "mode discloses simulated");
+        assertEq(
+            fcc.mode(),
+            "action-result-compat-v1/simulated-attestation",
+            "mode discloses compatibility boundary"
+        );
     }
 
     function test_constructor_rejectsEmptyAttestation() public {

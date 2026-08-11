@@ -9,7 +9,7 @@
 #   1. forge test                    -- the full invariant + FCC + vector suite
 #   2. evidence/run-positive-proof.sh -- eligible order pays the exact commission, once
 #   3. evidence/run-negative-proof.sh -- every failure mode refuses to pay; escrow intact
-#   4. (best-effort) re-derive the genuine tee-node signature vector from real Flare code
+#   4. (best-effort) re-derive the ActionResult compatibility vector
 #   5. a privacy scan of the committed public evidence for prohibited fields
 #
 # then maps the verification checks to that evidence and writes:
@@ -89,13 +89,13 @@ ERROR_RETRY="$(jq -r '.distinguishability.error_status_is_retryable_not_settled'
 REFUND_TERMINAL="$(jq -r '.distinguishability.refund_is_terminal_settled' evidence/negative-proof.json 2>/dev/null || echo false)"
 echo "    negative: ok=$NEG_OK only_eligible=$NEG_ONLY moved=$NEG_MOVED"
 
-# ------------------------------------------------ 4. re-derive genuine vector (best-effort)
-echo "==> [4/5] genuine tee-node signature vector (best-effort re-derivation)"
+# ------------------------------------------------ 4. re-derive compatibility vector (best-effort)
+echo "==> [4/5] ActionResult compatibility vector (best-effort re-derivation)"
 GO_VECTOR="covered by forge FccRealSignatureTest (committed vector pinned)"
 if command -v go >/dev/null 2>&1; then
   if ( cd tools/tee-signer && GOTOOLCHAIN=local GOFLAGS=-mod=mod timeout 90 go run . ) > "$GO_LOG" 2>&1; then
     if git diff --quiet tools/tee-signer/genuine-vector.json 2>/dev/null; then
-      GO_VECTOR="re-derived byte-for-byte from real Flare code (go run .)"
+      GO_VECTOR="re-derived byte-for-byte with pinned Flare libraries (go run .)"
     else
       GO_VECTOR="MISMATCH: re-derived vector differs from committed genuine-vector.json"
       git checkout -- tools/tee-signer/genuine-vector.json 2>/dev/null || true
@@ -104,7 +104,7 @@ if command -v go >/dev/null 2>&1; then
     GO_VECTOR="go regen skipped (toolchain go1.25 unavailable offline); covered by forge FccRealSignatureTest"
   fi
 fi
-echo "    genuine vector: $GO_VECTOR"
+echo "    compatibility vector: $GO_VECTOR"
 
 # ---------------------------------------------------------------- 5. privacy scan
 echo "==> [5/5] privacy scan of committed public evidence"
@@ -150,11 +150,11 @@ add_item "settlement_invariant_end_to_end" \
   "The settlement invariant works end to end." "$S1" \
   "forge test $T_PASS passed / $T_FAIL failed; positive-proof.json=$POS_RESULT; negative-proof.json only_eligible=$NEG_ONLY"
 
-# 2. real FCC path authenticates settlement
+# 2. ActionResult format compatibility gates settlement locally
 S2=fail; { [ "$REALSIG_OK" = "ok" ] && [ "$FCCSET_OK" = "ok" ]; } && S2=pass
-add_item "real_fcc_required" \
-  "The current real FCC path works and gates settlement." "$S2" \
-  "FccRealSignatureTest=$REALSIG_OK (genuine Flare-code signature verifies); FccSettlementTest=$FCCSET_OK (eligible pays only on a registered-TEE signature); genuine vector: $GO_VECTOR"
+add_item "action_result_compatibility" \
+  "The local ActionResult compatibility path gates settlement." "$S2" \
+  "FccRealSignatureTest=$REALSIG_OK; FccSettlementTest=$FCCSET_OK; compatibility vector: $GO_VECTOR"
 
 # 3. positive proof inspectable
 S3="$(ck "$POS_OK")"; [ "$POS_RESULT" = "PASS" ] || S3=fail
@@ -208,7 +208,7 @@ jq -n \
   --arg result "$RESULT" \
   --arg generated_by "evidence/run-proof-gate.sh" \
   --arg chain "local anvil devnet (chainId 31337)" \
-  --arg note "The verification suite. One command re-runs the full forge suite and both on-chain proofs from a clean state, then resolves each verification check to a source-of-truth artifact. Runs locally on anvil 31337 with synthetic records, for the same reason as the positive/negative proofs. The live Coston2 FCC attestation path is not yet connected; the genuine Flare-code signature is the self-contained substitute." \
+  --arg note "Local Anvil verification suite for settlement invariants and ActionResult signature-format compatibility. It does not prove a live FCE round trip or TEE attestation. The Coston2 app separately uses the disclosed evaluator signer." \
   --argjson forgePassed "$T_PASS" --argjson forgeFailed "$T_FAIL" \
   --arg genuineVector "$GO_VECTOR" \
   --argjson passedItems "$PASSED_ITEMS" --argjson totalItems "$TOTAL_ITEMS" \
@@ -245,10 +245,10 @@ echo "==> wrote evidence/proof-gate.json"
   echo "**Result: $RESULT.** $PASSED_ITEMS of $TOTAL_ITEMS verification checks pass, each"
   echo "resolved to a source-of-truth artifact re-run from a clean state by this script."
   echo
-  echo "- **Chain:** local anvil devnet (chainId 31337) with synthetic records, same rationale as the positive/negative proofs"
+  echo "- **Chain:** local Anvil devnet (chainId 31337)"
   echo "- **Reproduce:** \`bash evidence/run-proof-gate.sh\` (Foundry + jq; Go optional; no secrets, no live systems)"
   echo "- **forge test:** $T_PASS passed, $T_FAIL failed"
-  echo "- **Genuine signature vector:** $GO_VECTOR"
+  echo "- **Compatibility vector:** $GO_VECTOR"
   echo "- **Privacy scan:** $PRIV_COUNT prohibited pattern(s) in committed public evidence"
   echo
   echo "## Checklist"
@@ -270,7 +270,7 @@ echo "==> wrote evidence/proof-gate.json"
   echo "- Full test suite: \`forge test\` ($T_PASS passing)"
   echo "- Positive proof: \`evidence/positive-proof.{json,md}\` (eligible order pays the exact commission, once)"
   echo "- Negative proof: \`evidence/negative-proof.{json,md}\` (every failure mode refuses to pay; escrow intact)"
-  echo "- Genuine FCC signature: \`tools/tee-signer/genuine-vector.json\` + \`contracts/test/FccRealSignature.t.sol\`"
+  echo "- ActionResult compatibility vector: \`tools/tee-signer/genuine-vector.json\` + \`contracts/test/FccRealSignature.t.sol\`"
   echo
   echo "Machine-readable form: \`evidence/proof-gate.json\`."
 } > "$EVID_DIR/proof-gate.md"

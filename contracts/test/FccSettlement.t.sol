@@ -10,10 +10,10 @@ import {MockUSD} from "../src/MockUSD.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 /// @title FCC settlement integration
-/// @notice Proves the settlement invariant holds with the REAL FCC verifier installed,
+/// @notice Proves the settlement invariant holds with the compatibility verifier installed,
 ///         and that `JorqethSettlement` is identical to the local-verifier
 ///         deployment (same bytecode, same constructor, same tests): an eligible
-///         order settles the exact commission ONLY because a registered TEE signed
+///         order settles the exact commission only because the configured test signer signed
 ///         the result, and the payable path stops the instant that authenticity is
 ///         missing.
 contract FccSettlementTest is JorqethTestBase {

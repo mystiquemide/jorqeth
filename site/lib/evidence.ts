@@ -203,7 +203,7 @@ export function amountAgreement() {
     commissionBps: Number(a.commissionBps),
     sources: [
       { label: "Configured formula floor(net × rate)", value: Number(a.configuredFormula_floor_net_bps_over_10000) },
-      { label: "FCC signed result amount", value: Number(a.fccResultAmount) },
+      { label: "Compatibility result amount", value: Number(a.fccResultAmount) },
       { label: "On-chain Settled event", value: Number(a.settledEventAmount) },
       { label: "Creator balance delta", value: Number(a.creatorBalanceDelta) },
       { label: "Escrow balance delta", value: Number(a.escrowBalanceDelta) },

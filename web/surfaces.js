@@ -1,11 +1,11 @@
 // Pure view-models for the three read-only verification views:
-//   1. Settlement receipt      (receipt.html)   — did the system produce the claimed outcome?
-//   2. FCC verification details (inspector.html) — how Flare Confidential Compute authenticates settlement.
-//   3. Product & security view  (brief.html)     — what the product is and where it can go.
+//   1. Settlement receipt      (receipt.html)   - did the system produce the claimed outcome?
+//   2. FCC verification details (inspector.html) - how Flare Confidential Compute authenticates settlement.
+//   3. Product & security view  (brief.html)     - what the product is and where it can go.
 //
 // Same rules as view.js: no DOM, no fetch, no framework. Every function takes the
 // committed evidence (evidence/positive-proof.json, evidence/negative-proof.json)
-// plus the frozen campaign config (spec/jorqeth-v1.json — the authoritative source
+// plus the frozen campaign config (spec/jorqeth-v1.json - the authoritative source
 // the demo derives from, not a second source of truth) and returns a plain object the
 // view renders through textContent only. A view can never show a number the
 // proof/config does not contain.
@@ -137,7 +137,7 @@ export function receiptView(key, pos, neg, spec) {
       // Local anvil devnet has no public block explorer; the tx hash
       // is the on-chain reference and the positive proof is the verifiable artifact.
       explorer: null,
-      explorerNote: "Local anvil devnet — no public block explorer. Verify via the committed positive proof.",
+      explorerNote: "Local anvil devnet - no public block explorer. Verify via the committed positive proof.",
       evidenceHref: "../evidence/positive-proof.md",
     };
   }
@@ -166,8 +166,8 @@ export function receiptView(key, pos, neg, spec) {
     digestConsumed: state.terminal === true,
     explorer: null,
     explorerNote: reverts
-      ? "No settlement transaction — settle() reverted and moved no value."
-      : "No payout transaction — a terminal zero settlement.",
+      ? "No settlement transaction - settle() reverted and moved no value."
+      : "No payout transaction - a terminal zero settlement.",
     evidenceHref: "../evidence/negative-proof.md",
   };
 }
@@ -244,10 +244,10 @@ export function inspectorView(pos, neg, spec) {
     // when the run used a simulated TEE on the local devnet.
     attestationCopy:
       cfg.attestation === "simulated"
-        ? "Simulated attestation on a local anvil devnet. The TEE signature scheme is reproduced from real Flare tee-node code and verified on-chain; the live Coston2 Confidential Space round trip is not yet connected."
+        ? "Local ActionResult format compatibility on Anvil. This does not prove TEE execution, registration, proxy delivery, or attestation."
         : "Production Confidential Space attestation.",
     genuineness:
-      "Signature genuineness is proven separately and permanently: tools/tee-signer produces a real tee-node vector and contracts/test/FccRealSignature.t.sol verifies it against the same FccResultVerifier the demo uses.",
+      "tools/tee-signer checks encoding and the signing hash with pinned Flare libraries and a local development key. It is a compatibility vector, not a TEE attestation.",
     links: {
       settlement: cfg.settlement,
       verifier: cfg.fccVerifier,
@@ -305,7 +305,7 @@ export function briefFacts(pos, spec) {
     ],
     newWork: [
       "JorqethSettlement: escrow, domain binding, replay guard, exact/zero payout.",
-      "FccResultVerifier: reconstructs and verifies the real TEE ActionResult signature against the active on-chain teeId set.",
+      "FccResultVerifier: local ActionResult signature-format compatibility adapter with an injected active signer set.",
       "The frozen spec, golden vectors, and the full positive/negative on-chain proofs.",
       "tools/tee-signer and the FccRealSignature test that pin the signing scheme exactly.",
       "The verification demo page and its three read-only verification views.",

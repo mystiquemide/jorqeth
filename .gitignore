@@ -6,6 +6,8 @@ flare summary*.md
 /internal/
 CODE_REVIEW.md
 CHANGES_IMPLEMENTED.md
+site/AGENTS.md
+site/CLAUDE.md
 
 # --- Secrets ---
 .env

@@ -5,9 +5,9 @@
 # independently-inspectable evidence bundle.
 #
 # Pipeline:
-#   1. boot a fresh anvil (chainId 31337 — the chain the genuine tee-node vector targets)
+#   1. boot a fresh Anvil devnet (chainId 31337)
 #   2. broadcast script/PositiveProof.s.sol: deploy stack, fund escrow, settle one
-#      eligible order signed by a registered TEE machine via the frozen FCC scheme
+#      eligible order signed by a local development key via the compatibility scheme
 #   3. read the resulting on-chain state back over RPC with `cast` (independent of the
 #      script's own simulation), and pull the settle() tx + Settled event from the
 #      broadcast receipt
@@ -144,7 +144,7 @@ $ok || { echo "POSITIVE PROOF FAILED"; exit 1; }
 jq -n \
   --arg generated_by "evidence/run-positive-proof.sh" \
   --arg chain "local anvil devnet (chainId 31337)" \
-  --arg note "Running locally on anvil 31337 with synthetic records, on the chain the genuine tee-node vector targets: same contracts, same FCC verifier scheme, same exact-payout invariant. The live Coston2 FCC attestation path is not yet connected. Signature genuineness (bytes match real Flare code) is proven separately by tools/tee-signer + contracts/test/FccRealSignature.t.sol." \
+  --arg note "Local Anvil devnet proof of settlement invariants using an injected active-set adapter and a local development signer. This is not a live FCE or TEE attestation. The Coston2 app separately uses the disclosed evaluator signer." \
   --arg settlement "$SETTLEMENT" --arg token "$TOKEN" --arg registry "$REGISTRY" \
   --arg verifier "$VERIFIER" --arg verifierMode "$VERIFIER_MODE" \
   --arg merchant "$MERCHANT" --arg creator "$CREATOR" --arg teeId "$TEE_ID" \
@@ -198,19 +198,16 @@ cat > "$EVID_DIR/positive-proof.md" <<EOF
 # Positive Settlement Verification
 
 **Result: PASS.** One eligible order released the exact configured commission to the
-bound creator, once, as a real on-chain transaction, only because a registered TEE
-machine signed the result under the frozen FCC scheme.
+bound creator, once, as a local on-chain transaction using the ActionResult compatibility
+adapter and a local development signer.
 
-- **Chain:** local anvil devnet (chainId 31337 — the chain the genuine tee-node vector targets)
-- **Verifier mode:** \`$VERIFIER_MODE\` (honestly labelled; not production hardware)
+- **Chain:** local Anvil devnet (chainId 31337)
+- **Verifier mode:** \`$VERIFIER_MODE\` (format compatibility only)
 - **Regenerate:** \`bash evidence/run-positive-proof.sh\` (Foundry + jq; no secrets, no live systems)
 
-This run executes locally on anvil 31337 with synthetic records, on the chain the
-genuine tee-node vector targets: same contracts, same FCC verifier scheme, same
-exact-payout invariant. The live Coston2 FCC attestation path is not yet connected: no
-funded Coston2 wallet is available to the executor and public Coston2 rejects simulated
-attestation. That the signature bytes match real Flare library code is proven separately
-by \`tools/tee-signer\` and \`contracts/test/FccRealSignature.t.sol\`.
+This run proves the settlement invariant on local Anvil. It does not prove TEE execution,
+registration, attestation, or proxy delivery. The current FCE sender and extension handler
+live in \`contracts/src/JorqethInstructionSender.sol\` and \`fce-extension/\`.
 
 ## Deployment
 
@@ -218,18 +215,18 @@ by \`tools/tee-signer\` and \`contracts/test/FccRealSignature.t.sol\`.
 | --- | --- |
 | Settlement | \`$SETTLEMENT\` |
 | Escrow token (mUSD) | \`$TOKEN\` |
-| FCC result verifier | \`$VERIFIER\` |
-| TEE machine registry | \`$REGISTRY\` |
+| ActionResult compatibility verifier | \`$VERIFIER\` |
+| Injected active-set adapter | \`$REGISTRY\` |
 | Merchant (funder) | \`$MERCHANT\` |
 | Creator (payee) | \`$CREATOR\` |
-| Registered teeId (signer) | \`$TEE_ID\` |
+| Local development signer | \`$TEE_ID\` |
 | Extension id | \`$EXTENSION_ID\` |
 
 ## The successful path
 
 1. Merchant funded escrow with 100.000000 mUSD (tx \`$FUND_TX\`).
-2. A registered TEE machine signed an ELIGIBLE result for order
-   \`$ORDER_A\` under the frozen ActionResult scheme.
+2. A local development signer signed an ELIGIBLE compatibility result for order
+   \`$ORDER_A\`.
 3. \`settle()\` verified authenticity and released the exact commission
    (tx \`$SETTLE_TX\`, block $SETTLE_BLOCK, $SETTLE_STATUS, ${SETTLE_GAS} gas).
 
@@ -238,7 +235,7 @@ by \`tools/tee-signer\` and \`contracts/test/FccRealSignature.t.sol\`.
 | Source | Amount (mUSD, 6dp) |
 | --- | --- |
 | Configured formula \`floor(200000000 × 1000 / 10000)\` | $EVENT_AMOUNT |
-| FCC result \`amount\` field | $EVENT_AMOUNT |
+| Compatibility result \`amount\` field | $EVENT_AMOUNT |
 | \`Settled\` event amount | $EVENT_AMOUNT |
 | Creator balance delta (0 → $CREATOR_BAL_ONCHAIN) | $CREATOR_DELTA |
 | Escrow balance delta (100000000 → $ESCROW_ONCHAIN) | $ESCROW_DELTA |

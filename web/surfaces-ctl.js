@@ -103,8 +103,8 @@ export async function renderReceipt() {
       paidEl.textContent = model.paid
         ? "Value moved on-chain"
         : model.retryable
-          ? "No payout — retryable, digest not consumed"
-          : "No payout — terminal";
+          ? "No payout - retryable, digest not consumed"
+          : "No payout - terminal";
       paidEl.dataset.tone = model.tone;
     }
 

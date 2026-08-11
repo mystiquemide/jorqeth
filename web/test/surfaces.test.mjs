@@ -112,12 +112,12 @@ test("inspector binds the exact on-chain PayableResult schema, not prose", () =>
   assert.equal(i.chain.length, 5); // the five-step verification chain
 });
 
-test("inspector labels simulated attestation honestly and never claims production", () => {
+test("inspector labels local compatibility honestly and never claims production", () => {
   const i = inspectorView(POS, NEG, SPEC);
   assert.equal(i.attestation, "simulated");
-  assert.match(i.attestationCopy, /Simulated attestation/);
+  assert.match(i.attestationCopy, /format compatibility/);
   assert.doesNotMatch(i.attestationCopy, /production Confidential Space attestation\./i);
-  assert.match(i.genuineness, /FccRealSignature/);
+  assert.match(i.genuineness, /compatibility vector/);
   assert.equal(i.onlyEligiblePaid, true);
 });
 

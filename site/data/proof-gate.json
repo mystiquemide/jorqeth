@@ -3,11 +3,11 @@
   "result": "PASS",
   "generated_by": "evidence/run-proof-gate.sh",
   "chain": "local anvil devnet (chainId 31337)",
-  "provenance_note": "The verification suite. One command re-runs the full forge suite and both on-chain proofs from a clean state, then resolves each verification check to a source-of-truth artifact. Runs locally on anvil 31337 with synthetic records, for the same reason as the positive/negative proofs. The live Coston2 FCC attestation path is not yet connected; the genuine Flare-code signature is the self-contained substitute.",
+  "provenance_note": "Local Anvil verification suite for settlement invariants and ActionResult signature-format compatibility. It does not prove a live FCE round trip or TEE attestation. The Coston2 app separately uses the disclosed evaluator signer.",
   "summary": {
     "checklist_items_passed": 9,
     "checklist_items_total": 9,
-    "forge_tests_passed": 68,
+    "forge_tests_passed": 73,
     "forge_tests_failed": 0,
     "genuine_signature_vector": "go regen skipped (toolchain go1.25 unavailable offline); covered by forge FccRealSignatureTest",
     "privacy_scan_findings": 0
@@ -23,13 +23,13 @@
       "item": "settlement_invariant_end_to_end",
       "requirement": "The settlement invariant works end to end.",
       "status": "pass",
-      "evidence": "forge test 68 passed / 0 failed; positive-proof.json=PASS; negative-proof.json only_eligible=true"
+      "evidence": "forge test 73 passed / 0 failed; positive-proof.json=PASS; negative-proof.json only_eligible=true"
     },
     {
-      "item": "real_fcc_required",
-      "requirement": "The current real FCC path works and gates settlement.",
+      "item": "action_result_compatibility",
+      "requirement": "The local ActionResult compatibility path gates settlement.",
       "status": "pass",
-      "evidence": "FccRealSignatureTest=ok (genuine Flare-code signature verifies); FccSettlementTest=ok (eligible pays only on a registered-TEE signature); genuine vector: go regen skipped (toolchain go1.25 unavailable offline); covered by forge FccRealSignatureTest"
+      "evidence": "FccRealSignatureTest=ok; FccSettlementTest=ok; compatibility vector: go regen skipped (toolchain go1.25 unavailable offline); covered by forge FccRealSignatureTest"
     },
     {
       "item": "positive_proof_inspectable",
@@ -65,7 +65,7 @@
       "item": "no_prohibited_fields",
       "requirement": "Public evidence contains no raw merchant/customer record or credential.",
       "status": "pass",
-      "evidence": "privacy scan of 37 tracked files: 0 prohibited pattern(s); only the documented public anvil dev key is present"
+      "evidence": "privacy scan of 43 tracked files: 0 prohibited pattern(s); only the documented public anvil dev key is present"
     },
     {
       "item": "core_reproducible",

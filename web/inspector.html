@@ -20,7 +20,7 @@
           Jorqeth pays the exact commission from a merchant's private records without
           publishing them. That is only possible because a confidential extension
           evaluates the record and the contract trusts nothing but a signed, domain-bound
-          result from a registered TEE. This inspects that boundary.
+          result from the configured local compatibility signer. This inspects that boundary.
         </p>
         <p class="crumbs"><a href="./index.html">← Back to the verification replay</a></p>
       </div>
@@ -60,7 +60,7 @@
       </section>
 
       <section class="card" aria-labelledby="mode-h">
-        <h2 id="mode-h">Execution mode and genuineness</h2>
+        <h2 id="mode-h">Execution mode and compatibility</h2>
         <dl class="kv">
           <div><dt>Verifier mode</dt><dd><span class="mode-tag" data-bind="verifierMode">–</span></dd></div>
           <div><dt>Attestation</dt><dd data-bind="attestation">–</dd></div>
@@ -75,10 +75,10 @@
         <h2 id="links-h">Verify it yourself</h2>
         <ul class="links" id="inspector-links">
           <li>Settlement contract <code class="addr" data-bind-addr="links.settlement">–</code></li>
-          <li>FCC verifier <code class="addr" data-bind-addr="links.verifier">–</code></li>
-          <li>TEE registry <code class="addr" data-bind-addr="links.teeRegistry">–</code> · active teeId <code class="addr" data-bind-addr="links.teeId">–</code></li>
-          <li><a data-bind-href="links.verifierSource" href="../contracts/src/FccResultVerifier.sol">FccResultVerifier.sol</a> — the on-chain signature check</li>
-          <li><a data-bind-href="links.signerSource" href="../tools/tee-signer/main.go">tee-signer/main.go</a> — the genuine Flare-code signer</li>
+          <li>Compatibility verifier <code class="addr" data-bind-addr="links.verifier">–</code></li>
+          <li>Active-set adapter <code class="addr" data-bind-addr="links.teeRegistry">–</code> · local signer <code class="addr" data-bind-addr="links.teeId">–</code></li>
+          <li><a data-bind-href="links.verifierSource" href="../contracts/src/FccResultVerifier.sol">FccResultVerifier.sol</a> - the on-chain signature check</li>
+          <li><a data-bind-href="links.signerSource" href="../tools/tee-signer/main.go">tee-signer/main.go</a> - the local compatibility vector generator</li>
           <li><a data-bind-href="links.spec" href="../spec/jorqeth-v1.json">Frozen spec + golden vectors</a></li>
           <li><a data-bind-href="links.positiveEvidence" href="../evidence/positive-proof.md">Positive proof</a> · <a data-bind-href="links.negativeEvidence" href="../evidence/negative-proof.md">Negative proof</a></li>
         </ul>
@@ -90,7 +90,7 @@
 
     <footer class="site-footer">
       <div class="wrap">
-        <p>Jorqeth · Flare Summer Signal · FCC verification details · synthetic data only.</p>
+        <p>Jorqeth · Testnet only</p>
       </div>
     </footer>
 

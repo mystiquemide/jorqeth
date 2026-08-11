@@ -7,19 +7,19 @@ import {FccResultVerifier} from "../src/FccResultVerifier.sol";
 import {MockTeeMachineRegistry} from "./mocks/MockTeeMachineRegistry.sol";
 
 /// @title Genuine Flare TEE-node signature acceptance
-/// @notice The strongest achievable round-trip proof without provisioning
+/// @notice A signature-format compatibility check without provisioning
 ///         Flare's private e2e devnet: a signature minted by the REAL, pinned Flare
 ///         library code (tee-node v0.0.24 + go-flare-common) over
 ///         `abi.encode(PayableResult)` is accepted by `FccResultVerifier` with zero
 ///         changes to `JorqethSettlement`.
 ///
 ///         The vector below is emitted by `tools/tee-signer` (a Go driver that
-///         reproduces `internal/router.SignResult` line-for-line using the genuine
+///         reproduces `internal/router.SignResult` line-for-line using the pinned
 ///         public primitives `teetypes.ActionResult.Hash()`,
 ///         `csigning.NewPayload(...).Hash()`, and `teeutils.Sign(...)`). To regenerate:
 ///         `go run ./cmd/jorqeth-sign` in the pinned fce-extension-scaffold module.
 ///
-///         Because it is a captured genuine signature, this suite is the only one that
+///         Because it is a captured local compatibility signature, this suite
 ///         exercises the two off-chain-tooling landmines a mock `vm.sign` hides:
 ///           1. go-ethereum `crypto.Sign` emits v in {0,1}; OZ ECDSA needs {27,28}.
 ///              The submitting relayer applies the standard +27 (r,s untouched).
@@ -28,7 +28,7 @@ import {MockTeeMachineRegistry} from "./mocks/MockTeeMachineRegistry.sol";
 contract FccRealSignatureTest is Test {
     uint256 internal constant EXTENSION_ID = 0x10000;
 
-    // --- Captured genuine-signature vector (tools/tee-signer output) ---
+    // --- Captured compatibility vector (tools/tee-signer output) ---
     uint256 internal constant CAP_CHAIN_ID = 31337; // tee-node CHAIN_ID (local devnet)
     address internal constant CAP_TEE_ID = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
     bytes32 internal constant CAP_INSTRUCTION_ID =
@@ -58,7 +58,7 @@ contract FccRealSignatureTest is Test {
     bytes internal constant CAP_SIG_RAW_V01 = hex"9717c77497e3dc0669df3303d7b00a0d1e7b851c53062f830a9519cf9ac82ce4"
         hex"3133a0a3537818352976b85da785a9ba427af9d30f87768971b62f6e475a2e53" hex"01";
 
-    // Intermediate hashes captured from the genuine Flare code, asserted below.
+    // Intermediate hashes captured from the pinned Flare libraries, asserted below.
     bytes32 internal constant CAP_AR_HASH =
         0x861b0e993d7779fea44841a33f6fe23616f8af6aede34325a38f9ee876de3ec1;
     bytes32 internal constant CAP_PAYLOAD_HASH =
@@ -112,7 +112,7 @@ contract FccRealSignatureTest is Test {
         );
     }
 
-    // --- 2. The digest chain reconstructs the genuine captured hashes ---
+    // --- 2. The digest chain reconstructs the captured compatibility hashes ---
 
     function test_realSig_hashChainMatchesGenuine() public view {
         bytes32 dataHash = keccak256(abi.encode(capturedResult()));
@@ -125,12 +125,12 @@ contract FccRealSignatureTest is Test {
         assertEq(payload, CAP_PAYLOAD_HASH, "payload matches go-flare-common Payload.Hash()");
     }
 
-    // --- 3. THE round trip: the genuine Flare-code signature verifies unchanged ---
+    // --- 3. The local compatibility signature verifies unchanged ---
 
     function test_realSig_verifierAcceptsGenuineSignature() public view {
         assertTrue(
             fcc.verify(capturedResult(), _proof(CAP_SIG_V2728)),
-            "a genuine tee-node signature over abi.encode(PayableResult) is accepted"
+            "a pinned-library compatibility signature is accepted"
         );
     }
 

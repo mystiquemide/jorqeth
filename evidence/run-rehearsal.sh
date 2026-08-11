@@ -6,7 +6,7 @@
 #   bash evidence/run-rehearsal.sh
 #
 # Phases (each timed):
-#   1. PROOF      re-run evidence/run-proof-gate.sh — a fresh anvil boot, the full forge
+#   1. PROOF      re-run evidence/run-proof-gate.sh - a fresh anvil boot, the full forge
 #                 suite, and both on-chain proofs, resolving the nine verification checks
 #                 (9/9). This is the "cold chain -> verification" leg of the demo.
 #   2. WALK       boot the zero-dependency static server and drive the verification page

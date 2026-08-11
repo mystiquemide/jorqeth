@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { usd, deployment, payout, ledger, jorqethSpec } from "@/lib/evidence";
 
 export const metadata: Metadata = {
-  title: "FCC verification details",
+  title: "Result verification details",
   description:
     "Walk the authenticity boundary in the order the contract checks it. Each guard maps to a real reject vector, so nothing here is illustrative.",
 };
@@ -14,8 +14,8 @@ export const metadata: Metadata = {
 const BOUNDARY = [
   {
     n: "01",
-    title: "Signed by a registered node",
-    desc: "The result must carry a signature from a compute node in the on-chain TEE registry. An unknown key fails immediately.",
+    title: "Signed by the configured local key",
+    desc: "This local proof uses an injected active-set adapter and development signer. An unknown key fails immediately.",
     breaks: "untrusted_signer",
   },
   {
@@ -54,7 +54,7 @@ export default function Inspector() {
   return (
     <>
       <div className="crumb">
-        <Link href="/app">Dashboard</Link> <span>/</span> FCC verification details
+        <Link href="/app">Dashboard</Link> <span>/</span> Result verification details
       </div>
 
       <div className="panel">
@@ -97,8 +97,8 @@ export default function Inspector() {
             <div className="kv__row"><span className="kv__k">Domain name</span><span className="kv__v">{eip.domainName}</span></div>
             <div className="kv__row"><span className="kv__k">Domain version</span><span className="kv__v">{eip.domainVersion}</span></div>
             <div className="kv__row"><span className="kv__k">Verifier mode</span><span className="kv__v">{d.verifierMode}</span></div>
-            <div className="kv__row"><span className="kv__k">TEE registry</span><span className="kv__v mono">{d.teeRegistry}</span></div>
-            <div className="kv__row"><span className="kv__k">TEE id</span><span className="kv__v mono">{d.teeId}</span></div>
+            <div className="kv__row"><span className="kv__k">Active-set adapter</span><span className="kv__v mono">{d.teeRegistry}</span></div>
+            <div className="kv__row"><span className="kv__k">Local signer</span><span className="kv__v mono">{d.teeId}</span></div>
             <div className="kv__row"><span className="kv__k">Extension id</span><span className="kv__v mono">{d.extensionId}</span></div>
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function Inspector() {
             <div className="kv__row"><span className="kv__k">Eligibility</span><span className="kv__v">{order.eligibility}</span></div>
             <div className="kv__row"><span className="kv__k">Instruction id</span><span className="kv__v mono">{order.instructionId}</span></div>
             <div className="kv__row"><span className="kv__k">Settlement</span><span className="kv__v mono">{d.settlement}</span></div>
-            <div className="kv__row"><span className="kv__k">FCC verifier</span><span className="kv__v mono">{d.fccVerifier}</span></div>
+            <div className="kv__row"><span className="kv__k">Compatibility verifier</span><span className="kv__v mono">{d.fccVerifier}</span></div>
           </div>
           <div className="callout" style={{ marginTop: 16 }}>
             <b>No private data here.</b> The order reference is an opaque digest. No customer field,
@@ -120,9 +120,9 @@ export default function Inspector() {
       </div>
 
       <div className="callout">
-        <b>Honest status.</b> The verifier runs in {d.verifierMode}. The signature scheme is the real
-        Flare one, proven byte-for-byte against the official sources. The remaining piece is a fully
-        live production attestation round trip. See every guarded path on the{" "}
+        <b>Honest status.</b> The local verifier runs in {d.verifierMode}. It checks byte-format
+        compatibility with the pinned Flare libraries, not TEE execution or attestation. See every
+        guarded path on the{" "}
         <Link href="/app/activity" style={{ color: "var(--jade-deep)" }}>settlement matrix</Link>.
       </div>
     </>

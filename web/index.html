@@ -73,7 +73,7 @@
           <div><dt>Chain</dt><dd data-bind="campaign.chain">–</dd></div>
           <div><dt>Settlement</dt><dd class="addr" data-bind-addr="campaign.settlement">–</dd></div>
           <div><dt>Creator (payee)</dt><dd class="addr" data-bind-addr="campaign.creator">–</dd></div>
-          <div><dt>TEE machine id</dt><dd class="addr" data-bind-addr="campaign.teeId">–</dd></div>
+          <div><dt>Local compatibility signer</dt><dd class="addr" data-bind-addr="campaign.teeId">–</dd></div>
         </dl>
       </section>
 
@@ -164,9 +164,8 @@
         <ul class="limits">
           <li>Runs locally on an anvil devnet with synthetic records, not live Coston2. The live
             Coston2 FCC attestation path is not yet connected; the verifier mode is labelled simulated-attestation.</li>
-          <li>The TEE signature scheme is proven against real Flare library code
-            (<code>tools/tee-signer</code> + <code>contracts/test/FccRealSignature.t.sol</code>),
-            which is the self-contained substitute for that pending round trip.</li>
+          <li>The ActionResult encoding and signing hash are checked with pinned Flare libraries
+            and a local development key. This is format compatibility only.</li>
           <li>Jorqeth proves what the agreed merchant source records, not objective attribution
             outside that source.</li>
           <li>All amounts and records here are synthetic.</li>
@@ -182,7 +181,7 @@
 
     <footer class="site-footer">
       <div class="wrap">
-        <p>Jorqeth · Flare Summer Signal · read-only verification replay · synthetic data only.</p>
+        <p>Jorqeth · Testnet only</p>
       </div>
     </footer>
 

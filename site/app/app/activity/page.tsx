@@ -84,7 +84,7 @@ export default function Activity() {
         {usd(inv.escrow_final)} mUSD, total settled {usd(inv.total_settled)} mUSD. Refunds settle at
         zero, undecided and error results stay retryable with escrow intact, and every tamper or
         wrong-domain case is rejected at the boundary. Walk the checks on the{" "}
-        <Link href="/app/inspector" style={{ color: "var(--jade-deep)" }}>FCC verification details</Link>.
+        <Link href="/app/inspector" style={{ color: "var(--jade-deep)" }}>result verification details</Link>.
       </div>
     </>
   );

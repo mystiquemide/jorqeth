@@ -26,7 +26,7 @@ interface IResultVerifier {
         returns (bool ok);
 
     /// @notice Human/tooling label for the active verification mode, e.g.
-    ///         "local-signature-v1" or "flare-fcc-v1". Used by evidence tooling to
+    ///         "local-signature-v1" or "action-result-compat-v1". Used by evidence tooling to
     ///         avoid ever labelling a simulated boundary as production hardware.
     function mode() external view returns (string memory);
 }

@@ -3,7 +3,7 @@ pragma solidity 0.8.28;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-/// @title RevertingToken — test double whose transfer can be toggled to fail
+/// @title RevertingToken - test double whose transfer can be toggled to fail
 /// @notice Used only to prove settlement fails closed (no state corruption) when
 ///         the escrow token's transfer reverts. Not part of the product.
 contract RevertingToken is ERC20 {

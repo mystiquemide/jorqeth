@@ -32,7 +32,7 @@ function bindAddr(root, model) {
 function bindFlags(root, model) {
   for (const el of root.querySelectorAll("[data-bind-flag]")) {
     const v = pick(model, el.getAttribute("data-bind-flag"));
-    el.textContent = v ? "All five sources agree." : "Sources disagree — see evidence.";
+    el.textContent = v ? "All five sources agree." : "Sources disagree - see evidence.";
     el.classList.toggle("ok", !!v);
     el.classList.toggle("bad", !v);
   }
