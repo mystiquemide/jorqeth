@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Jorqeth">
+  <rect x="0" y="0" width="64" height="64" rx="15" fill="#0FA36B"/>
+  <path d="M22 19 H45" stroke="#FBF7EF" stroke-width="8" stroke-linecap="round"/>
+  <path d="M38.5 19 V38 C38.5 47 31 50.5 23.5 45.5" stroke="#FBF7EF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="47.5" cy="47.5" r="4" fill="#FF6A3D"/>
+</svg>

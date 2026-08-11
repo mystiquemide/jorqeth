@@ -1,0 +1,10 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Jorqeth">
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#0FA36B"/>
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="15.25" stroke="#0A7D51" stroke-opacity="0.4"/>
+  <!-- J monogram -->
+  <path d="M24 18 H44" stroke="#FBF7EF" stroke-width="6.5" stroke-linecap="round"/>
+  <path d="M38.5 18 V37 C38.5 45 32 48 25.5 44" stroke="#FBF7EF" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- exact baseline + settled dot -->
+  <path d="M22 51 H43" stroke="#FBF7EF" stroke-width="4" stroke-linecap="round" stroke-opacity="0.82"/>
+  <circle cx="47.5" cy="51" r="3.2" fill="#FF6A3D"/>
+</svg>

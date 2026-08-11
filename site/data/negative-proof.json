@@ -1,0 +1,150 @@
+{
+  "proof": "milestone-4-negative",
+  "result": "PASS",
+  "generated_by": "evidence/run-negative-proof.sh",
+  "chain": "local anvil devnet (chainId 31337)",
+  "provenance_note": "The mirror of the positive proof: same funded campaign, same real FCC verifier, every failure mode attempted against live state. Runs on local anvil 31337 for the same reason as the positive proof (BLK-001/BLK-002). Each attempt runs through NegativeProbe.runAll (try/catch per attempt) so one transaction records the whole matrix; the persisted on-chain balances then confirm, independently over RPC, that only the single eligible payout transferred value.",
+  "deployment": {
+    "settlement": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+    "escrowToken": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "teeRegistry": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "fccVerifier": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    "verifierMode": "flare-fcc-v1/simulated-attestation",
+    "creator": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "teeId": "0xC9fe5A864FbE024a2cc46d0dF6b2F5e2417204ca",
+    "extensionId": "65536"
+  },
+  "invariant": {
+    "paths_attempted": 12,
+    "paths_that_transferred_value": 1,
+    "creator_final": 20000000,
+    "escrow_final": 80000000,
+    "total_settled": 20000000,
+    "only_eligible_path_paid": true
+  },
+  "distinguishability": {
+    "refund_is_terminal_settled": true,
+    "infra_unknown_is_retryable_not_settled": true,
+    "fleet_outage_is_retryable_not_settled": true,
+    "error_status_is_retryable_not_settled": true,
+    "eligible_consumed": true
+  },
+  "fleet_outage": {
+    "paid": false,
+    "revertSelector": "0xf56806be",
+    "expectedError": "EmptyRegistry()",
+    "creatorDelta": 0
+  },
+  "vectors": [
+    {
+      "idx": 0,
+      "label": "refund_ineligible",
+      "paid": true,
+      "revertSelector": "0x00000000",
+      "expectedSelector": "0x00000000",
+      "expectedError": "none",
+      "creatorDelta": 0,
+      "escrowDelta": 0
+    },
+    {
+      "idx": 1,
+      "label": "wrong_domain_chain",
+      "paid": false,
+      "revertSelector": "0x24497bc3",
+      "expectedSelector": "0x24497bc3",
+      "expectedError": "WrongChain(uint256,uint256)",
+      "creatorDelta": 0,
+      "escrowDelta": 0
+    },
+    {
+      "idx": 2,
+      "label": "wrong_domain_contract",
+      "paid": false,
+      "revertSelector": "0xe977298a",
+      "expectedSelector": "0xe977298a",
+      "expectedError": "WrongContract(address,address)",
+      "creatorDelta": 0,
+      "escrowDelta": 0
+    },
+    {
+      "idx": 3,
+      "label": "untrusted_signer",
+      "paid": false,
+      "revertSelector": "0xab3ffed4",
+      "expectedSelector": "0xab3ffed4",
+      "expectedError": "BadResult()",
+      "creatorDelta": 0,
+      "escrowDelta": 0
+    },
+    {
+      "idx": 4,
+      "label": "tampered_amount",
+      "paid": false,
+      "revertSelector": "0xab3ffed4",
+      "expectedSelector": "0xab3ffed4",
+      "expectedError": "BadResult()",
+      "creatorDelta": 0,
+      "escrowDelta": 0
+    },
+    {
+      "idx": 5,
+      "label": "tampered_creator",
+      "paid": false,
+      "revertSelector": "0x37cdccf6",
+      "expectedSelector": "0x37cdccf6",
+      "expectedError": "WrongCreator(address,address)",
+      "creatorDelta": 0,
+      "escrowDelta": 0
+    },
+    {
+      "idx": 6,
+      "label": "expired",
+      "paid": false,
+      "revertSelector": "0x91cc37bc",
+      "expectedSelector": "0x91cc37bc",
+      "expectedError": "Expired(uint64,uint256)",
+      "creatorDelta": 0,
+      "escrowDelta": 0
+    },
+    {
+      "idx": 7,
+      "label": "infrastructure_unknown",
+      "paid": false,
+      "revertSelector": "0x75aaa8f6",
+      "expectedSelector": "0x75aaa8f6",
+      "expectedError": "NonPayableCode(uint8)",
+      "creatorDelta": 0,
+      "escrowDelta": 0
+    },
+    {
+      "idx": 8,
+      "label": "eligible_positive",
+      "paid": true,
+      "revertSelector": "0x00000000",
+      "expectedSelector": "0x00000000",
+      "expectedError": "none",
+      "creatorDelta": 20000000,
+      "escrowDelta": 20000000
+    },
+    {
+      "idx": 9,
+      "label": "replay",
+      "paid": false,
+      "revertSelector": "0xb196a44a",
+      "expectedSelector": "0xb196a44a",
+      "expectedError": "AlreadySettled(bytes32)",
+      "creatorDelta": 0,
+      "escrowDelta": 0
+    },
+    {
+      "idx": 10,
+      "label": "error_status",
+      "paid": false,
+      "revertSelector": "0xab3ffed4",
+      "expectedSelector": "0xab3ffed4",
+      "expectedError": "BadResult()",
+      "creatorDelta": 0,
+      "escrowDelta": 0
+    }
+  ]
+}

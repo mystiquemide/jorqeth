@@ -1,0 +1,178 @@
+{
+  "$comment": "Jorqeth frozen deterministic spec. Milestone 1 / CP-001. This file is the authoritative source for schema versions, eligibility codes, rounding, domain binding, replay identity, and golden vectors. Synthetic + testnet only. No customer fields appear in any public result.",
+  "specVersion": "1.0.0",
+  "schemaVersion": 1,
+  "product": "Jorqeth",
+  "claimBoundary": "Settles what the agreed merchant record shows, not universal attribution truth.",
+  "eip712": {
+    "domainName": "Jorqeth",
+    "domainVersion": "1",
+    "domainTypeString": "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)",
+    "resultTypeString": "PayableResult(uint16 schemaVersion,bytes32 campaignId,bytes32 orderDigest,address creator,uint256 amount,uint8 eligibilityCode,uint256 chainId,address settlementContract,bytes32 ruleVersion,bytes32 nonce,uint64 issuedAt,uint64 expiry)"
+  },
+  "eligibilityCodes": {
+    "INELIGIBLE": 0,
+    "ELIGIBLE": 1,
+    "INFRASTRUCTURE_UNKNOWN": 2,
+    "$note": "Only INELIGIBLE (zero payout) and ELIGIBLE (exact payout) are terminal, payable-path results a signer may emit. INFRASTRUCTURE_UNKNOWN is never signed as a settlement result; if it ever reaches the contract it fails closed with a revert."
+  },
+  "rounding": {
+    "rule": "floor",
+    "formula": "commission = floor(netAmount * commissionBps / 10000)",
+    "$note": "One documented rounding direction (floor / truncation toward zero). netAmount is the eligible net order amount in the escrow token's smallest unit."
+  },
+  "escrowToken": {
+    "kind": "test-erc20",
+    "symbol": "mUSD",
+    "decimals": 6,
+    "$note": "DEC-002 default: standard test ERC-20 with safe transfer. Synthetic, non-production."
+  },
+  "campaign": {
+    "campaignId": "0xcbd0f075e08709f2fd3f28132cb9496eecfcac785276e84c16b0d8e475b4c99a",
+    "campaignLabel": "JORQ-CAMPAIGN-001",
+    "commissionBps": 1000,
+    "ruleVersion": "0xa865c645c1901fa821cc0ea91db46d39b4cfe7e81f927863d51387ab8c947a4d",
+    "ruleVersionLabel": "jorqeth.rule.v1.fixed-bps.floor",
+    "dataSourceId": "0x724078173c8c5078c17ce00e5135dff51c301da254febd926084c946d0611c10",
+    "dataSourceLabel": "jorqeth.synthetic.merchant.v1",
+    "escrowAmount": 100000000,
+    "$escrowNote": "100.000000 mUSD escrow, enough for one eligible 20.000000 commission plus headroom."
+  },
+  "orders": {
+    "ORDER-A": {
+      "orderDigest": "0xbe4b0fa03136646a52108527f8dd4873c60796d246fe5dd610ec0d4a2f6a1a45",
+      "class": "eligible",
+      "netAmount": 200000000,
+      "expectedEligibilityCode": 1,
+      "expectedCommission": 20000000
+    },
+    "ORDER-B": {
+      "orderDigest": "0x2211acb1c6f286f7f78d0540520ff45e6b53701156d05e1951bb85bbfefff065",
+      "class": "refunded",
+      "netAmount": 150000000,
+      "expectedEligibilityCode": 0,
+      "expectedCommission": 0
+    },
+    "ORDER-C": {
+      "orderDigest": "0x5739f03e7db113339cc4be123cbb055d3dcb549923fd291f390ef6e9bfd7b9c3",
+      "class": "unmatched",
+      "netAmount": 90000000,
+      "expectedEligibilityCode": 0,
+      "expectedCommission": 0
+    }
+  },
+  "goldenVectors": [
+    {
+      "id": "V1_POSITIVE",
+      "label": "Eligible order pays the exact floor commission once",
+      "order": "ORDER-A",
+      "eligibilityCode": 1,
+      "amount": 20000000,
+      "domain": "correct",
+      "signer": "trusted",
+      "expiry": "future",
+      "expect": "PAYOUT",
+      "expectedPayout": 20000000
+    },
+    {
+      "id": "V2_NEGATIVE_REFUND",
+      "label": "Refunded order is a valid evaluation that pays zero and is marked settled",
+      "order": "ORDER-B",
+      "eligibilityCode": 0,
+      "amount": 0,
+      "domain": "correct",
+      "signer": "trusted",
+      "expiry": "future",
+      "expect": "ZERO_PAYOUT",
+      "expectedPayout": 0
+    },
+    {
+      "id": "V3_REPLAY",
+      "label": "Replaying the eligible result cannot pay twice",
+      "order": "ORDER-A",
+      "eligibilityCode": 1,
+      "amount": 20000000,
+      "domain": "correct",
+      "signer": "trusted",
+      "expiry": "future",
+      "expect": "REVERT_ALREADY_SETTLED"
+    },
+    {
+      "id": "V4_WRONG_DOMAIN_CHAIN",
+      "label": "Result bound to a different chain id cannot pay",
+      "order": "ORDER-A",
+      "eligibilityCode": 1,
+      "amount": 20000000,
+      "domain": "wrong_chain",
+      "signer": "trusted",
+      "expiry": "future",
+      "expect": "REVERT"
+    },
+    {
+      "id": "V5_WRONG_DOMAIN_CONTRACT",
+      "label": "Result bound to a different settlement contract cannot pay",
+      "order": "ORDER-A",
+      "eligibilityCode": 1,
+      "amount": 20000000,
+      "domain": "wrong_contract",
+      "signer": "trusted",
+      "expiry": "future",
+      "expect": "REVERT"
+    },
+    {
+      "id": "V6_EXPIRED",
+      "label": "Expired result cannot pay",
+      "order": "ORDER-A",
+      "eligibilityCode": 1,
+      "amount": 20000000,
+      "domain": "correct",
+      "signer": "trusted",
+      "expiry": "past",
+      "expect": "REVERT_EXPIRED"
+    },
+    {
+      "id": "V7_MALFORMED_UNTRUSTED_SIGNER",
+      "label": "Result signed by an untrusted key cannot pay",
+      "order": "ORDER-A",
+      "eligibilityCode": 1,
+      "amount": 20000000,
+      "domain": "correct",
+      "signer": "untrusted",
+      "expiry": "future",
+      "expect": "REVERT_BAD_RESULT"
+    },
+    {
+      "id": "V8_TAMPERED_CREATOR",
+      "label": "Tampering the recipient after signing breaks verification",
+      "order": "ORDER-A",
+      "eligibilityCode": 1,
+      "amount": 20000000,
+      "domain": "correct",
+      "signer": "trusted_then_tamper_creator",
+      "expiry": "future",
+      "expect": "REVERT_BAD_RESULT"
+    },
+    {
+      "id": "V9_TAMPERED_AMOUNT",
+      "label": "Tampering the amount after signing breaks verification",
+      "order": "ORDER-A",
+      "eligibilityCode": 1,
+      "amount": 20000000,
+      "domain": "correct",
+      "signer": "trusted_then_tamper_amount",
+      "expiry": "future",
+      "expect": "REVERT_BAD_RESULT"
+    },
+    {
+      "id": "V10_INFRA_UNKNOWN",
+      "label": "Infrastructure-unknown code is never payable and fails closed",
+      "order": "ORDER-A",
+      "eligibilityCode": 2,
+      "amount": 0,
+      "domain": "correct",
+      "signer": "trusted",
+      "expiry": "future",
+      "expect": "REVERT"
+    }
+  ]
+}
