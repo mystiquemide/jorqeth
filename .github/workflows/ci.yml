@@ -1,0 +1,67 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  contracts:
+    name: Foundry build and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+      - name: Build
+        run: forge build
+      - name: Test
+        run: forge test -vvv
+
+  site:
+    name: Next.js typecheck and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Build
+        run: npm run build
+
+  web-state-tests:
+    name: Legacy replay state tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pure view-model tests over committed evidence
+        run: node --test web/test/view.test.mjs web/test/surfaces.test.mjs
+
+  proof-drift:
+    name: Evidence mirror is byte-identical
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Site data must match committed evidence and spec
+        run: |
+          set -e
+          for f in positive-proof negative-proof proof-gate; do
+            cmp "site/data/$f.json" "evidence/$f.json"
+          done
+          cmp site/data/jorqeth-v1.json spec/jorqeth-v1.json
+          echo "proof mirror is byte-identical"

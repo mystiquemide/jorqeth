@@ -53,7 +53,8 @@ contract FccSettlementTest is JorqethTestBase {
             merchant,
             creator,
             COMMISSION_BPS,
-            RULE_VERSION
+            RULE_VERSION,
+            CAMPAIGN_END
         );
 
         token.mint(merchant, ESCROW_AMOUNT);

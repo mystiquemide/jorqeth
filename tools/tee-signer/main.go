@@ -88,7 +88,9 @@ func must[T any](v T, err error) T {
 }
 
 func main() {
-	// --- Fixed key: anvil account 0. Its address IS the teeId registered on-chain. ---
+	// --- The well-known PUBLIC Anvil account-0 test key, shared by every Foundry
+	//     install and safe to commit. This is NOT a secret and is never used with real
+	//     funds. Its address is the teeId registered on-chain for the local FCC devnet. ---
 	const teeKeyHex = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 	key := must(crypto.HexToECDSA(teeKeyHex))
 	teeId := crypto.PubkeyToAddress(key.PublicKey)

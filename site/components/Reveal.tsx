@@ -2,9 +2,14 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-// Fades/rises children in on scroll. Server-renders fully visible; only after
-// mount does it hide (.pre) then reveal (.in) on intersection, so no-JS and
-// reduced-motion users always see content.
+// One first-load entrance, no scroll-triggered hiding.
+//
+// The server renders children fully visible, so no-JS and reduced-motion users
+// always see everything. After mount, ONLY elements already in the first
+// viewport play a short fade-up; anything below the fold is left fully visible
+// and never hidden. That means a full-page automated screenshot (which does not
+// scroll) captures every section instead of blank bands where an
+// IntersectionObserver never fired.
 export default function Reveal({
   children,
   as: Tag = "div",
@@ -17,29 +22,26 @@ export default function Reveal({
   delay?: number;
 }) {
   const ref = useRef<HTMLElement | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [entering, setEntering] = useState(false);
   const [shown, setShown] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const el = ref.current;
     if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            setShown(true);
-            io.disconnect();
-          }
-        }
-      },
-      { rootMargin: "0px 0px -12% 0px", threshold: 0.08 }
+
+    // Only the initial-viewport band animates. A little slack below the fold so
+    // an element peeking in at load still gets the entrance.
+    const inFirstView = el.getBoundingClientRect().top < window.innerHeight * 0.9;
+    if (!inFirstView) return;
+
+    setEntering(true); // adds .pre (hidden) for this paint
+    const r1 = requestAnimationFrame(() =>
+      requestAnimationFrame(() => setShown(true)) // next paint adds .in (revealed)
     );
-    io.observe(el);
-    return () => io.disconnect();
+    return () => cancelAnimationFrame(r1);
   }, []);
 
-  const cls = ["reveal", mounted ? "pre" : "", shown ? "in" : "", className]
+  const cls = ["reveal", entering ? "pre" : "", shown ? "in" : "", className]
     .filter(Boolean)
     .join(" ");
 

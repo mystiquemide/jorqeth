@@ -5,42 +5,19 @@ export default function SiteFooter() {
   return (
     <footer className="footer">
       <div className="container">
-        <div className="footer__grid">
-          <div className="footer__brand">
-            <Link className="brand" href="/">
-              <Image src="/assets/mark.svg" alt="" width={32} height={32} />
-              Jorqeth
-            </Link>
-            <p>
-              Private proofs. Exact commissions. Settles what the agreed merchant record shows,
-              on-chain.
-            </p>
-          </div>
-          <div>
-            <h4>Product</h4>
-            <ul>
-              <li><Link href="/#how">How it works</Link></li>
-              <li><Link href="/app">Open the app</Link></li>
-              <li><Link href="/app/receipt">Live payout</Link></li>
-              <li><Link href="/app/inspector">Proof inspector</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4>Proof</h4>
-            <ul>
-              <li><Link href="/app/activity">Settlement matrix</Link></li>
-              <li><Link href="/#outcomes">The numbers</Link></li>
-              <li><Link href="/#security">Security</Link></li>
-              <li><Link href="/#faq">FAQ</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4>Resources</h4>
-            <ul>
-              <li><a href="https://github.com/mystiquemide/jorqeth" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-              <li><a href="https://github.com/mystiquemide/jorqeth#readme" target="_blank" rel="noopener noreferrer">README</a></li>
-              <li><a href="https://flare.network" target="_blank" rel="noopener noreferrer">Flare</a></li>
-            </ul>
+        <div className="footer__close">
+          <Link className="brand" href="/">
+            <Image src="/assets/mark.svg" alt="" width={32} height={32} />
+            Jorqeth
+          </Link>
+          <p className="footer__proof">
+            Five independent sources agreed on the payout to the cent, and only one of twelve
+            tested paths moved value. Read it straight from the committed proof.
+          </p>
+          <div className="footer__links">
+            <Link href="/app/receipt">Settlement receipt</Link>
+            <Link href="/app/activity">Settlement matrix</Link>
+            <a href="https://github.com/mystiquemide/jorqeth" target="_blank" rel="noopener noreferrer">Repository</a>
           </div>
         </div>
         <div className="footer__bottom">

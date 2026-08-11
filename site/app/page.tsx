@@ -3,6 +3,7 @@ import Link from "next/link";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 import Reveal from "@/components/Reveal";
+import ProofStrip from "@/components/ProofStrip";
 import Faq from "@/components/Faq";
 import { usd, ledgerSummary, gateSummary } from "@/lib/evidence";
 
@@ -42,19 +43,21 @@ export default function Home() {
         <section className="hero">
           <div className="container hero__grid">
             <Reveal className="hero__copy">
-              <span className="eyebrow">Private commission settlement</span>
               <h1 className="hero__title">Get paid exactly what you earned.</h1>
               <p className="hero__sub">
-                Jorqeth reads the merchant&apos;s own record privately, works out the commission
-                you&apos;re owed to the cent, and pays it out on-chain. No exposed ledgers, no
-                trust-me math.
+                Jorqeth takes an agreed private record, works out the commission you&apos;re owed
+                to the cent, and settles it on-chain. No exposed ledgers, no trust-me math.
               </p>
               <div className="hero__actions">
                 <Link className="btn btn--primary" href="/app/receipt">
-                  See a real payout <span className="arrow">→</span>
+                  See the settlement proof <span className="arrow">→</span>
                 </Link>
                 <a className="btn btn--tinted" href="#how">How it works</a>
               </div>
+              <p className="hero__note" style={{ marginTop: 12, fontSize: "var(--fs-sm)", color: "var(--text-muted)" }}>
+                Local replay, simulated attestation, synthetic records. A live production
+                attestation round trip is the one remaining piece.
+              </p>
               <div className="hero__trust">
                 <span><b>Exact to the cent.</b> Five sources agree.</span>
                 <span><b>{s.paid} of {s.total}</b> paths moved value.</span>
@@ -73,7 +76,7 @@ export default function Home() {
               <div className="receipt-chip">
                 <div className="receipt-chip__icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M20 6 9 17l-5-5" stroke="#0A7D51" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
                 <div>
@@ -89,20 +92,7 @@ export default function Home() {
         </section>
 
         {/* PROOF STRIP */}
-        <div className="proofstrip" aria-label="Proven facts">
-          <div className="marquee">
-            <div className="marquee__group">
-              {MARQUEE.map((m, i) => (
-                <span className="marquee__item" key={`a${i}`}>{m}</span>
-              ))}
-            </div>
-            <div className="marquee__group" aria-hidden="true">
-              {MARQUEE.map((m, i) => (
-                <span className="marquee__item" key={`b${i}`}>{m}</span>
-              ))}
-            </div>
-          </div>
-        </div>
+        <ProofStrip items={MARQUEE} />
 
         {/* PROBLEM */}
         <section className="section" id="problem">
@@ -111,7 +101,6 @@ export default function Home() {
               <Image src="/assets/problem.jpg" alt="A payment happening at a counter" width={1200} height={801} />
             </Reveal>
             <Reveal className="split__body">
-              <span className="eyebrow">The problem</span>
               <h2>You can&apos;t see the ledger. They can&apos;t show it to you.</h2>
               <p>
                 A creator owed a commission can&apos;t inspect a merchant&apos;s private orders. The
@@ -222,7 +211,7 @@ export default function Home() {
                 delta all equal the same number to the cent. That is what exact means here.
               </p>
               <Link className="btn btn--primary" href="/app/receipt">
-                Open the live proof <span className="arrow">→</span>
+                Open the settlement proof <span className="arrow">→</span>
               </Link>
             </Reveal>
           </div>
@@ -252,12 +241,11 @@ export default function Home() {
               <Image src="/assets/security.jpg" alt="A calm, quiet workspace" width={1200} height={801} />
             </Reveal>
             <Reveal className="secure__body">
-              <span className="eyebrow">Private and provable</span>
               <h2>Their customers stay private. Your payout stays provable.</h2>
               <ul className="checklist">
                 <li>
                   <span className="tick">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#FBF7EF" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </span>
                   <span>
                     <b>No private data on-chain.</b> No customer record, revenue field, or private key
@@ -266,7 +254,7 @@ export default function Home() {
                 </li>
                 <li>
                   <span className="tick">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#FBF7EF" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </span>
                   <span>
                     <b>Signed, not screenshotted.</b> Authenticity comes from a result signed by a
@@ -276,7 +264,7 @@ export default function Home() {
                 </li>
                 <li>
                   <span className="tick">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#FBF7EF" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </span>
                   <span>
                     <b>Not-sure is not not-owed.</b> If the system can&apos;t decide, it pays zero and
@@ -292,7 +280,6 @@ export default function Home() {
         <section className="section" id="faq">
           <div className="container">
             <Reveal className="head head--center">
-              <span className="eyebrow">Questions</span>
               <h2>Straight answers</h2>
             </Reveal>
             <Faq />
@@ -304,10 +291,10 @@ export default function Home() {
           <div className="container">
             <Reveal className="finalcta">
               <h2>Earned it. Prove it. Get paid it.</h2>
-              <p>See the real settlement, exact to the cent, before you take our word for anything.</p>
+              <p>See the committed settlement, exact to the cent, before you take our word for anything.</p>
               <div className="hero__actions">
                 <Link className="btn btn--primary" href="/app/receipt">
-                  See a real payout <span className="arrow">→</span>
+                  See the settlement proof <span className="arrow">→</span>
                 </Link>
                 <Link className="btn btn--tinted" href="/app">Open the app</Link>
               </div>

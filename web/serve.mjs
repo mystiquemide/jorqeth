@@ -2,6 +2,14 @@
 // Serves the repository root so the page at /web/ can fetch ../evidence/*.json.
 //
 //   node web/serve.mjs [port]   # default 8080, serving repo root
+//   node web/serve.mjs 0        # bind an OS-assigned free port
+//
+// On listen it prints a machine-parseable readiness line:
+//   SERVE_LISTENING port=<n>
+// Smoke harnesses wait for that line (and watch child error/exit) instead of
+// polling a fixed port they do not own. When SMOKE_NONCE is set, GET
+// /__smoke_nonce returns exactly that value, letting a caller prove the HTTP
+// responder is this spawned process and not a stale server on the same port.
 //
 // Read-only: GET/HEAD only, path-traversal blocked, no write endpoints.
 
@@ -12,7 +20,8 @@ import { dirname, join, normalize, extname, resolve, sep } from "node:path";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, ".."); // repository root
-const PORT = Number(process.argv[2] || process.env.PORT || 8080);
+const PORT = Number(process.argv[2] ?? process.env.PORT ?? 8080);
+const SMOKE_NONCE = process.env.SMOKE_NONCE || "";
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -31,6 +40,13 @@ const server = createServer(async (req, res) => {
       return;
     }
     let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
+    // Checkout-identity probe: proves the responding process is THIS server, not a
+    // stale listener that happened to already hold the port (REV-006).
+    if (path === "/__smoke_nonce") {
+      res.writeHead(SMOKE_NONCE ? 200 : 404, { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" });
+      res.end(req.method === "HEAD" ? undefined : SMOKE_NONCE);
+      return;
+    }
     if (path === "/") path = "/web/index.html";
     const full = normalize(join(ROOT, path));
     if (!full.startsWith(ROOT + sep)) {
@@ -51,5 +67,8 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, "127.0.0.1", () => {
-  console.log(`serving ${ROOT} at http://127.0.0.1:${PORT}/  (page: /web/index.html)`);
+  const bound = server.address().port;
+  // Machine-parseable readiness line consumed by the smoke harnesses.
+  console.log(`SERVE_LISTENING port=${bound}`);
+  console.log(`serving ${ROOT} at http://127.0.0.1:${bound}/  (page: /web/index.html)`);
 });

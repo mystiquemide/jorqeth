@@ -26,7 +26,7 @@ export default function Receipt() {
         <div className="payout-hero">
           <div className="payout-hero__badge">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-              <path d="M20 6 9 17l-5-5" stroke="#0A7D51" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <div>
@@ -56,7 +56,7 @@ export default function Receipt() {
               <span className="agree__val">
                 {usd(src.value)}
                 <span className="agree__check">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#FBF7EF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </span>
               </span>
             </div>
@@ -64,7 +64,7 @@ export default function Receipt() {
         </div>
         {agree.allEqual && (
           <div className="agree__foot">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#0A7D51" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
             All five agree. floor({usd(agree.netApplied)} × {agree.commissionBps / 100}%) resolves to exactly {usd(balances.creatorDelta)} mUSD.
           </div>
         )}

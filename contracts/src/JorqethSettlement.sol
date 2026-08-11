@@ -36,6 +36,11 @@ contract JorqethSettlement is ReentrancyGuard {
     address public immutable creator; // the only valid payout recipient
     uint16 public immutable commissionBps; // informational bound; amount is verified per result
     bytes32 public immutable ruleVersion; // commission rule identity
+    /// @notice Unix time at/after which the merchant may reclaim unspent escrow.
+    ///         Before this the escrow is locked, so a valid in-window result can
+    ///         never be stranded by a merchant withdrawal (REV-003). Set beyond the
+    ///         validity horizon of every result the campaign can emit.
+    uint64 public immutable campaignEnd;
 
     // --- State ---
 
@@ -77,6 +82,7 @@ contract JorqethSettlement is ReentrancyGuard {
     error NonPayableCode(uint8 code); // e.g. INFRASTRUCTURE_UNKNOWN reaching settlement
     error AmountNotZeroForIneligible(uint256 amount);
     error InsufficientEscrow(uint256 amount, uint256 available);
+    error EscrowLocked(uint64 campaignEnd, uint256 nowTs); // withdrawal before campaign end
 
     constructor(
         IERC20 token_,
@@ -86,12 +92,14 @@ contract JorqethSettlement is ReentrancyGuard {
         address merchant_,
         address creator_,
         uint16 commissionBps_,
-        bytes32 ruleVersion_
+        bytes32 ruleVersion_,
+        uint64 campaignEnd_
     ) {
         require(address(token_) != address(0), "settlement: zero token");
         require(address(verifier_) != address(0), "settlement: zero verifier");
         require(merchant_ != address(0), "settlement: zero merchant");
         require(creator_ != address(0), "settlement: zero creator");
+        require(campaignEnd_ > block.timestamp, "settlement: campaign end in past");
         token = token_;
         verifier = verifier_;
         schemaVersion = schemaVersion_;
@@ -100,6 +108,7 @@ contract JorqethSettlement is ReentrancyGuard {
         creator = creator_;
         commissionBps = commissionBps_;
         ruleVersion = ruleVersion_;
+        campaignEnd = campaignEnd_;
     }
 
     /// @notice Merchant funds campaign escrow. Escrow must exist before any
@@ -164,10 +173,13 @@ contract JorqethSettlement is ReentrancyGuard {
         token.safeTransfer(creator, amount);
     }
 
-    /// @notice Merchant reclaims unspent escrow (e.g. after the campaign window).
-    ///         Never touches settled state or the creator's received funds.
+    /// @notice Merchant reclaims unspent escrow after the campaign window closes.
+    ///         Locked until `campaignEnd` so a valid in-window result can never be
+    ///         stranded by a withdrawal (REV-003). Never touches settled state or
+    ///         the creator's received funds.
     function withdrawEscrow(uint256 amount) external nonReentrant {
         if (msg.sender != merchant) revert NotMerchant();
+        if (block.timestamp < campaignEnd) revert EscrowLocked(campaignEnd, block.timestamp);
         if (amount > escrowBalance) revert InsufficientEscrow(amount, escrowBalance);
         escrowBalance -= amount;
         emit EscrowWithdrawn(campaignId, merchant, amount);

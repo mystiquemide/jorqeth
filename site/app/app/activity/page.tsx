@@ -37,7 +37,7 @@ export default function Activity() {
           </div>
         </div>
 
-        <div className="grid-3" style={{ gridTemplateColumns: "repeat(4, 1fr)", marginBottom: 22 }}>
+        <div className="grid-4" style={{ marginBottom: 22 }}>
           {(["paid", "zero", "retry", "reject"] as Category[]).map((c) => (
             <div className="metric" key={c}>
               <div className="metric__k">{CATEGORY_LABEL[c]}</div>

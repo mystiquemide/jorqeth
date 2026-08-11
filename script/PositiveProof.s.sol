@@ -42,6 +42,9 @@ contract PositiveProof is Script {
     uint256 internal constant NET_A = 200_000000; // gross the commission rule applies to
     uint256 internal constant COMMISSION_A = 20_000000; // floor(NET_A * bps / 10_000)
     uint256 internal constant ESCROW_AMOUNT = 100_000000; // 100.000000 mUSD funded
+    // Escrow unlock time, beyond every result expiry so a valid in-window result can
+    // never be stranded by a merchant withdrawal (REV-003).
+    uint64 internal constant CAMPAIGN_END = 2_100_000_000;
 
     // --- FCC ActionResult envelope (identical to the forge integration tests) ---
     uint256 internal constant EXTENSION_ID = 0x10000;
@@ -77,7 +80,7 @@ contract PositiveProof is Script {
         MockTeeMachineRegistry reg = new MockTeeMachineRegistry();
         FccResultVerifier fcc = new FccResultVerifier(reg, EXTENSION_ID, "simulated-attestation");
         settlement = new JorqethSettlement(
-            token, fcc, SCHEMA_VERSION, CAMPAIGN_ID, merchant, CREATOR, COMMISSION_BPS, RULE_VERSION
+            token, fcc, SCHEMA_VERSION, CAMPAIGN_ID, merchant, CREATOR, COMMISSION_BPS, RULE_VERSION, CAMPAIGN_END
         );
 
         address[] memory ids = new address[](1);

@@ -7,12 +7,13 @@
 //
 // Exit 0 = pass. Any failed assertion exits 1 with the reason.
 
-import { spawn, execSync } from "node:child_process";
+import { execSync } from "node:child_process";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { homedir } from "node:os";
 import { createRequire } from "node:module";
+import { startServer } from "./smoke-server.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -35,8 +36,6 @@ const executablePath = findChromium();
 const POS = JSON.parse(readFileSync(join(here, "..", "evidence", "positive-proof.json"), "utf8"));
 const SPEC = JSON.parse(readFileSync(join(here, "..", "spec", "jorqeth-v1.json"), "utf8"));
 
-const PORT = 8124;
-const BASE = `http://127.0.0.1:${PORT}`;
 const fails = [];
 const ok = (cond, msg) => { if (!cond) fails.push(msg); };
 
@@ -49,14 +48,10 @@ function wait(ms) {
 
 const SECRETS = ["cardnumber", "cvv", "ssn", "mnemonic", "password", "private key", "0xac0974"];
 
-const srv = spawn("node", [join(here, "serve.mjs"), String(PORT)], { stdio: "inherit" });
+// Spawn the static server on a free port, confirmed to be this checkout (REV-006).
+const { base: BASE, stop: stopServer } = await startServer();
 
 async function run() {
-  for (let i = 0; i < 50; i++) {
-    try { const r = await fetch(`${BASE}/web/receipt.html`); if (r.ok) break; } catch {}
-    await wait(100);
-  }
-
   const browser = await chromium.launch(executablePath ? { executablePath } : {});
   try {
     const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
@@ -164,7 +159,7 @@ async function run() {
     }
   } finally {
     await browser.close();
-    srv.kill("SIGTERM");
+    stopServer();
   }
 
   if (fails.length) {
@@ -175,4 +170,4 @@ async function run() {
   console.log("SURFACES SMOKE PASSED: receipt (eligible/infra/replay), inspector, brief, index cross-links, 360px, keyboard, link readback, secret scan");
 }
 
-run().catch((e) => { console.error(e); srv.kill("SIGTERM"); process.exit(1); });
+run().catch((e) => { console.error(e); stopServer(); process.exit(1); });

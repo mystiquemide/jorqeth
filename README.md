@@ -7,7 +7,9 @@ merchant record and releases the exact amount from merchant-funded escrow. The
 participating merchant stays the source of record. Jorqeth settles what that agreed
 record shows, not universal attribution truth.
 
-Built for the Flare Summer Signal hackathon. Testnet (Coston2) and synthetic data only.
+Built for the Flare Summer Signal hackathon. Coston2 is the target chain; the committed
+proofs run on a local anvil devnet (chainId 31337) with synthetic data only. See the
+status note below for what is and is not live.
 
 > Status: proof-first build, judge-ready. The settlement invariant is enforced and
 > tested locally, the real Flare Confidential Compute (FCC) result-authenticity boundary
@@ -143,17 +145,34 @@ Evidence index:
 | [`evidence/proof-gate.md`](evidence/proof-gate.md) | All nine mandatory checklist items pass in one run. |
 | [`contracts/test/FccRealSignature.t.sol`](contracts/test/FccRealSignature.t.sol) | A genuine Flare tee-node signature over `abi.encode(PayableResult)` verifies byte-for-byte against the real FCC scheme. |
 
-## Judge page
+## Judge here first: the dashboard
 
-A zero-dependency, read-only page replays the committed evidence, with a settlement
-receipt, an FCC proof inspector, and a trust & product brief beside it. No chain call, no
-build step:
+The canonical review surface is the Next.js dashboard in [`site/`](site/README.md). It
+reads every figure from the committed proof below, with a settlement dashboard, the full
+12-path matrix, a receipt, and a verification inspector.
+
+```bash
+cd site
+npm ci
+npm run build && npm run start   # http://localhost:3000  (open /app first)
+```
+
+Routes, evidence sync, and deployment are documented in [`site/README.md`](site/README.md).
+`/app` is the page to open first.
+
+### Fallback: the zero-dependency replay
+
+If a build step is not wanted, a zero-dependency, read-only page replays the same
+committed evidence, with a settlement receipt, an FCC proof inspector, and a trust &
+product brief beside it. No chain call, no build step:
 
 ```bash
 node web/serve.mjs          # http://127.0.0.1:8080  (redirects to the judge page)
 ```
 
-See [`web/README.md`](web/README.md) for the surfaces, tests, and design notes.
+See [`web/README.md`](web/README.md) for the surfaces, tests, and design notes. Both
+frontends render the identical committed proof; the dashboard is the intended demo, the
+replay is the no-build fallback.
 
 ## New work vs inherited scaffold
 
@@ -164,6 +183,8 @@ Built during Flare Summer Signal (this repository's contribution):
 - The full local and on-chain proof pipeline (`evidence/run-*.sh`), the deterministic
   positive/negative/gate evidence, and the cold-start rehearsal runner.
 - The zero-dependency judge page and its three amplification surfaces.
+- The Next.js dashboard in `site/`, which renders the same committed proof as the
+  canonical demo surface (see `site/README.md`).
 - `tools/tee-signer`: a small tool that re-derives a genuine tee-node signature vector
   from the pinned official Flare sources, so the on-chain FCC test runs against real bytes.
 
@@ -198,12 +219,14 @@ Inherited, reused unchanged (not this project's work):
 
 ## Security and privacy
 
-- No credential, private key, raw merchant record, or customer field appears in any
-  result, event, or tracked file. Order references are opaque digests.
+- No production credential, secret key, raw merchant record, or customer field appears in
+  any result, event, or tracked file. Order references are opaque digests. The only key in
+  the repository is the public Anvil account-0 test key (shared by every Foundry install),
+  used solely to reproduce the FCC signature scheme against a local devnet.
 - Infrastructure uncertainty is distinct from a legitimate zero payout; both pay nothing.
 - Synthetic records and testnet assets only. Production would require an off-chain
   secret-delivery channel and a privacy/legal review.
 
 ## License
 
-MIT.
+MIT. See [`LICENSE`](LICENSE).

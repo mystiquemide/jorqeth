@@ -4,15 +4,15 @@ import { shortHash, deployment } from "@/lib/evidence";
 
 export const metadata: Metadata = {
   title: {
-    default: "Live proof",
+    default: "Settlement proof",
     template: "%s · Jorqeth",
   },
   description:
-    "The live Jorqeth settlement proof, read straight from the committed on-chain evidence. One eligible sale paid exact, everything else zero.",
+    "The committed Jorqeth settlement proof, read straight from the on-chain evidence of a local replay. One eligible sale paid exact, everything else zero.",
 };
 
-// The signed-in shell. Wallet address shown is the real proof creator account,
-// read from the committed deployment, not a placeholder.
+// The signed-in shell. The account shown is the proof's bound creator address, read
+// from the committed local deployment. This is a replay view, not a connected wallet.
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const d = deployment();
   return (
@@ -21,13 +21,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="appmain">
         <header className="apptop">
           <div>
-            <div className="apptop__title">Live settlement proof</div>
+            <div className="apptop__title">Settlement proof</div>
             <div className="apptop__sub">
               Flare FCC · {d.verifierMode}
             </div>
           </div>
           <div className="apptop__right">
-            <span className="wallet" title={`Connected creator account ${d.creator}`}>
+            <span className="wallet" title={`Bound creator account ${d.creator}`}>
               <span className="dot" style={{ background: "var(--jade)" }} />
               Creator <span className="mono">{shortHash(d.creator, 6, 4)}</span>
             </span>

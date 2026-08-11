@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Jorqeth site
 
-## Getting Started
+The judge-facing dashboard for Jorqeth: private, exact creator-affiliate commission
+settlement on Flare Confidential Compute. Every figure on these pages is read from the
+committed on-chain proof in [`../evidence`](../evidence), not from hand-written copy.
 
-First, run the development server:
+Built with Next.js 16 (App Router), React 19, and plain CSS. No Tailwind, no UI kit.
+Fonts are self-hosted (`public/fonts`), so there is no CDN dependency.
+
+## Routes
+
+| Route | What it shows |
+| --- | --- |
+| `/` | Landing: what Jorqeth settles and why the number is trustworthy. |
+| `/app` | Settlement dashboard: the one eligible payout, escrow left intact, proof gate. |
+| `/app/activity` | The full 12-path settlement matrix, one outcome each. |
+| `/app/receipt` | The receipt for the single sale that released the exact commission. |
+| `/app/inspector` | The verification walk: five independent sources agreeing to the cent. |
+
+`/app` is the canonical page to open first when reviewing the proof.
+
+## Develop
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm ci
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Build and check
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npx tsc --noEmit   # typecheck
+npm run build      # production build
+npm run start      # serve the build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Evidence, not copy
 
-## Learn More
+The pages import their numbers from `data/*.json`, a byte-identical mirror of the
+repository's committed proof:
 
-To learn more about Next.js, take a look at the following resources:
+- `data/positive-proof.json`, `data/negative-proof.json`, `data/proof-gate.json` mirror
+  `../evidence/*.json`.
+- `data/jorqeth-v1.json` mirrors the frozen spec at `../spec/jorqeth-v1.json`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+CI fails if any mirror drifts (`cmp` in `../.github/workflows/ci.yml`). To refresh after
+a new proof run, copy the regenerated files from `../evidence` and `../spec` over the
+matching files in `data/`, then rerun the build.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy
 
-## Deploy on Vercel
+Any Node host that runs `npm ci && npm run build && npm run start` serves the site. It is
+a standard Next.js app with no environment variables and no server-side data source, so a
+static-friendly host works too.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Honest status
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Testnet and synthetic data only. The proofs run on a local anvil chain (chainId 31337)
+with a synthetic escrow token and records. The settlement invariant and the Flare
+signature scheme are real; a fully live production attestation round trip is the one
+remaining piece. The pages say so where it matters, and the copy is not allowed to claim
+more than the linked proof supports.
+
+## License
+
+MIT. See [`../LICENSE`](../LICENSE).

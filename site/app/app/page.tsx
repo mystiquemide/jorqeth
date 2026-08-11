@@ -75,7 +75,7 @@ export default function Dashboard() {
             Full matrix <span className="arrow">→</span>
           </Link>
         </div>
-        <div className="grid-3" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+        <div className="grid-4">
           <div className="metric">
             <div className="metric__k">{CATEGORY_LABEL.paid}</div>
             <div className="metric__v">{s.paid}</div>

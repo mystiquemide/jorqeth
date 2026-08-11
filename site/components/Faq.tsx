@@ -13,7 +13,7 @@ const ITEMS = [
   },
   {
     q: "Is my customers' data exposed?",
-    a: "No. The confidential compute step returns only a minimal signed result and the exact amount. No customer field, revenue figure, or private key appears in any result, event, or file. Order references are opaque digests.",
+    a: "No. The confidential compute step returns only a minimal signed result and the exact amount. No customer field, revenue figure, or secret key appears in any result, event, or output. Order references are opaque digests. The only key in the repository is the public Anvil test account used to reproduce the signature scheme locally.",
   },
   {
     q: "What happens if a sale is refunded?",

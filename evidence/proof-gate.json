@@ -7,7 +7,7 @@
   "summary": {
     "checklist_items_passed": 9,
     "checklist_items_total": 9,
-    "forge_tests_passed": 55,
+    "forge_tests_passed": 58,
     "forge_tests_failed": 0,
     "genuine_signature_vector": "go regen skipped (toolchain go1.25 unavailable offline); covered by forge FccRealSignatureTest",
     "privacy_scan_findings": 0
@@ -23,7 +23,7 @@
       "item": "winning_invariant_end_to_end",
       "requirement": "The winning invariant works end to end.",
       "status": "pass",
-      "evidence": "forge test 55 passed / 0 failed; positive-proof.json=PASS; negative-proof.json only_eligible=true"
+      "evidence": "forge test 58 passed / 0 failed; positive-proof.json=PASS; negative-proof.json only_eligible=true"
     },
     {
       "item": "real_fcc_load_bearing",

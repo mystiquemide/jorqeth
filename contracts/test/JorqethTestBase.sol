@@ -23,6 +23,9 @@ abstract contract JorqethTestBase is Test {
         0xa865c645c1901fa821cc0ea91db46d39b4cfe7e81f927863d51387ab8c947a4d;
     uint16 internal constant COMMISSION_BPS = 1000;
     uint256 internal constant ESCROW_AMOUNT = 100_000000; // 100.000000 mUSD
+    // Escrow unlock time. Set beyond every result expiry window so a valid in-window
+    // result can never be stranded by a merchant withdrawal (REV-003).
+    uint64 internal constant CAMPAIGN_END = 2_100_000_000;
 
     bytes32 internal constant ORDER_A =
         0xbe4b0fa03136646a52108527f8dd4873c60796d246fe5dd610ec0d4a2f6a1a45;
@@ -73,7 +76,8 @@ abstract contract JorqethTestBase is Test {
             merchant,
             creator,
             COMMISSION_BPS,
-            RULE_VERSION
+            RULE_VERSION,
+            CAMPAIGN_END
         );
 
         // Warp to a realistic timestamp so issuedAt/expiry windows are meaningful.

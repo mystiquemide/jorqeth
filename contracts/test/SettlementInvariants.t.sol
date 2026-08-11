@@ -38,7 +38,10 @@ contract SettlementInvariantsTest is JorqethTestBase {
     // --- Insufficient escrow ---
 
     function test_insufficientEscrow_reverts() public {
-        // Drain escrow to below the commission via merchant withdrawal.
+        // Drain escrow to below the commission via merchant withdrawal. Withdrawal is
+        // locked until campaign end, so warp past it first, then settle an in-window
+        // result minted at the new time.
+        vm.warp(CAMPAIGN_END);
         vm.prank(merchant);
         settlement.withdrawEscrow(ESCROW_AMOUNT - (COMMISSION_A - 1)); // leaves COMMISSION_A - 1
 
@@ -136,7 +139,8 @@ contract SettlementInvariantsTest is JorqethTestBase {
             merchant,
             creator,
             COMMISSION_BPS,
-            RULE_VERSION
+            RULE_VERSION,
+            CAMPAIGN_END
         );
         rvt.mint(merchant, ESCROW_AMOUNT);
         vm.startPrank(merchant);
@@ -167,7 +171,29 @@ contract SettlementInvariantsTest is JorqethTestBase {
         settlement.withdrawEscrow(1);
     }
 
+    function test_withdrawEscrow_lockedBeforeCampaignEnd() public {
+        // In setUp the clock sits well before campaignEnd, so even the merchant is
+        // blocked. A valid in-window result therefore cannot be stranded (REV-003).
+        vm.prank(merchant);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                JorqethSettlement.EscrowLocked.selector, CAMPAIGN_END, block.timestamp
+            )
+        );
+        settlement.withdrawEscrow(1);
+    }
+
+    function test_withdrawEscrow_atBoundaryUnlocks() public {
+        // Exactly at campaignEnd the lock releases (block.timestamp < campaignEnd is
+        // false). Proves the boundary does not strand escrow one second too long.
+        vm.warp(CAMPAIGN_END);
+        vm.prank(merchant);
+        settlement.withdrawEscrow(1);
+        assertEq(settlement.escrowBalance(), ESCROW_AMOUNT - 1, "boundary withdrawal allowed");
+    }
+
     function test_withdrawEscrow_reducesBalance() public {
+        vm.warp(CAMPAIGN_END);
         uint256 merchantBefore = token.balanceOf(merchant);
         vm.prank(merchant);
         settlement.withdrawEscrow(10_000000);
@@ -175,6 +201,26 @@ contract SettlementInvariantsTest is JorqethTestBase {
         assertEq(
             token.balanceOf(merchant) - merchantBefore, 10_000000, "merchant received withdrawal"
         );
+    }
+
+    // A valid eligible result inside its window still settles even though the merchant
+    // would like to reclaim escrow: the lock holds the funds until campaignEnd, and the
+    // creator is paid the exact commission before then (REV-003 acceptance).
+    function test_validResultSettlesWhileEscrowLocked() public {
+        // Merchant cannot pull funds now.
+        vm.prank(merchant);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                JorqethSettlement.EscrowLocked.selector, CAMPAIGN_END, block.timestamp
+            )
+        );
+        settlement.withdrawEscrow(ESCROW_AMOUNT);
+
+        // The in-window eligible result pays exact and leaves escrow funded.
+        PayableResult memory r = eligibleResultA();
+        settlement.settle(r, sign(r));
+        assertEq(token.balanceOf(creator), COMMISSION_A, "creator paid exact while locked");
+        assertEq(settlement.escrowBalance(), ESCROW_AMOUNT - COMMISSION_A, "escrow remains funded");
     }
 
     // --- Positive then negative on the same campaign share escrow correctly ---
