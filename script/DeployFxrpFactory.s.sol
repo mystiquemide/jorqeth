@@ -9,8 +9,7 @@ import {JorqethCampaignFactory} from "../contracts/src/JorqethCampaignFactory.so
 /// @notice Deploys only a new campaign factory bound to Coston2 FTestXRP while
 ///         reusing the already-deployed Jorqeth FCE ActionResult verifier.
 contract DeployFxrpFactory is Script {
-    address internal constant COSTON2_FTEST_XRP =
-        0x0b6A3645c240605887a5532109323A3E12273dc7;
+    address internal constant COSTON2_FTEST_XRP = 0x0b6A3645c240605887a5532109323A3E12273dc7;
 
     function run() external {
         uint256 deployerKey = vm.envUint("JORQETH_DEPLOYER_KEY");
