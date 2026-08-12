@@ -11,6 +11,10 @@ export const COSTON2_RPC_URL =
   process.env.NEXT_PUBLIC_COSTON2_RPC_URL ||
   "https://coston2-api.flare.network/ext/C/rpc";
 
+export const COSTON2_FTEST_XRP_ADDRESS =
+  "0x0b6A3645c240605887a5532109323A3E12273dc7" as Address;
+export const FLARE_COSTON2_FAUCET_URL = "https://faucet.flare.network/";
+
 export const coston2 = defineChain({
   id: 114,
   name: "Flare Testnet Coston2",
@@ -27,6 +31,9 @@ function publicAddress(value: string | undefined): Address | undefined {
 }
 
 export const deployment = {
+  // Legacy MockUSD deployment retained for the disclosed-signer fallback and the
+  // historical mUSD proof. The primary FCE app automatically prefers FXRP once
+  // an FXRP-bound campaign factory is configured.
   token: publicAddress(process.env.NEXT_PUBLIC_JORQETH_TOKEN_ADDRESS),
   verifier: publicAddress(process.env.NEXT_PUBLIC_JORQETH_VERIFIER_ADDRESS),
   factory: publicAddress(process.env.NEXT_PUBLIC_JORQETH_FACTORY_ADDRESS),
@@ -36,6 +43,10 @@ export const deployment = {
     process.env.NEXT_PUBLIC_JORQETH_FCE_INSTRUCTION_SENDER_ADDRESS,
   ),
   fceExtensionId: process.env.NEXT_PUBLIC_JORQETH_FCE_EXTENSION_ID || "66159",
+  fxrpToken:
+    publicAddress(process.env.NEXT_PUBLIC_JORQETH_FXRP_TOKEN_ADDRESS) ||
+    COSTON2_FTEST_XRP_ADDRESS,
+  fxrpFactory: publicAddress(process.env.NEXT_PUBLIC_JORQETH_FXRP_FACTORY_ADDRESS),
 };
 
 export const deploymentConfigured = Boolean(
@@ -46,6 +57,13 @@ export const fceDeploymentConfigured = Boolean(
   deployment.token &&
     deployment.fceVerifier &&
     deployment.fceFactory &&
+    deployment.fceInstructionSender,
+);
+
+export const fxrpDeploymentConfigured = Boolean(
+  deployment.fxrpToken &&
+    deployment.fceVerifier &&
+    deployment.fxrpFactory &&
     deployment.fceInstructionSender,
 );
 
@@ -120,17 +138,7 @@ export const factoryAbi = [
   },
 ] as const;
 
-export const tokenAbi = [
-  {
-    type: "function",
-    name: "mint",
-    stateMutability: "nonpayable",
-    inputs: [
-      { name: "to", type: "address" },
-      { name: "amount", type: "uint256" },
-    ],
-    outputs: [],
-  },
+export const erc20Abi = [
   {
     type: "function",
     name: "approve",
@@ -149,6 +157,23 @@ export const tokenAbi = [
     outputs: [{ name: "", type: "uint256" }],
   },
 ] as const;
+
+export const mockTokenAbi = [
+  ...erc20Abi,
+  {
+    type: "function",
+    name: "mint",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "to", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [],
+  },
+] as const;
+
+// Backward-compatible export for the disclosed-signer demo.
+export const tokenAbi = mockTokenAbi;
 
 export const settlementAbi = [
   {
