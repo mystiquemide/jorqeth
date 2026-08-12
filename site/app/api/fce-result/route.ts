@@ -15,12 +15,36 @@ function unavailableResponse() {
   );
 }
 
+async function proxyReady(proxyUrl: string) {
+  try {
+    const response = await fetch(`${proxyUrl}/info`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(5_000),
+      headers: { Accept: "application/json" },
+    });
+    return response.ok;
+  } catch (error) {
+    console.error("FCE proxy readiness check failed", error);
+    return false;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const proxyUrl = process.env.JORQETH_FCE_PROXY_URL?.replace(/\/$/, "");
 
   if (request.nextUrl.searchParams.get("health") === "1") {
+    if (!proxyUrl) {
+      return NextResponse.json(
+        { configured: false, ready: false },
+        { headers: { "Cache-Control": "no-store, max-age=0" } },
+      );
+    }
+
+    const ready = await proxyReady(proxyUrl);
+    // `configured` intentionally tracks usability for backward compatibility with the
+    // current client, while `ready` makes the health contract explicit.
     return NextResponse.json(
-      { configured: Boolean(proxyUrl) },
+      { configured: ready, ready },
       { headers: { "Cache-Control": "no-store, max-age=0" } },
     );
   }
@@ -35,7 +59,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (!proxyUrl) {
-    console.error("FCE result proxy unavailable: JORQETH_FCE_PROXY_URL is not configured");
+    console.error("FCE result proxy unavailable: server-only proxy URL is not configured");
     return NextResponse.json(
       {
         code: "PRIVATE_VERIFICATION_NOT_CONFIGURED",

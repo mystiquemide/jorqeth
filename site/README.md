@@ -1,10 +1,9 @@
 # Jorqeth site
 
-The public web app for **private commission settlement built on Flare**.
+The public web app for **private commission settlement powered by Flare Confidential Compute**.
 
-Jorqeth uses **Flare Confidential Compute** to evaluate a private merchant record, return a
-signed TEE `ActionResult`, verify the active Flare TEE signer, and settle the exact creator
-or affiliate commission on Coston2 without exposing the underlying ledger.
+Jorqeth privately checks an agreed merchant record, calculates the exact creator or affiliate
+commission, and settles it on Flare Coston2 without exposing the underlying ledger.
 
 Built with Next.js 16, React 19, viem, and plain CSS. Fonts are self-hosted.
 
@@ -12,16 +11,17 @@ Built with Next.js 16, React 19, viem, and plain CSS. Fonts are self-hosted.
 
 | Route | What it shows |
 | --- | --- |
-| `/` | Flare-focused landing page and Coston2 proof. |
-| `/how`, `/proof`, `/security`, `/faq` | Refresh-safe landing section routes. |
-| `/app` | Primary Flare FCE settlement journey. |
+| `/` | Product-first Flare landing page. |
+| `/proof` | Dedicated live hosted FCE instruction and settlement proof. |
+| `/how`, `/security`, `/faq` | Refresh-safe landing section routes. |
+| `/app` | Primary Flare Confidential Compute settlement journey. |
 | `/app/demo` | Separate disclosed-signer fallback test flow. |
-| `/app/activity` | Committed settlement-path matrix. |
+| `/app/activity` | Deterministic settlement-path matrix. |
 | `/app/receipt` | Reference settlement receipt. |
 | `/app/inspector` | Reference verification checks and trust boundary. |
-| `/docs` | Flare-native product flow, trust boundary, privacy, and troubleshooting. |
+| `/docs` | Product flow, Flare trust path, privacy boundary, and troubleshooting. |
 | `/terms`, `/privacy` | Legal and privacy details. |
-| `/api/fce-result` | Server-side polling bridge for the Flare tee-proxy signed ActionResult. |
+| `/api/fce-result` | Server-side result bridge and readiness check for the FCE runtime. |
 | `/api/evaluate` | Legacy disclosed-signer fallback evaluator used only by `/app/demo`. |
 
 ## Develop
@@ -53,18 +53,24 @@ Primary FCE server-only variable:
 
 - `JORQETH_FCE_PROXY_URL`
 
-`JORQETH_FCE_PROXY_URL` must point to the public HTTPS Flare tee-proxy endpoint that
-serves `GET /action/result/{instructionId}` for Jorqeth extension `66159`. The browser does
-not receive this URL. `/api/fce-result` polls it server-side and returns the signed result.
-The `/app` UI checks proxy readiness before it allows an FCE instruction to be sent.
+The production Vercel project has this server-only variable configured for the hosted FCE result
+bridge. It must point to the public HTTPS tee-proxy endpoint that serves `/info` and
+`GET /action/result/{instructionId}` for Jorqeth extension `66159`. The browser never receives the
+proxy URL.
+
+`GET /api/fce-result?health=1` performs an actual `/info` readiness check through the server. A
+healthy runtime returns:
+
+```json
+{"configured":true,"ready":true}
+```
 
 Fallback demo server-only variables:
 
 - `JORQETH_EVALUATOR_PRIVATE_KEY`
 - `JORQETH_PRIVATE_RECORDS_JSON`
 
-Those variables support only the separate `/app/demo` disclosed-signer flow. The private
-key must match the public address registered in `SignatureResultVerifier`. Never prefix
+Those variables support only the separate `/app/demo` disclosed-signer flow. Never prefix
 server-only variables with `NEXT_PUBLIC_`.
 
 ## Flare trust path
@@ -74,15 +80,29 @@ wallet
   -> Coston2 FCE campaign factory
   -> funded JorqethSettlement
   -> JorqethInstructionSender
-  -> Flare FCE registry
+  -> Flare Confidential Compute
   -> registered active TEE
   -> signed Flare ActionResult
   -> FccResultVerifier
   -> exact commission settlement on Coston2
 ```
 
-The private merchant record remains inside the extension runtime. The public chain sees
-only the minimum domain-bound result required to verify and settle the payout.
+The private merchant record remains inside the evaluation runtime. The public chain sees only the
+minimum domain-bound result required to verify and settle the payout.
+
+## Live proof
+
+The dedicated `/proof` route uses `lib/live-proof.ts`, which mirrors the hosted Coston2 run recorded
+in `../deployments/coston2-live-demo.json`:
+
+- FCE instruction: `0x8142d704...`
+- Settlement: `0xf8269c7a...`
+- Exact commission: `20 mUSD`
+- Remaining escrow: `80 mUSD`
+- Replay: rejected
+
+The older deterministic proof pages remain useful for negative-path and settlement-invariant
+inspection; they are separate from the live hosted transaction proof.
 
 ## Build and check
 
@@ -91,20 +111,13 @@ npm run typecheck
 npm run build
 ```
 
-The production build type-checks the API and client, prerenders the clean landing routes,
-and leaves `/api/fce-result` and `/api/evaluate` as server routes.
-
 ## Trust boundary
 
-The primary path is a real Flare FCE testnet integration. The committed proof uses Flare's
-supported simulated-TEE mode and verifies the result signer against the current
-MachineManager active set. Hardware-backed production attestation, confidential credential
-delivery, a real commerce connector, and operational monitoring remain production
+The primary path is a real Flare FCE testnet integration. The current hosted runtime uses Flare's
+supported simulated-TEE mode and verifies the result signer against the active TEE set. This is not
+hardware-backed production attestation. Confidential credential delivery, a real commerce
+connector, measured production attestation, and operational monitoring remain production
 requirements.
-
-The proof pages read their figures from `data/*.json`, mirrored from the repository's
-committed Foundry evidence. They remain reference evidence and do not pretend to be the
-connected wallet's live transaction history.
 
 ## License
 
