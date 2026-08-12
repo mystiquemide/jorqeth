@@ -57,7 +57,7 @@ type FceEvaluation = {
 };
 
 const EXPLORER = coston2.blockExplorers.default.url;
-const INSTRUCTION_FEE = 1_000_000n;
+const INSTRUCTION_FEE = BigInt(1_000_000);
 const DEFAULT_REFERENCE = "private-order-1";
 
 function delay(ms: number) {
@@ -87,8 +87,8 @@ export default function FceSettlementJourney() {
   const [recordReference, setRecordReference] = useState(DEFAULT_REFERENCE);
   const [evaluation, setEvaluation] = useState<FceEvaluation>();
   const [settlementHash, setSettlementHash] = useState<Hex>();
-  const [escrowBalance, setEscrowBalance] = useState(0n);
-  const [totalSettled, setTotalSettled] = useState(0n);
+  const [escrowBalance, setEscrowBalance] = useState(BigInt(0));
+  const [totalSettled, setTotalSettled] = useState(BigInt(0));
   const [verified, setVerified] = useState(false);
   const [proxyReady, setProxyReady] = useState<boolean>();
   const [busy, setBusy] = useState<string>();
@@ -236,7 +236,7 @@ export default function FceSettlementJourney() {
     let amount: bigint;
     try {
       amount = parseUnits(escrowAmount, 6);
-      if (amount <= 0n) throw new Error("zero amount");
+      if (amount <= BigInt(0)) throw new Error("zero amount");
     } catch {
       setError("Enter an escrow amount greater than zero.");
       return;
@@ -300,8 +300,8 @@ export default function FceSettlementJourney() {
         publicClient.readContract({ address: campaign, abi: settlementAbi, functionName: "campaignEnd" }),
       ]);
       const issuedAt = (await publicClient.getBlock({ blockTag: "latest" })).timestamp;
-      const expiry = issuedAt + 900n < campaignEnd ? issuedAt + 900n : campaignEnd;
-      if (expiry <= issuedAt + 60n) throw new Error("Campaign is too close to expiry for an FCE request.");
+      const expiry = issuedAt + BigInt(900) < campaignEnd ? issuedAt + BigInt(900) : campaignEnd;
+      if (expiry <= issuedAt + BigInt(60)) throw new Error("Campaign is too close to expiry for an FCE request.");
 
       const reference = recordReference.trim();
       const orderDigest = keccak256(toBytes(reference));
@@ -451,8 +451,8 @@ export default function FceSettlementJourney() {
     setCampaign(undefined);
     setEvaluation(undefined);
     setSettlementHash(undefined);
-    setEscrowBalance(0n);
-    setTotalSettled(0n);
+    setEscrowBalance(BigInt(0));
+    setTotalSettled(BigInt(0));
     setVerified(false);
     setCreator(account || "");
     clearMessages();
@@ -515,7 +515,7 @@ export default function FceSettlementJourney() {
           </div>
         </li>
 
-        <li className={escrowBalance > 0n ? "journey-step journey-step--done" : "journey-step"}>
+        <li className={escrowBalance > BigInt(0) ? "journey-step journey-step--done" : "journey-step"}>
           <div className="journey-step__number">3</div>
           <div className="journey-step__content">
             <h2>Fund escrow</h2>
@@ -534,7 +534,7 @@ export default function FceSettlementJourney() {
             <h2>Run the private evaluation through Flare FCE</h2>
             <p>The reference is hashed on the public side. The configured private record remains inside the extension runtime. The browser receives only the signed ActionResult.</p>
             <label className="field"><span>Agreed private record reference</span><input autoComplete="off" value={recordReference} onChange={(event) => setRecordReference(event.target.value)} /><small>Coston2 FCE demo record: {DEFAULT_REFERENCE}</small></label>
-            <button className="btn btn--primary" onClick={runFceEvaluation} disabled={!ready || !campaign || escrowBalance === 0n || busy === "fce"}>
+            <button className="btn btn--primary" onClick={runFceEvaluation} disabled={!ready || !campaign || escrowBalance === BigInt(0) || busy === "fce"}>
               {busy === "fce" ? "Waiting for TEE result…" : "Run with Flare FCE"}
             </button>
             {evaluation && (
