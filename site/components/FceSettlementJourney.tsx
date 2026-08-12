@@ -65,15 +65,26 @@ function delay(ms: number) {
 }
 
 function messageFrom(error: unknown, fallback: string) {
-  if (error instanceof Error) {
-    if (/rejected|denied|cancelled/i.test(error.message)) {
-      return "The wallet request was cancelled. You can try again when ready.";
-    }
-    if (/insufficient funds/i.test(error.message)) {
-      return "This wallet needs C2FLR for network fees. Add faucet funds, then try again.";
-    }
-    if (error.message) return error.message;
+  const message = error instanceof Error ? error.message : "";
+
+  if (message) console.error("Jorqeth flow error:", error);
+
+  if (/rejected|denied|cancelled/i.test(message)) {
+    return "The wallet request was cancelled. You can try again when ready.";
   }
+  if (/insufficient funds/i.test(message)) {
+    return "You need a small amount of C2FLR for Flare network fees. Add testnet funds, then try again.";
+  }
+  if (/too close to expiry/i.test(message)) {
+    return "This campaign is about to end. Start a new campaign to continue.";
+  }
+  if (/proxy|result polling|still pending|temporarily unavailable|could not be reached|tee result/i.test(message)) {
+    return "Private verification is temporarily unavailable. No payout was made. Try again shortly.";
+  }
+  if (/different settlement|verification|invalid signature|active tee|revert|reverted|result is bound/i.test(message)) {
+    return "We couldn’t verify this result, so no payout was made.";
+  }
+
   return fallback;
 }
 
@@ -148,7 +159,7 @@ export default function FceSettlementJourney() {
   async function connectWallet() {
     clearMessages();
     if (!provider) {
-      setError("No injected EVM wallet was found.");
+      setError("No wallet was found. Install or open an EVM wallet such as MetaMask, then try again.");
       return;
     }
     setBusy("connect");
@@ -175,9 +186,9 @@ export default function FceSettlementJourney() {
       setAccount(accounts[0]);
       setCreator((currentCreator) => currentCreator || accounts[0]);
       setChainId(coston2.id);
-      setNotice("Wallet connected to Coston2.");
+      setNotice("Wallet connected to Flare Coston2.");
     } catch (cause) {
-      setError(messageFrom(cause, "The wallet could not connect."));
+      setError(messageFrom(cause, "We couldn’t connect your wallet. Check the wallet and try again."));
     } finally {
       setBusy(undefined);
     }
@@ -186,11 +197,11 @@ export default function FceSettlementJourney() {
   async function createCampaign() {
     clearMessages();
     if (!deployment.fceFactory || !account) {
-      setError("The FCE campaign factory is not configured.");
+      setError("Campaign creation is temporarily unavailable. Try again shortly.");
       return;
     }
     if (!isAddress(creator)) {
-      setError("Enter a valid creator payout wallet.");
+      setError("Enter a valid wallet address for the person receiving the commission.");
       return;
     }
     const percent = Number(commissionPercent);
@@ -219,9 +230,9 @@ export default function FceSettlementJourney() {
       if (!address) throw new Error("FCE campaign address missing from receipt.");
       setCampaign(address);
       window.localStorage.setItem("jorqeth.fceCampaign", address);
-      setNotice("FCE campaign created. Its verifier is bound to the active Flare TEE set.");
+      setNotice("Campaign created on Flare. You can fund it now.");
     } catch (cause) {
-      setError(messageFrom(cause, "The FCE campaign could not be created."));
+      setError(messageFrom(cause, "We couldn’t create the campaign. No funds were moved. Try again."));
     } finally {
       setBusy(undefined);
     }
@@ -230,7 +241,7 @@ export default function FceSettlementJourney() {
   async function fundCampaign() {
     clearMessages();
     if (!deployment.token || !campaign || !account) {
-      setError("Connect a wallet and create an FCE campaign first.");
+      setError("Connect your wallet and create a campaign first.");
       return;
     }
     let amount: bigint;
@@ -238,7 +249,7 @@ export default function FceSettlementJourney() {
       amount = parseUnits(escrowAmount, 6);
       if (amount <= BigInt(0)) throw new Error("zero amount");
     } catch {
-      setError("Enter an escrow amount greater than zero.");
+      setError("Enter an amount greater than zero.");
       return;
     }
 
@@ -267,9 +278,9 @@ export default function FceSettlementJourney() {
       });
       await publicClient.waitForTransactionReceipt({ hash: fundHash });
       await refreshCampaign(campaign);
-      setNotice("Escrow funded on Coston2.");
+      setNotice("Campaign funded on Flare. Your test escrow is ready.");
     } catch (cause) {
-      setError(messageFrom(cause, "Escrow funding did not finish."));
+      setError(messageFrom(cause, "We couldn’t finish funding the campaign. Check your wallet and try again."));
     } finally {
       setBusy(undefined);
     }
@@ -277,16 +288,16 @@ export default function FceSettlementJourney() {
 
   async function runFceEvaluation() {
     clearMessages();
-    if (!proxyReady) {
-      setError("The public FCE result proxy is not configured for this deployment yet.");
+    if (!fceDeploymentConfigured || !proxyReady) {
+      setError("Private verification is temporarily unavailable. Your funds are unchanged. Try again shortly.");
       return;
     }
     if (!campaign || !deployment.fceInstructionSender) {
-      setError("Create and fund an FCE campaign first.");
+      setError("Create and fund a campaign first.");
       return;
     }
     if (!recordReference.trim()) {
-      setError("Enter the agreed private record reference.");
+      setError("Enter the order reference agreed with the merchant.");
       return;
     }
 
@@ -322,7 +333,7 @@ export default function FceSettlementJourney() {
         expiry: Number(expiry),
       };
 
-      setNotice("Sending the evaluation instruction through Flare FCE.");
+      setNotice("Private verification started on Flare. This can take a few moments.");
       const instructionTx = await walletClient().writeContract({
         address: deployment.fceInstructionSender,
         abi: fceInstructionSenderAbi,
@@ -339,7 +350,7 @@ export default function FceSettlementJourney() {
       const instructionId = sent?.args.instructionId;
       if (!instructionId) throw new Error("Instruction ID missing from FCE transaction receipt.");
 
-      setNotice(`FCE instruction ${instructionId.slice(0, 10)}… sent. Waiting for the signed TEE result.`);
+      setNotice("Your private check is running. Waiting for the verified result.");
       const action = await pollFceResult(instructionId);
       if (action.result.status !== 1) {
         throw new Error(action.result.log || "The FCE extension rejected the evaluation.");
@@ -374,9 +385,9 @@ export default function FceSettlementJourney() {
       );
 
       setEvaluation({ result, proof, instructionId, instructionTx });
-      setNotice("Signed FCE ActionResult received. It is ready for on-chain verification and settlement.");
+      setNotice("Private verification complete. Review the amount, then settle on Flare.");
     } catch (cause) {
-      setError(messageFrom(cause, "The FCE evaluation did not finish."));
+      setError(messageFrom(cause, "We couldn’t complete the private verification. No payout was made. Try again."));
     } finally {
       setBusy(undefined);
     }
@@ -390,16 +401,16 @@ export default function FceSettlementJourney() {
         continue;
       }
       const payload = (await response.json()) as FceActionResponse & { error?: string };
-      if (!response.ok) throw new Error(payload.error || "FCE result polling failed.");
+      if (!response.ok) throw new Error(payload.error || "Private verification result polling failed.");
       return payload;
     }
-    throw new Error("The FCE result is still pending. Try again shortly.");
+    throw new Error("The private verification result is still pending. Try again shortly.");
   }
 
   async function settleCommission() {
     clearMessages();
     if (!campaign || !evaluation) {
-      setError("Run the FCE evaluation first.");
+      setError("Run the private verification first.");
       return;
     }
     setBusy("settle");
@@ -413,9 +424,9 @@ export default function FceSettlementJourney() {
       await publicClient.waitForTransactionReceipt({ hash });
       setSettlementHash(hash);
       await verifySettlement(campaign, evaluation.result.orderDigest);
-      setNotice("FCE-verified settlement confirmed on Coston2.");
+      setNotice("Settlement confirmed on Flare Coston2.");
     } catch (cause) {
-      setError(messageFrom(cause, "The FCE-verified settlement failed."));
+      setError(messageFrom(cause, "We couldn’t complete the payout. No unverified payout was made."));
     } finally {
       setBusy(undefined);
     }
@@ -440,7 +451,8 @@ export default function FceSettlementJourney() {
       ]);
       setEscrowBalance(escrow);
       setTotalSettled(total);
-    } catch {
+    } catch (cause) {
+      console.error("Could not refresh saved campaign:", cause);
       window.localStorage.removeItem("jorqeth.fceCampaign");
       setCampaign(undefined);
     }
@@ -459,31 +471,37 @@ export default function FceSettlementJourney() {
   }
 
   const ready = fceDeploymentConfigured && proxyReady === true;
+  const readinessLabel =
+    proxyReady === undefined
+      ? "Checking private verification…"
+      : ready
+        ? "Private verification ready"
+        : "Private verification unavailable";
 
   return (
     <div className="journey">
       <section className="journey__intro">
         <div>
-          <span className="eyebrow">Flare Confidential Compute</span>
-          <h1>Settle a commission through the live FCE path.</h1>
+          <span className="eyebrow">Built on Flare</span>
+          <h1>Settle a private commission on Flare.</h1>
           <p>
-            Create a Coston2 campaign, fund escrow, send the private evaluation through Flare FCE,
-            receive the signed TEE ActionResult, and settle only after the active TEE verifier accepts it.
+            Create a campaign, fund it, run the private check with Flare Confidential Compute,
+            then settle the exact verified commission on Coston2.
           </p>
         </div>
         <div className={`network-card${ready ? " network-card--ready" : ""}`}>
           <span className="dot" />
           <div>
-            <b>{ready ? "FCE runtime ready" : "FCE runtime configuration required"}</b>
-            <span>Extension {deployment.fceExtensionId} · Coston2</span>
+            <b>{readinessLabel}</b>
+            <span>Powered by Flare Confidential Compute · Coston2</span>
           </div>
         </div>
       </section>
 
-      {proxyReady === false && (
+      {(proxyReady === false || !fceDeploymentConfigured) && (
         <div className="journey-alert journey-alert--warning" role="status">
-          The contracts are deployed, but this web deployment cannot yet reach the FCE result proxy.
-          Set the server-only <code>JORQETH_FCE_PROXY_URL</code> to the public HTTPS tee-proxy endpoint before running this flow.
+          Private verification is temporarily unavailable. You can still explore the live Flare proof,
+          but new private checks are paused. No payout will be made until verification is available.
         </div>
       )}
       {error && <div className="journey-alert journey-alert--error" role="alert">{error}</div>}
@@ -494,7 +512,7 @@ export default function FceSettlementJourney() {
           <div className="journey-step__number">1</div>
           <div className="journey-step__content">
             <h2>Connect your wallet</h2>
-            <p>Jorqeth switches the wallet to Flare Testnet Coston2.</p>
+            <p>Connect an EVM wallet. Jorqeth will switch it to Flare Testnet Coston2.</p>
             <button className="btn btn--primary" onClick={connectWallet} disabled={busy === "connect"}>
               {account ? `${account.slice(0, 8)}…${account.slice(-6)}` : busy === "connect" ? "Connecting…" : "Connect wallet"}
             </button>
@@ -504,42 +522,42 @@ export default function FceSettlementJourney() {
         <li className={campaign ? "journey-step journey-step--done" : "journey-step"}>
           <div className="journey-step__number">2</div>
           <div className="journey-step__content">
-            <h2>Create an FCE-bound campaign</h2>
-            <p>The factory creates a settlement contract whose verifier accepts only an active TEE for Jorqeth extension {deployment.fceExtensionId}.</p>
+            <h2>Create the commission campaign</h2>
+            <p>Choose who gets paid and set the commission rate. Jorqeth creates the campaign on Flare.</p>
             <label className="field"><span>Creator payout wallet</span><input value={creator} onChange={(event) => setCreator(event.target.value)} /></label>
             <label className="field field--short"><span>Commission percentage</span><div className="field__unit"><input inputMode="decimal" value={commissionPercent} onChange={(event) => setCommissionPercent(event.target.value)} /><span>%</span></div></label>
             <button className="btn btn--primary" onClick={createCampaign} disabled={!account || chainId !== coston2.id || Boolean(campaign) || busy === "create"}>
-              {busy === "create" ? "Creating…" : campaign ? "FCE campaign created" : "Create FCE campaign"}
+              {busy === "create" ? "Creating…" : campaign ? "Campaign created" : "Create campaign"}
             </button>
-            {campaign && <a className="journey-link" href={`${EXPLORER}/address/${campaign}`} target="_blank" rel="noreferrer">Open campaign on explorer</a>}
+            {campaign && <a className="journey-link" href={`${EXPLORER}/address/${campaign}`} target="_blank" rel="noreferrer">View campaign on Flare</a>}
           </div>
         </li>
 
         <li className={escrowBalance > BigInt(0) ? "journey-step journey-step--done" : "journey-step"}>
           <div className="journey-step__number">3</div>
           <div className="journey-step__content">
-            <h2>Fund escrow</h2>
-            <p>Mint faucet-only mUSD, approve the new settlement, and lock the test payout budget.</p>
+            <h2>Fund the campaign</h2>
+            <p>Add test mUSD to the campaign so the verified commission can be paid.</p>
             <label className="field field--short"><span>Escrow amount</span><div className="field__unit"><input inputMode="decimal" value={escrowAmount} onChange={(event) => setEscrowAmount(event.target.value)} /><span>mUSD</span></div></label>
             <button className="btn btn--primary" onClick={fundCampaign} disabled={!campaign || busy === "fund"}>
-              {busy === "fund" ? "Funding…" : "Fund FCE campaign"}
+              {busy === "fund" ? "Funding…" : "Fund campaign"}
             </button>
-            {campaign && <span className="journey-muted">Escrow: {formatUnits(escrowBalance, 6)} mUSD</span>}
+            {campaign && <span className="journey-muted">Available for payouts: {formatUnits(escrowBalance, 6)} mUSD</span>}
           </div>
         </li>
 
         <li className={evaluation ? "journey-step journey-step--done" : "journey-step"}>
           <div className="journey-step__number">4</div>
           <div className="journey-step__content">
-            <h2>Run the private evaluation through Flare FCE</h2>
-            <p>The reference is hashed on the public side. The configured private record remains inside the extension runtime. The browser receives only the signed ActionResult.</p>
-            <label className="field"><span>Agreed private record reference</span><input autoComplete="off" value={recordReference} onChange={(event) => setRecordReference(event.target.value)} /><small>Coston2 FCE demo record: {DEFAULT_REFERENCE}</small></label>
+            <h2>Run the private verification</h2>
+            <p>The merchant record stays private. Jorqeth uses Flare Confidential Compute to check the agreed reference and return only the payout result.</p>
+            <label className="field"><span>Order reference</span><input autoComplete="off" value={recordReference} onChange={(event) => setRecordReference(event.target.value)} /><small>Demo reference: {DEFAULT_REFERENCE}</small></label>
             <button className="btn btn--primary" onClick={runFceEvaluation} disabled={!ready || !campaign || escrowBalance === BigInt(0) || busy === "fce"}>
-              {busy === "fce" ? "Waiting for TEE result…" : "Run with Flare FCE"}
+              {busy === "fce" ? "Running private check…" : "Run private check"}
             </button>
             {evaluation && (
               <a className="journey-link" href={`${EXPLORER}/tx/${evaluation.instructionTx}`} target="_blank" rel="noreferrer">
-                Open FCE instruction transaction
+                View verification transaction on Flare
               </a>
             )}
           </div>
@@ -548,35 +566,35 @@ export default function FceSettlementJourney() {
         <li className={settlementHash ? "journey-step journey-step--done" : "journey-step"}>
           <div className="journey-step__number">5</div>
           <div className="journey-step__content">
-            <h2>Verify the TEE result and settle</h2>
-            <p>FccResultVerifier reconstructs Flare&apos;s ActionResult signing hash and checks the recovered signer against the current active TEE set before value moves.</p>
-            {evaluation && <span className="journey-muted">TEE result: {formatUnits(evaluation.result.amount, 6)} mUSD · status {evaluation.result.eligibilityCode === 1 ? "eligible" : "ineligible"}</span>}
+            <h2>Review and settle</h2>
+            <p>Jorqeth verifies the signed result before any payout can move.</p>
+            {evaluation && <span className="journey-muted">Verified amount: {formatUnits(evaluation.result.amount, 6)} mUSD · {evaluation.result.eligibilityCode === 1 ? "Eligible for payout" : "No payout due"}</span>}
             <button className="btn btn--primary" onClick={settleCommission} disabled={!evaluation || Boolean(settlementHash) || busy === "settle"}>
-              {busy === "settle" ? "Settling…" : settlementHash ? "Settled" : "Settle FCE-verified result"}
+              {busy === "settle" ? "Settling…" : settlementHash ? "Settled" : "Settle on Flare"}
             </button>
-            {settlementHash && <a className="journey-link" href={`${EXPLORER}/tx/${settlementHash}`} target="_blank" rel="noreferrer">Open settlement transaction</a>}
+            {settlementHash && <a className="journey-link" href={`${EXPLORER}/tx/${settlementHash}`} target="_blank" rel="noreferrer">View settlement on Flare</a>}
           </div>
         </li>
 
         <li className={verified ? "journey-step journey-step--done" : "journey-step"}>
           <div className="journey-step__number">6</div>
           <div className="journey-step__content">
-            <h2>Verify exact-once settlement</h2>
-            <p>The order digest closes after settlement and cannot pay twice.</p>
-            <span className="journey-muted">Settled: {formatUnits(totalSettled, 6)} mUSD · Remaining escrow: {formatUnits(escrowBalance, 6)} mUSD</span>
-            {verified && <b>Verified on Coston2.</b>}
+            <h2>Payment confirmed</h2>
+            <p>Once settled, the same order cannot pay twice.</p>
+            <span className="journey-muted">Paid: {formatUnits(totalSettled, 6)} mUSD · Remaining campaign funds: {formatUnits(escrowBalance, 6)} mUSD</span>
+            {verified && <b>Verified on Flare Coston2.</b>}
           </div>
         </li>
       </ol>
 
       <section className="journey__reference">
         <div>
-          <h2>Need the fast disclosed-signer demo?</h2>
-          <p>The legacy demo remains available separately. The primary flow above is the sponsor-native FCE path.</p>
+          <h2>Want a quicker demo?</h2>
+          <p>A simplified test flow is available separately. The main flow above uses Flare Confidential Compute.</p>
         </div>
         <div className="hero__actions">
-          <Link className="btn btn--tinted" href="/app/demo">Open disclosed-signer demo</Link>
-          {campaign && <button className="btn btn--tinted" onClick={resetCampaign}>Start a new FCE campaign</button>}
+          <Link className="btn btn--tinted" href="/app/demo">Open quick demo</Link>
+          {campaign && <button className="btn btn--tinted" onClick={resetCampaign}>Start a new campaign</button>}
         </div>
       </section>
     </div>
