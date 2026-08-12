@@ -47,23 +47,19 @@ export function LandingPage({ scrollTo }: { scrollTo?: LandingSection }) {
           <div className="hero__scrim" aria-hidden="true" />
           <div className="container hero__grid">
             <Reveal className="hero__copy">
-              <span className="eyebrow">Built on Flare</span>
               <h1 className="hero__title">Private XRP commissions. Verified on Flare.</h1>
               <p className="hero__sub">
-                Jorqeth funds commission campaigns with test FXRP, uses Flare Confidential Compute
-                to privately check an agreed merchant record, and releases only the exact verified
-                XRP-denominated payout on Coston2 without exposing the underlying ledger.
+                Fund with test FXRP. Flare Confidential Compute checks the agreed merchant record
+                in private, then Jorqeth settles only the verified commission on Coston2.
               </p>
-              <div className="hero__actions">
-                <Link className="btn btn--primary" href="/app">
-                  Open the FXRP app <span className="arrow">→</span>
-                </Link>
-                <Link className="btn btn--tinted" href="/proof">See the completed FCE proof</Link>
-              </div>
-              <div className="hero__trust">
-                <span><b>Private evaluation.</b> The merchant record stays out of the browser and chain.</span>
-                <span><b>Exact FXRP settlement.</b> The verified commission is bound to the campaign and recipient.</span>
-                <span><b>Paid once.</b> Replay protection blocks a second payout for the same order.</span>
+              <div className="hero__actionbar">
+                <span className="hero__flare-label"><span className="dot" />Built on Flare</span>
+                <div className="hero__actions">
+                  <Link className="btn btn--primary" href="/app">
+                    Open the FXRP app <span className="arrow">→</span>
+                  </Link>
+                  <Link className="btn btn--tinted" href="/proof">See the completed FCE proof</Link>
+                </div>
               </div>
             </Reveal>
           </div>
