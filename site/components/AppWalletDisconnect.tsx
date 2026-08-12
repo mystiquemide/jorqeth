@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { coston2 } from "@/lib/jorqeth";
 
 type WalletProvider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
@@ -15,7 +16,8 @@ function getProvider() {
 
 export default function AppWalletDisconnect() {
   const [connected, setConnected] = useState(false);
-  const [disconnecting, setDisconnecting] = useState(false);
+  const [busy, setBusy] = useState<"connect" | "disconnect">();
+  const [connectFailed, setConnectFailed] = useState(false);
 
   useEffect(() => {
     const provider = getProvider();
@@ -49,9 +51,59 @@ export default function AppWalletDisconnect() {
     };
   }, []);
 
+  async function connectWallet() {
+    const provider = getProvider();
+    setConnectFailed(false);
+
+    if (!provider) {
+      setConnectFailed(true);
+      return;
+    }
+
+    setBusy("connect");
+    try {
+      const accounts = (await provider.request({ method: "eth_requestAccounts" })) as string[];
+      if (!accounts?.[0]) throw new Error("No wallet account returned.");
+
+      const current = Number.parseInt(
+        (await provider.request({ method: "eth_chainId" })) as string,
+        16,
+      );
+
+      if (current !== coston2.id) {
+        try {
+          await provider.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: "0x72" }],
+          });
+        } catch {
+          await provider.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: "0x72",
+                chainName: coston2.name,
+                nativeCurrency: coston2.nativeCurrency,
+                rpcUrls: coston2.rpcUrls.default.http,
+                blockExplorerUrls: [coston2.blockExplorers.default.url],
+              },
+            ],
+          });
+        }
+      }
+
+      setConnected(true);
+    } catch {
+      setConnected(false);
+      setConnectFailed(true);
+    } finally {
+      setBusy(undefined);
+    }
+  }
+
   async function disconnectWallet() {
     const provider = getProvider();
-    setDisconnecting(true);
+    setBusy("disconnect");
 
     try {
       // MetaMask and some EIP-1193 wallets support revoking the site's account permission.
@@ -68,16 +120,28 @@ export default function AppWalletDisconnect() {
     }
   }
 
-  if (!connected) return null;
+  if (!connected) {
+    return (
+      <button
+        type="button"
+        className="btn btn--primary"
+        onClick={connectWallet}
+        disabled={busy === "connect"}
+        title={connectFailed ? "Open an EVM wallet such as MetaMask and try again." : undefined}
+      >
+        {busy === "connect" ? "Connecting…" : connectFailed ? "Try connect again" : "Connect wallet"}
+      </button>
+    );
+  }
 
   return (
     <button
       type="button"
       className="btn btn--tinted"
       onClick={disconnectWallet}
-      disabled={disconnecting}
+      disabled={busy === "disconnect"}
     >
-      {disconnecting ? "Disconnecting…" : "Disconnect wallet"}
+      {busy === "disconnect" ? "Disconnecting…" : "Disconnect wallet"}
     </button>
   );
 }
