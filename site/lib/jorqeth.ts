@@ -70,7 +70,21 @@ export const fxrpDeploymentConfigured = Boolean(
     deployment.fceInstructionSender,
 );
 
-export const publicClient = createPublicClient({ chain: coston2, transport: http(COSTON2_RPC_URL) });
+const basePublicClient = createPublicClient({ chain: coston2, transport: http(COSTON2_RPC_URL) });
+const waitForReceipt = basePublicClient.waitForTransactionReceipt.bind(basePublicClient);
+type WaitForReceiptParameters = Parameters<typeof waitForReceipt>[0];
+
+// viem resolves waitForTransactionReceipt for both successful and reverted receipts.
+// The interactive app must never treat a mined-but-reverted transaction as confirmation.
+export const publicClient = Object.assign(basePublicClient, {
+  waitForTransactionReceipt: async (parameters: WaitForReceiptParameters) => {
+    const receipt = await waitForReceipt(parameters);
+    if (receipt.status !== "success") {
+      throw new Error("Transaction failed on Flare Coston2. No state change was applied.");
+    }
+    return receipt;
+  },
+});
 
 export type PayableResult = {
   schemaVersion: number;
