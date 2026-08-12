@@ -52,8 +52,9 @@ FCE ActionResult verifier.
 
 ## Production activation
 
-The canonical Coston2 FXRP token and factory addresses are now public deployment defaults in the
-web application. Environment variables can still override them for a future redeployment:
+The FXRP production cutover was merged to `main` on 2026-08-12. The canonical Coston2 FXRP token
+and factory addresses are public deployment defaults in the web application. Environment variables
+can still override them for a future redeployment:
 
 ```text
 NEXT_PUBLIC_JORQETH_FXRP_TOKEN_ADDRESS=0x0b6A3645c240605887a5532109323A3E12273dc7
