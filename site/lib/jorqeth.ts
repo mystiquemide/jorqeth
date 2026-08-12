@@ -42,6 +42,13 @@ export const deploymentConfigured = Boolean(
   deployment.token && deployment.verifier && deployment.factory,
 );
 
+export const fceDeploymentConfigured = Boolean(
+  deployment.token &&
+    deployment.fceVerifier &&
+    deployment.fceFactory &&
+    deployment.fceInstructionSender,
+);
+
 export const publicClient = createPublicClient({ chain: coston2, transport: http(COSTON2_RPC_URL) });
 
 export type PayableResult = {
@@ -244,5 +251,31 @@ export const verifierAbi = [
     stateMutability: "view",
     inputs: [],
     outputs: [{ name: "", type: "address" }],
+  },
+] as const;
+
+export const fceInstructionSenderAbi = [
+  {
+    type: "function",
+    name: "sendEvaluation",
+    stateMutability: "payable",
+    inputs: [{ name: "message", type: "bytes" }],
+    outputs: [{ name: "instructionId", type: "bytes32" }],
+  },
+  {
+    type: "function",
+    name: "extensionId",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "event",
+    name: "EvaluationInstructionSent",
+    anonymous: false,
+    inputs: [
+      { name: "instructionId", type: "bytes32", indexed: true },
+      { name: "requester", type: "address", indexed: true },
+    ],
   },
 ] as const;
