@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./landing-bleed.css";
+import "./hero-refinement.css";
 
 const generalSans = localFont({
   variable: "--font-general-sans",
