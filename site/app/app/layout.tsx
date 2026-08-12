@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AppNav from "@/components/AppNav";
+import AppWalletDisconnect from "@/components/AppWalletDisconnect";
 
 export const metadata: Metadata = {
   title: {
@@ -25,6 +26,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <span className="dot" style={{ background: "var(--tone-retry)" }} />
               Testnet only
             </span>
+            <AppWalletDisconnect />
           </div>
         </header>
         <div className="appbody">{children}</div>
