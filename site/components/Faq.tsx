@@ -5,11 +5,15 @@ import { useState } from "react";
 const ITEMS = [
   {
     q: "What is Jorqeth?",
-    a: "Jorqeth is a private commission settlement app built on Flare. It uses Flare Confidential Compute to evaluate an agreed private merchant record, returns a signed TEE result, and settles the exact creator or affiliate commission on Coston2 without exposing the underlying ledger.",
+    a: "Jorqeth is a private commission settlement app built on Flare. It uses Flare Confidential Compute to privately check an agreed merchant record, calculate the exact creator or affiliate commission, and settle it on Coston2 without exposing the underlying ledger.",
   },
   {
     q: "Why does Jorqeth use Flare?",
-    a: "Flare is the trust layer for the primary settlement path. Coston2 hosts the escrow and settlement contracts, Flare FCE routes the evaluation to a registered TEE, and Jorqeth verifies the resulting Flare ActionResult against the active TEE set before value can move.",
+    a: "Flare is part of the primary trust path. Coston2 hosts the escrow and settlement contracts, Flare Confidential Compute runs the private evaluation, and Jorqeth verifies the signed result against the active TEE set before value can move.",
+  },
+  {
+    q: "Can I verify a real settlement?",
+    a: "Yes. The live proof page links the hosted FCE instruction and the completed Coston2 settlement. The demonstrated run paid exactly 20 mUSD, left 80 mUSD in escrow, and rejected a second payout attempt for the same order.",
   },
   {
     q: "Do I have to trust the merchant?",
@@ -17,19 +21,19 @@ const ITEMS = [
   },
   {
     q: "Is customer data exposed?",
-    a: "No raw customer, order, or revenue fields are sent on-chain. The Coston2 FCE path uses an opaque order digest while the private merchant record remains inside the extension runtime. Only the minimal domain-bound payout result is returned for verification and settlement.",
+    a: "No raw customer, order, or revenue fields are sent on-chain. The FCE path uses an opaque order digest while the private merchant record remains inside the evaluation runtime. Only the minimum domain-bound payout result is returned for verification and settlement.",
   },
   {
     q: "What happens if a sale is refunded?",
-    a: "A refunded sale is a valid evaluation that pays zero and is marked settled. An infrastructure-unknown result is different: settlement rejects it and leaves the digest retryable. Neither path can move commission value.",
+    a: "A refunded sale is a valid evaluation that pays zero and is marked settled. If the system cannot obtain or verify a result, no payout is made and the escrow remains unchanged so the check can be retried.",
   },
   {
     q: "Is this live money?",
-    a: "No. Jorqeth is deployed on Flare Testnet Coston2 and uses a test token with no cash value. The proof covers a live FCE instruction, an active simulated TEE ActionResult, and an on-chain payout. Hardware-backed production attestation and a real commerce connector remain production requirements.",
+    a: "No. Jorqeth is deployed on Flare Testnet Coston2 and uses a test token with no cash value. The live proof covers a real FCE instruction, an active simulated-TEE result, on-chain verification, and a testnet payout. Hardware-backed production attestation and a real commerce connector remain production requirements.",
   },
   {
     q: "How is the amount calculated?",
-    a: "A fixed-rate floor formula: the eligible net order amount times the agreed rate, rounded down. In the committed Coston2 FCE proof that is floor(100.000000 times 20 percent) = exactly 20.000000 mUSD. The signed Flare ActionResult, settlement event, payout, and escrow state all agree.",
+    a: "A fixed-rate floor formula: the eligible net order amount times the agreed rate, rounded down. In the live Coston2 run, a 100 mUSD eligible amount at a 20 percent rule produced exactly 20 mUSD. The settlement left 80 mUSD in escrow.",
   },
 ];
 
