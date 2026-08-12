@@ -5,7 +5,11 @@ import { useState } from "react";
 const ITEMS = [
   {
     q: "What is Jorqeth?",
-    a: "A commission-settlement prototype for creators and affiliates. The merchant funds escrow and fixes the rule, an evaluator derives the outcome from an agreed record, and the contract enforces the exact bound payout once.",
+    a: "Jorqeth is a private commission settlement app built on Flare. It uses Flare Confidential Compute to evaluate an agreed private merchant record, returns a signed TEE result, and settles the exact creator or affiliate commission on Coston2 without exposing the underlying ledger.",
+  },
+  {
+    q: "Why does Jorqeth use Flare?",
+    a: "Flare is the trust layer for the primary settlement path. Coston2 hosts the escrow and settlement contracts, Flare FCE routes the evaluation to a registered TEE, and Jorqeth verifies the resulting Flare ActionResult against the active TEE set before value can move.",
   },
   {
     q: "Do I have to trust the merchant?",
@@ -13,7 +17,7 @@ const ITEMS = [
   },
   {
     q: "Is customer data exposed?",
-    a: "No raw customer, order, or revenue fields are sent on-chain. The Coston2 FCE proof sends an opaque order digest to an active TEE, which reads the private record inside the extension and returns only the minimal domain-bound payout result.",
+    a: "No raw customer, order, or revenue fields are sent on-chain. The Coston2 FCE path uses an opaque order digest while the private merchant record remains inside the extension runtime. Only the minimal domain-bound payout result is returned for verification and settlement.",
   },
   {
     q: "What happens if a sale is refunded?",
@@ -21,11 +25,11 @@ const ITEMS = [
   },
   {
     q: "Is this live money?",
-    a: "No. Jorqeth is deployed on Coston2 and uses a test token with no cash value. The proof covers a live FCE instruction, an active simulated TEE ActionResult, and an on-chain payout. Hardware-backed production attestation and a real commerce connector remain separate deployment requirements.",
+    a: "No. Jorqeth is deployed on Flare Testnet Coston2 and uses a test token with no cash value. The proof covers a live FCE instruction, an active simulated TEE ActionResult, and an on-chain payout. Hardware-backed production attestation and a real commerce connector remain production requirements.",
   },
   {
     q: "How is the amount calculated?",
-    a: "A fixed-rate floor formula: the eligible net order amount times the agreed rate, rounded down. In the live Coston2 FCE proof that is floor(100.000000 times 20 percent) = exactly 20.000000 mUSD. The signed result, settlement event, payout, and escrow state all agree.",
+    a: "A fixed-rate floor formula: the eligible net order amount times the agreed rate, rounded down. In the committed Coston2 FCE proof that is floor(100.000000 times 20 percent) = exactly 20.000000 mUSD. The signed Flare ActionResult, settlement event, payout, and escrow state all agree.",
   },
 ];
 

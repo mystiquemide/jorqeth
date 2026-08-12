@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import "./landing-bleed.css";
 
-// Self-hosted display / body / mono fonts. No CDN, nothing to break through a tunnel.
 const generalSans = localFont({
   variable: "--font-general-sans",
   display: "swap",
@@ -28,11 +27,11 @@ const jbMono = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL("https://jorqeth.app"),
   title: {
-    default: "Jorqeth: get paid exactly what you earned",
+    default: "Jorqeth: private commissions on Flare",
     template: "%s · Jorqeth",
   },
   description:
-    "Jorqeth reads the merchant's own record privately, works out the commission you're owed to the cent, and pays it out on-chain. No exposed ledgers, no trust-me math.",
+    "Private commission settlement built on Flare. Jorqeth uses Flare Confidential Compute to evaluate private merchant records and settle exact creator commissions on Coston2 without exposing the underlying ledger.",
   applicationName: "Jorqeth",
   icons: {
     icon: [
@@ -42,9 +41,9 @@ export const metadata: Metadata = {
     apple: [{ url: "/assets/apple-touch-icon.png" }],
   },
   openGraph: {
-    title: "Jorqeth: get paid exactly what you earned",
+    title: "Jorqeth: private commissions on Flare",
     description:
-      "Private, exact creator commission settlement. Proven on-chain, exact to the cent.",
+      "Private merchant records in. Exact creator commissions out. Powered by Flare Confidential Compute and settled on Coston2.",
     url: "/",
     siteName: "Jorqeth",
     locale: "en_US",
@@ -54,15 +53,15 @@ export const metadata: Metadata = {
         url: "/assets/og.png",
         width: 1200,
         height: 630,
-        alt: "Jorqeth: get paid exactly what you earned. Private, exact creator commission settlement.",
+        alt: "Jorqeth: private commission settlement built on Flare",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Jorqeth: get paid exactly what you earned",
+    title: "Jorqeth: private commissions on Flare",
     description:
-      "Private, exact creator commission settlement. Proven on-chain, exact to the cent.",
+      "Private commission settlement powered by Flare Confidential Compute and settled on Coston2.",
     images: ["/assets/og.png"],
   },
 };

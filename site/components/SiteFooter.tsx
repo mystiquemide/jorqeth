@@ -11,11 +11,13 @@ export default function SiteFooter() {
             Jorqeth
           </Link>
           <p className="footer__proof">
-            Five evidence sources agree on the committed local payout, and only one of twelve
-            tested settlement paths moved value.
+            Private commission settlement built on Flare. The primary path uses Flare
+            Confidential Compute to evaluate the private record and verify the signed TEE result
+            before exact settlement on Coston2.
           </p>
           <div className="footer__links">
             <Link href="/docs">How Jorqeth works</Link>
+            <Link href="/app">Flare FCE app</Link>
             <Link href="/app/receipt">Settlement receipt</Link>
             <Link href="/app/activity">Settlement matrix</Link>
             <Link href="/terms">Terms</Link>
@@ -35,7 +37,7 @@ export default function SiteFooter() {
           </div>
         </div>
         <div className="footer__bottom">
-          <span>© 2026 Jorqeth · Testnet only</span>
+          <span>© 2026 Jorqeth · Built on Flare · Coston2 testnet · Flare Confidential Compute</span>
         </div>
       </div>
     </footer>

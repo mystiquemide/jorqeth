@@ -1,17 +1,52 @@
 # Jorqeth
 
-Private proofs. Exact commissions.
+**Private commission settlement built on Flare.**
 
-Jorqeth settles creator commissions from merchant-controlled records without putting raw
-customer or order data on-chain. A campaign escrows test mUSD, evaluates an opaque order
-digest, and pays the exact floor commission once when every domain and authenticity check
-passes.
+Jorqeth uses **Flare Confidential Compute** to evaluate private merchant records and settle
+exact creator and affiliate commissions on-chain without exposing the underlying customer,
+order, or revenue data.
 
-The interactive app is live on Coston2 at [jorqeth.vercel.app](https://jorqeth.vercel.app).
-The primary `/app` flow creates an FCE-bound campaign, funds escrow, sends the evaluation
-through Flare Confidential Compute, polls the signed TEE `ActionResult`, verifies the
-active TEE signer on-chain, settles the exact payout, and proves that replay is rejected.
-The disclosed-signer fallback remains available separately at `/app/demo`.
+**Built for Flare Summer Signal · Confidential Compute Apps**
+
+The interactive app is live on Flare Testnet Coston2 at
+[jorqeth.vercel.app](https://jorqeth.vercel.app). The primary `/app` flow creates an
+FCE-bound campaign, funds escrow, sends the evaluation through Flare Confidential Compute,
+polls the signed TEE `ActionResult`, verifies the active Flare TEE signer on-chain, settles
+the exact payout, and proves that replay is rejected. The disclosed-signer fallback remains
+available separately at `/app/demo`.
+
+## Flare-native flow
+
+```text
+Merchant wallet
+      |
+      v
+Escrow campaign on Flare Coston2
+      |
+      v
+JorqethInstructionSender
+      |
+      v
+Flare Confidential Compute (FCE)
+      |
+      v
+Registered active TEE
+      |
+      v
+Signed Flare ActionResult
+      |
+      v
+FccResultVerifier
+      |
+      v
+Exact commission settlement on Flare
+```
+
+Flare is the trust layer for Jorqeth's primary path. Coston2 hosts the escrow and
+settlement contracts, FCE routes the private evaluation to a registered TEE, and the
+MachineManager active set is used to authenticate the signer before any escrow can move.
+The separate disclosed-signer route exists only as a fallback test flow and is not the
+primary product path.
 
 ## Current status
 
@@ -23,9 +58,9 @@ The disclosed-signer fallback remains available separately at `/app/demo`.
   Coston2. The committed proof records instruction `0x9bf8867c...`, its raw signed
   `ActionResult`, and settlement transaction `0x6165197a...`.
 - [`FccResultVerifier.sol`](contracts/src/FccResultVerifier.sol) reconstructs Flare's
-  ActionResult signing hash and accepts the signer only when it is in the current
+  `ActionResult` signing hash and accepts the signer only when it is in the current
   MachineManager active set for the Jorqeth extension.
-- The primary interactive path now mirrors Flare's current test flow: the wallet calls
+- The primary interactive path mirrors Flare's current test flow: the wallet calls
   `JorqethInstructionSender.sendEvaluation`, the server polls the configured tee-proxy at
   `/action/result/{instructionId}`, and the returned TEE signature is passed to
   `FccResultVerifier` during settlement.
@@ -33,35 +68,12 @@ The disclosed-signer fallback remains available separately at `/app/demo`.
   set to the public HTTPS tee-proxy endpoint. The UI checks this before allowing an FCE
   instruction, so a missing runtime endpoint cannot create a half-finished demo flow.
 
-## Architecture
+## What stays private
 
-```text
-wallet -> FCE campaign factory -> funded settlement
-                    |
-                    v
-        JorqethInstructionSender
-                    |
-                    v
-          Flare FCE registry
-                    |
-                    v
-             active TEE
-                    |
-                    v
-         signed ActionResult
-                    |
-                    v
-          FccResultVerifier
-                    |
-                    v
-          exact payout or zero
-
-fallback demo -> disclosed testnet evaluator signer -> SignatureResultVerifier
-```
-
-Raw order references and merchant credentials stay inside the evaluation boundary. The
-public result contains an opaque digest, eligibility, exact amount, creator, campaign,
-chain, settlement contract, rule version, nonce, and validity window.
+Raw merchant records and credentials remain inside the evaluation boundary. The public
+result contains only the minimum settlement data required to prove the payout: an opaque
+order digest, eligibility, exact amount, creator, campaign, chain, settlement contract,
+rule version, nonce, and validity window.
 
 ## Coston2 deployment
 
@@ -75,21 +87,21 @@ chain, settlement contract, rule version, nonce, and validity window.
 | FCE campaign factory | `0x9C685107E49a09760c5014031606D973aEA08C50` |
 | FCE verified campaign | `0x421856ed443fe7595e372ca508315e898d88fe24` |
 
-The manifest and verification command are in
-[`deployments/coston2.json`](deployments/coston2.json) and
-[`deployments/coston2-fce-proof.json`](deployments/coston2-fce-proof.json), with the
-on-chain checks in
+The manifests are in [`deployments/coston2.json`](deployments/coston2.json) and
+[`deployments/coston2-fce-proof.json`](deployments/coston2-fce-proof.json). Independent
+on-chain checks are scripted in
 [`scripts/verify-coston2-deployment.sh`](scripts/verify-coston2-deployment.sh).
 
-The contract also prevents the merchant from reclaiming escrow before `campaignEnd`, and refuses results whose expiry extends beyond that escrow lock.
+The settlement contract prevents the merchant from reclaiming escrow before `campaignEnd`
+and refuses results whose expiry extends beyond that escrow lock.
 
 | Contract | Role |
 | --- | --- |
 | `JorqethSettlement` | Escrow, domain binding, replay guard, exact or zero payout |
 | `JorqethCampaignFactory` | Creates and records fixed campaign deployments |
-| `SignatureResultVerifier` | Disclosed trusted-signer verifier used by the fallback demo |
-| `JorqethInstructionSender` | Current FCE instruction selection and dispatch |
-| `FccResultVerifier` | Raw Flare ActionResult verification against the active TEE set |
+| `JorqethInstructionSender` | Selects an active Flare TEE and dispatches the FCE evaluation |
+| `FccResultVerifier` | Verifies raw Flare `ActionResult` signatures against the active TEE set |
+| `SignatureResultVerifier` | Disclosed trusted-signer verifier used only by the fallback demo |
 | `MockUSD` | Six-decimal Coston2 test token with no cash value |
 
 The frozen result schema and golden vectors live in
