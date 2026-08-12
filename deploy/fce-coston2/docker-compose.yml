@@ -3,12 +3,14 @@ services:
     image: mysql:8.4
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: jorqeth-fce-local
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: ${INDEXER_DB_DATABASE:-indexer}
+      MYSQL_USER: ${INDEXER_DB_USERNAME:-jorqeth}
+      MYSQL_PASSWORD: ${INDEXER_DB_PASSWORD:?set INDEXER_DB_PASSWORD in .env}
     volumes:
       - fce-mysql:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -pjorqeth-fce-local --silent"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
       interval: 5s
       timeout: 5s
       retries: 30
@@ -18,11 +20,11 @@ services:
     restart: unless-stopped
     command: ["./flare-cchain-indexer", "--config", "/app/config.toml"]
     environment:
-      NODE_URL: https://coston2-api.flare.network/ext/C/rpc
+      NODE_URL: ${COSTON2_RPC_URL:-https://coston2-api.flare.network/ext/C/rpc}
       DB_HOST: mysql
-      DB_DATABASE: indexer
-      DB_USERNAME: jorqeth
-      DB_PASSWORD: jorqeth-fce-local
+      DB_DATABASE: ${INDEXER_DB_DATABASE:-indexer}
+      DB_USERNAME: ${INDEXER_DB_USERNAME:-jorqeth}
+      DB_PASSWORD: ${INDEXER_DB_PASSWORD:?set INDEXER_DB_PASSWORD in .env}
     volumes:
       - ./indexer.toml:/app/config.toml:ro
     depends_on:
@@ -47,15 +49,20 @@ services:
     environment:
       PROXY_PRIVATE_KEY: ${FCE_PROXY_PRIVATE_KEY:?set FCE_PROXY_PRIVATE_KEY in .env}
     volumes:
-      - ./proxy.toml:/app/config/config.toml:ro
+      - ${FCE_PROXY_CONFIG_PATH:-./proxy.runtime.toml}:/app/config/config.toml:ro
     ports:
       - "127.0.0.1:6673:6663"
-      - "0.0.0.0:6674:6664"
+      - "127.0.0.1:6674:6664"
     depends_on:
       indexer:
         condition: service_healthy
       redis:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:6664/info"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
 
   tee:
     build: ../../fce-extension
@@ -65,7 +72,7 @@ services:
       MODE: "1"
       SIMULATED_TEE: "true"
       CHAIN_ID: "114"
-      CHAIN_URL: https://coston2-api.flare.network/ext/C/rpc
+      CHAIN_URL: ${COSTON2_RPC_URL:-https://coston2-api.flare.network/ext/C/rpc}
       EXTENSION_ID: "0x000000000000000000000000000000000000000000000000000000000001026f"
       INITIAL_OWNER: "0x85a15B970eec3B6ae8A4518595F1f79e204Fbd19"
       GOVERNANCE_SIGNERS: "0x85a15B970eec3B6ae8A4518595F1f79e204Fbd19"
@@ -74,10 +81,10 @@ services:
       CONFIG_PORT: "5501"
       SIGN_PORT: "7701"
       EXTENSION_PORT: "7702"
-      JORQETH_PRIVATE_RECORDS: '[{"orderReference":"private-order-1","netAmount":"100000000","refunded":false}]'
+      JORQETH_PRIVATE_RECORDS: ${JORQETH_PRIVATE_RECORDS:?set JORQETH_PRIVATE_RECORDS in .env}
     depends_on:
       proxy:
-        condition: service_started
+        condition: service_healthy
 
 volumes:
   fce-mysql:
