@@ -11,15 +11,15 @@ export default function SiteFooter() {
             Jorqeth
           </Link>
           <p className="footer__proof">
-            Private commission settlement built on Flare. The primary path uses Flare
-            Confidential Compute to evaluate the private record and verify the signed TEE result
-            before exact settlement on Coston2.
+            Private commission settlement powered by Flare Confidential Compute. Jorqeth privately
+            checks an agreed merchant record and settles the exact creator or affiliate commission
+            on Coston2 without exposing the underlying ledger.
           </p>
           <div className="footer__links">
             <Link href="/docs">How Jorqeth works</Link>
-            <Link href="/app">Flare FCE app</Link>
+            <Link href="/app">Open the app</Link>
+            <Link href="/proof">Live Flare proof</Link>
             <Link href="/app/receipt">Settlement receipt</Link>
-            <Link href="/app/activity">Settlement matrix</Link>
             <Link href="/terms">Terms</Link>
             <Link href="/privacy">Privacy</Link>
             <a
