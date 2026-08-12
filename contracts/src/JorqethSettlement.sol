@@ -20,7 +20,7 @@ contract JorqethSettlement is ReentrancyGuard {
 
     // --- Immutable configuration ---
 
-    /// @notice Escrow asset (a synthetic test ERC-20 in the prototype).
+    /// @notice ERC-20 escrow asset selected by the campaign factory deployment.
     IERC20 public immutable token;
     /// @notice Result verifier used to authenticate settlement results. The deployment
     ///         may use the disclosed signer verifier or the live FCE ActionResult verifier.
