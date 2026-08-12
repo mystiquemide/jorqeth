@@ -21,7 +21,6 @@ host = "mysql"
 port = 3306
 database = "indexer"
 username = "jorqeth"
-password = "jorqeth-fce-local"
 log_queries = false
 drop_table_at_start = false
 history_drop = 0

@@ -8,4 +8,7 @@ FROM alpine:3.22
 RUN apk add --no-cache ca-certificates wget
 WORKDIR /app
 COPY --from=builder /app/tee-proxy ./tee-proxy
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod 755 ./entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["./tee-proxy"]

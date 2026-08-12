@@ -15,8 +15,15 @@ deployment must use `MODE=0` and a measured hardware attestation.
 Start the runtime with:
 
 ```bash
-docker compose up -d --build
+docker compose --env-file .env up -d --build
 ```
 
 The extension proxy listens on port `6674`. Give it a stable public HTTPS URL before
 running the official allow-version, governance, and TEE registration commands.
+
+The VPS-only files `.env`, `.env.mysql`, `.env.indexer`, `.env.proxy`, and `.env.tee`
+hold the proxy key, database credentials, and private demo records. They are ignored
+by Git and must never be committed. The TEE process generates a fresh in-memory
+identity when it is recreated, so an intentional TEE restart requires the official
+Flare registration and availability-proof flow again before it can accept production
+instructions.

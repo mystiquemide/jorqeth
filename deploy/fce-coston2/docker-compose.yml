@@ -2,13 +2,13 @@ services:
   mysql:
     image: mysql:8.4
     restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: jorqeth-fce-local
+    env_file:
+      - .env.mysql
     volumes:
       - fce-mysql:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./init.sh:/docker-entrypoint-initdb.d/00-jorqeth-init.sh:ro
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -pjorqeth-fce-local --silent"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} --silent"]
       interval: 5s
       timeout: 5s
       retries: 30
@@ -17,12 +17,13 @@ services:
     build: ./indexer
     restart: unless-stopped
     command: ["./flare-cchain-indexer", "--config", "/app/config.toml"]
+    env_file:
+      - .env.indexer
     environment:
       NODE_URL: https://falling-skilled-uranium.flare-coston2.quiknode.pro/ext/bc/C/rpc
       DB_HOST: mysql
       DB_DATABASE: indexer
       DB_USERNAME: jorqeth
-      DB_PASSWORD: jorqeth-fce-local
     volumes:
       - ./indexer.toml:/app/config.toml:ro
     depends_on:
@@ -49,10 +50,12 @@ services:
   proxy:
     build: ./proxy
     restart: unless-stopped
+    env_file:
+      - .env.proxy
     environment:
       PROXY_PRIVATE_KEY: ${FCE_PROXY_PRIVATE_KEY:?set FCE_PROXY_PRIVATE_KEY in .env}
     volumes:
-      - ./proxy.toml:/app/config/config.toml:ro
+      - ./proxy.toml:/app/config/config.template.toml:ro
     ports:
       - "127.0.0.1:6673:6663"
       - "127.0.0.1:6674:6664"
@@ -71,6 +74,8 @@ services:
     build: ../../fce-extension
     image: jorqeth-fce:0.2.0
     restart: unless-stopped
+    env_file:
+      - .env.tee
     environment:
       MODE: "1"
       SIMULATED_TEE: "true"
@@ -84,7 +89,6 @@ services:
       CONFIG_PORT: "5501"
       SIGN_PORT: "7701"
       EXTENSION_PORT: "7702"
-      JORQETH_PRIVATE_RECORDS: '[{"orderReference":"private-order-1","netAmount":"100000000","refunded":false}]'
     depends_on:
       proxy:
         condition: service_started

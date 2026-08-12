@@ -9,7 +9,7 @@ host = "mysql"
 port = 3306
 database = "indexer"
 username = "jorqeth"
-password = "jorqeth-fce-local"
+password = "__FCE_MYSQL_PASSWORD__"
 log_queries = false
 
 [addresses]
