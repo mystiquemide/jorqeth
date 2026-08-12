@@ -22,13 +22,16 @@ import {
 import {
   coston2,
   deployment,
+  erc20Abi,
   factoryAbi,
   fceDeploymentConfigured,
   fceInstructionSenderAbi,
+  FLARE_COSTON2_FAUCET_URL,
+  fxrpDeploymentConfigured,
+  mockTokenAbi,
   payableResultTypes,
   publicClient,
   settlementAbi,
-  tokenAbi,
   type PayableResult,
 } from "@/lib/jorqeth";
 
@@ -59,6 +62,7 @@ type FceEvaluation = {
 const EXPLORER = coston2.blockExplorers.default.url;
 const INSTRUCTION_FEE = BigInt(1_000_000);
 const DEFAULT_REFERENCE = "private-order-1";
+const ASSET_DECIMALS = 6;
 
 function delay(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -89,17 +93,32 @@ function messageFrom(error: unknown, fallback: string) {
 }
 
 export default function FceSettlementJourney() {
+  const usingFxrp = Boolean(deployment.fxrpFactory);
+  const primaryToken = usingFxrp ? deployment.fxrpToken : deployment.token;
+  const primaryFactory = usingFxrp ? deployment.fxrpFactory : deployment.fceFactory;
+  const primaryDeploymentConfigured = usingFxrp
+    ? fxrpDeploymentConfigured
+    : fceDeploymentConfigured;
+  const assetSymbol = usingFxrp ? "test FXRP" : "mUSD";
+  const assetShort = usingFxrp ? "FXRP" : "mUSD";
+  const storageKey = usingFxrp
+    ? "jorqeth.fceCampaign.fxrp"
+    : "jorqeth.fceCampaign.musd";
+
   const [account, setAccount] = useState<Address>();
   const [chainId, setChainId] = useState<number>();
   const [creator, setCreator] = useState("");
-  const [commissionPercent, setCommissionPercent] = useState("20");
-  const [escrowAmount, setEscrowAmount] = useState("100");
+  // The current private demo record is 100 units. With FXRP, 1% produces a clean
+  // 1 FXRP payout while a 5 FXRP campaign comfortably covers the commission.
+  const [commissionPercent, setCommissionPercent] = useState(usingFxrp ? "1" : "20");
+  const [escrowAmount, setEscrowAmount] = useState(usingFxrp ? "5" : "100");
   const [campaign, setCampaign] = useState<Address>();
   const [recordReference, setRecordReference] = useState(DEFAULT_REFERENCE);
   const [evaluation, setEvaluation] = useState<FceEvaluation>();
   const [settlementHash, setSettlementHash] = useState<Hex>();
   const [escrowBalance, setEscrowBalance] = useState(BigInt(0));
   const [totalSettled, setTotalSettled] = useState(BigInt(0));
+  const [walletAssetBalance, setWalletAssetBalance] = useState(BigInt(0));
   const [verified, setVerified] = useState(false);
   const [proxyReady, setProxyReady] = useState<boolean>();
   const [busy, setBusy] = useState<string>();
@@ -119,9 +138,13 @@ export default function FceSettlementJourney() {
   }, []);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem("jorqeth.fceCampaign");
-    if (saved && isAddress(saved)) setCampaign(saved);
-  }, []);
+    const saved = window.localStorage.getItem(storageKey);
+    const legacySaved = !usingFxrp
+      ? window.localStorage.getItem("jorqeth.fceCampaign")
+      : null;
+    const candidate = saved || legacySaved;
+    if (candidate && isAddress(candidate)) setCampaign(candidate);
+  }, [storageKey, usingFxrp]);
 
   useEffect(() => {
     if (!provider) return;
@@ -145,6 +168,10 @@ export default function FceSettlementJourney() {
   useEffect(() => {
     if (campaign) void refreshCampaign(campaign);
   }, [campaign]);
+
+  useEffect(() => {
+    if (account) void refreshWalletAssetBalance(account);
+  }, [account, primaryToken]);
 
   const walletClient = () => {
     if (!provider || !account) throw new Error("Connect a wallet first.");
@@ -186,6 +213,7 @@ export default function FceSettlementJourney() {
       setAccount(accounts[0]);
       setCreator((currentCreator) => currentCreator || accounts[0]);
       setChainId(coston2.id);
+      await refreshWalletAssetBalance(accounts[0]);
       setNotice("Wallet connected to Flare Coston2.");
     } catch (cause) {
       setError(messageFrom(cause, "We couldn’t connect your wallet. Check the wallet and try again."));
@@ -196,7 +224,7 @@ export default function FceSettlementJourney() {
 
   async function createCampaign() {
     clearMessages();
-    if (!deployment.fceFactory || !account) {
+    if (!primaryFactory || !account) {
       setError("Campaign creation is temporarily unavailable. Try again shortly.");
       return;
     }
@@ -219,7 +247,7 @@ export default function FceSettlementJourney() {
       const ruleVersion = keccak256(toBytes(`jorqeth.floor.v1:${commissionBps}`));
       const campaignEnd = BigInt(Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60);
       const hash = await walletClient().writeContract({
-        address: deployment.fceFactory,
+        address: primaryFactory,
         abi: factoryAbi,
         functionName: "createCampaign",
         args: [campaignId, creator, commissionBps, ruleVersion, campaignEnd],
@@ -229,8 +257,8 @@ export default function FceSettlementJourney() {
       const address = created?.args.settlement;
       if (!address) throw new Error("FCE campaign address missing from receipt.");
       setCampaign(address);
-      window.localStorage.setItem("jorqeth.fceCampaign", address);
-      setNotice("Campaign created on Flare. You can fund it now.");
+      window.localStorage.setItem(storageKey, address);
+      setNotice(`Campaign created on Flare with ${assetSymbol} settlement. You can fund it now.`);
     } catch (cause) {
       setError(messageFrom(cause, "We couldn’t create the campaign. No funds were moved. Try again."));
     } finally {
@@ -240,13 +268,13 @@ export default function FceSettlementJourney() {
 
   async function fundCampaign() {
     clearMessages();
-    if (!deployment.token || !campaign || !account) {
+    if (!primaryToken || !campaign || !account) {
       setError("Connect your wallet and create a campaign first.");
       return;
     }
     let amount: bigint;
     try {
-      amount = parseUnits(escrowAmount, 6);
+      amount = parseUnits(escrowAmount, ASSET_DECIMALS);
       if (amount <= BigInt(0)) throw new Error("zero amount");
     } catch {
       setError("Enter an amount greater than zero.");
@@ -256,16 +284,34 @@ export default function FceSettlementJourney() {
     setBusy("fund");
     try {
       const wallet = walletClient();
-      const mintHash = await wallet.writeContract({
-        address: deployment.token,
-        abi: tokenAbi,
-        functionName: "mint",
-        args: [account, amount],
-      });
-      await publicClient.waitForTransactionReceipt({ hash: mintHash });
+
+      if (usingFxrp) {
+        const balance = await publicClient.readContract({
+          address: primaryToken,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [account],
+        });
+        setWalletAssetBalance(balance);
+        if (balance < amount) {
+          setError(
+            `You need ${formatUnits(amount, ASSET_DECIMALS)} test FXRP to fund this campaign. Get test FXRP from the Flare faucet, then try again.`,
+          );
+          return;
+        }
+      } else {
+        const mintHash = await wallet.writeContract({
+          address: primaryToken,
+          abi: mockTokenAbi,
+          functionName: "mint",
+          args: [account, amount],
+        });
+        await publicClient.waitForTransactionReceipt({ hash: mintHash });
+      }
+
       const approveHash = await wallet.writeContract({
-        address: deployment.token,
-        abi: tokenAbi,
+        address: primaryToken,
+        abi: erc20Abi,
         functionName: "approve",
         args: [campaign, amount],
       });
@@ -277,8 +323,8 @@ export default function FceSettlementJourney() {
         args: [amount],
       });
       await publicClient.waitForTransactionReceipt({ hash: fundHash });
-      await refreshCampaign(campaign);
-      setNotice("Campaign funded on Flare. Your test escrow is ready.");
+      await Promise.all([refreshCampaign(campaign), refreshWalletAssetBalance(account)]);
+      setNotice(`Campaign funded with ${assetSymbol}. The payout budget is ready.`);
     } catch (cause) {
       setError(messageFrom(cause, "We couldn’t finish funding the campaign. Check your wallet and try again."));
     } finally {
@@ -288,7 +334,7 @@ export default function FceSettlementJourney() {
 
   async function runFceEvaluation() {
     clearMessages();
-    if (!fceDeploymentConfigured || !proxyReady) {
+    if (!primaryDeploymentConfigured || !proxyReady) {
       setError("Private verification is temporarily unavailable. Your funds are unchanged. Try again shortly.");
       return;
     }
@@ -424,7 +470,8 @@ export default function FceSettlementJourney() {
       await publicClient.waitForTransactionReceipt({ hash });
       setSettlementHash(hash);
       await verifySettlement(campaign, evaluation.result.orderDigest);
-      setNotice("Settlement confirmed on Flare Coston2.");
+      if (account) await refreshWalletAssetBalance(account);
+      setNotice(`Settlement confirmed on Flare Coston2 in ${assetShort}.`);
     } catch (cause) {
       setError(messageFrom(cause, "We couldn’t complete the payout. No unverified payout was made."));
     } finally {
@@ -453,13 +500,28 @@ export default function FceSettlementJourney() {
       setTotalSettled(total);
     } catch (cause) {
       console.error("Could not refresh saved campaign:", cause);
-      window.localStorage.removeItem("jorqeth.fceCampaign");
+      window.localStorage.removeItem(storageKey);
       setCampaign(undefined);
     }
   }
 
+  async function refreshWalletAssetBalance(address: Address) {
+    if (!primaryToken) return;
+    try {
+      const balance = await publicClient.readContract({
+        address: primaryToken,
+        abi: erc20Abi,
+        functionName: "balanceOf",
+        args: [address],
+      });
+      setWalletAssetBalance(balance);
+    } catch (cause) {
+      console.error("Could not refresh wallet asset balance:", cause);
+    }
+  }
+
   function resetCampaign() {
-    window.localStorage.removeItem("jorqeth.fceCampaign");
+    window.localStorage.removeItem(storageKey);
     setCampaign(undefined);
     setEvaluation(undefined);
     setSettlementHash(undefined);
@@ -470,7 +532,7 @@ export default function FceSettlementJourney() {
     clearMessages();
   }
 
-  const ready = fceDeploymentConfigured && proxyReady === true;
+  const ready = primaryDeploymentConfigured && proxyReady === true;
   const readinessLabel =
     proxyReady === undefined
       ? "Checking private verification…"
@@ -483,22 +545,31 @@ export default function FceSettlementJourney() {
       <section className="journey__intro">
         <div>
           <span className="eyebrow">Built on Flare</span>
-          <h1>Settle a private commission on Flare.</h1>
+          <h1>
+            {usingFxrp
+              ? "Settle a private FXRP commission on Flare."
+              : "Settle a private commission on Flare."}
+          </h1>
           <p>
-            Create a campaign, fund it, run the private check with Flare Confidential Compute,
-            then settle the exact verified commission on Coston2.
+            {usingFxrp
+              ? "Fund the campaign with test FXRP, privately check the agreed merchant record with Flare Confidential Compute, then settle the exact FXRP commission on Coston2."
+              : "Create a campaign, fund it, run the private check with Flare Confidential Compute, then settle the exact verified commission on Coston2."}
           </p>
         </div>
         <div className={`network-card${ready ? " network-card--ready" : ""}`}>
           <span className="dot" />
           <div>
             <b>{readinessLabel}</b>
-            <span>Powered by Flare Confidential Compute · Coston2</span>
+            <span>
+              {usingFxrp
+                ? "FXRP · Flare Confidential Compute · Coston2"
+                : "Powered by Flare Confidential Compute · Coston2"}
+            </span>
           </div>
         </div>
       </section>
 
-      {(proxyReady === false || !fceDeploymentConfigured) && (
+      {(proxyReady === false || !primaryDeploymentConfigured) && (
         <div className="journey-alert journey-alert--warning" role="status">
           Private verification is temporarily unavailable. You can still explore the live Flare proof,
           but new private checks are paused. No payout will be made until verification is available.
@@ -516,6 +587,11 @@ export default function FceSettlementJourney() {
             <button className="btn btn--primary" onClick={connectWallet} disabled={busy === "connect"}>
               {account ? `${account.slice(0, 8)}…${account.slice(-6)}` : busy === "connect" ? "Connecting…" : "Connect wallet"}
             </button>
+            {account && usingFxrp && (
+              <span className="journey-muted">
+                Wallet balance: {formatUnits(walletAssetBalance, ASSET_DECIMALS)} test FXRP
+              </span>
+            )}
           </div>
         </li>
 
@@ -523,7 +599,11 @@ export default function FceSettlementJourney() {
           <div className="journey-step__number">2</div>
           <div className="journey-step__content">
             <h2>Create the commission campaign</h2>
-            <p>Choose who gets paid and set the commission rate. Jorqeth creates the campaign on Flare.</p>
+            <p>
+              {usingFxrp
+                ? "Choose who gets paid and set the commission rate. Jorqeth creates an FXRP settlement campaign on Flare."
+                : "Choose who gets paid and set the commission rate. Jorqeth creates the campaign on Flare."}
+            </p>
             <label className="field"><span>Creator payout wallet</span><input value={creator} onChange={(event) => setCreator(event.target.value)} /></label>
             <label className="field field--short"><span>Commission percentage</span><div className="field__unit"><input inputMode="decimal" value={commissionPercent} onChange={(event) => setCommissionPercent(event.target.value)} /><span>%</span></div></label>
             <button className="btn btn--primary" onClick={createCampaign} disabled={!account || chainId !== coston2.id || Boolean(campaign) || busy === "create"}>
@@ -537,12 +617,21 @@ export default function FceSettlementJourney() {
           <div className="journey-step__number">3</div>
           <div className="journey-step__content">
             <h2>Fund the campaign</h2>
-            <p>Add test mUSD to the campaign so the verified commission can be paid.</p>
-            <label className="field field--short"><span>Escrow amount</span><div className="field__unit"><input inputMode="decimal" value={escrowAmount} onChange={(event) => setEscrowAmount(event.target.value)} /><span>mUSD</span></div></label>
+            <p>
+              {usingFxrp
+                ? "Add test FXRP to the campaign so the verified XRP-denominated commission can be paid."
+                : "Add test mUSD to the campaign so the verified commission can be paid."}
+            </p>
+            <label className="field field--short"><span>Escrow amount</span><div className="field__unit"><input inputMode="decimal" value={escrowAmount} onChange={(event) => setEscrowAmount(event.target.value)} /><span>{assetShort}</span></div></label>
             <button className="btn btn--primary" onClick={fundCampaign} disabled={!campaign || busy === "fund"}>
-              {busy === "fund" ? "Funding…" : "Fund campaign"}
+              {busy === "fund" ? "Funding…" : `Fund with ${assetShort}`}
             </button>
-            {campaign && <span className="journey-muted">Available for payouts: {formatUnits(escrowBalance, 6)} mUSD</span>}
+            {usingFxrp && (
+              <a className="journey-link" href={FLARE_COSTON2_FAUCET_URL} target="_blank" rel="noreferrer">
+                Get test FXRP from the official Flare faucet
+              </a>
+            )}
+            {campaign && <span className="journey-muted">Available for payouts: {formatUnits(escrowBalance, ASSET_DECIMALS)} {assetSymbol}</span>}
           </div>
         </li>
 
@@ -550,7 +639,10 @@ export default function FceSettlementJourney() {
           <div className="journey-step__number">4</div>
           <div className="journey-step__content">
             <h2>Run the private verification</h2>
-            <p>The merchant record stays private. Jorqeth uses Flare Confidential Compute to check the agreed reference and return only the payout result.</p>
+            <p>
+              The merchant record stays private. Jorqeth uses Flare Confidential Compute to check
+              the agreed reference and return only the payout result.
+            </p>
             <label className="field"><span>Order reference</span><input autoComplete="off" value={recordReference} onChange={(event) => setRecordReference(event.target.value)} /><small>Demo reference: {DEFAULT_REFERENCE}</small></label>
             <button className="btn btn--primary" onClick={runFceEvaluation} disabled={!ready || !campaign || escrowBalance === BigInt(0) || busy === "fce"}>
               {busy === "fce" ? "Running private check…" : "Run private check"}
@@ -568,9 +660,9 @@ export default function FceSettlementJourney() {
           <div className="journey-step__content">
             <h2>Review and settle</h2>
             <p>Jorqeth verifies the signed result before any payout can move.</p>
-            {evaluation && <span className="journey-muted">Verified amount: {formatUnits(evaluation.result.amount, 6)} mUSD · {evaluation.result.eligibilityCode === 1 ? "Eligible for payout" : "No payout due"}</span>}
+            {evaluation && <span className="journey-muted">Verified amount: {formatUnits(evaluation.result.amount, ASSET_DECIMALS)} {assetSymbol} · {evaluation.result.eligibilityCode === 1 ? "Eligible for payout" : "No payout due"}</span>}
             <button className="btn btn--primary" onClick={settleCommission} disabled={!evaluation || Boolean(settlementHash) || busy === "settle"}>
-              {busy === "settle" ? "Settling…" : settlementHash ? "Settled" : "Settle on Flare"}
+              {busy === "settle" ? "Settling…" : settlementHash ? "Settled" : `Settle ${assetShort} on Flare`}
             </button>
             {settlementHash && <a className="journey-link" href={`${EXPLORER}/tx/${settlementHash}`} target="_blank" rel="noreferrer">View settlement on Flare</a>}
           </div>
@@ -580,8 +672,8 @@ export default function FceSettlementJourney() {
           <div className="journey-step__number">6</div>
           <div className="journey-step__content">
             <h2>Payment confirmed</h2>
-            <p>Once settled, the same order cannot pay twice.</p>
-            <span className="journey-muted">Paid: {formatUnits(totalSettled, 6)} mUSD · Remaining campaign funds: {formatUnits(escrowBalance, 6)} mUSD</span>
+            <p>Once settled, the same private order cannot pay twice.</p>
+            <span className="journey-muted">Paid: {formatUnits(totalSettled, ASSET_DECIMALS)} {assetSymbol} · Remaining campaign funds: {formatUnits(escrowBalance, ASSET_DECIMALS)} {assetSymbol}</span>
             {verified && <b>Verified on Flare Coston2.</b>}
           </div>
         </li>
@@ -589,11 +681,15 @@ export default function FceSettlementJourney() {
 
       <section className="journey__reference">
         <div>
-          <h2>Want a quicker demo?</h2>
-          <p>A simplified test flow is available separately. The main flow above uses Flare Confidential Compute.</p>
+          <h2>Want a quicker fallback demo?</h2>
+          <p>
+            {usingFxrp
+              ? "The main flow above uses test FXRP and Flare Confidential Compute. The simplified fallback remains separate and uses the original disclosed-signer test flow."
+              : "A simplified test flow is available separately. The main flow above uses Flare Confidential Compute."}
+          </p>
         </div>
         <div className="hero__actions">
-          <Link className="btn btn--tinted" href="/app/demo">Open quick demo</Link>
+          <Link className="btn btn--tinted" href="/app/demo">Open fallback demo</Link>
           {campaign && <button className="btn btn--tinted" onClick={resetCampaign}>Start a new campaign</button>}
         </div>
       </section>
