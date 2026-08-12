@@ -1,0 +1,44 @@
+{
+  "network": "Coston2",
+  "chainId": 114,
+  "evidenceType": "hosted-fxrp-fce-attempt",
+  "recordedAt": "2026-08-12",
+  "campaign": "0x07D1251A5D94C7e833215016EBBbB774833091b4",
+  "asset": {
+    "symbol": "FTestXRP",
+    "address": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+    "decimals": 6
+  },
+  "fce": {
+    "verifier": "0xf314850e31970d8337372380D183aD17a93B7F88",
+    "instructionTransaction": "0xae3394fd31f5023616ab14099b5ad1628ac0b6c617af100e3c5e8083bf687ece",
+    "instructionId": "0x44db88510f6e345bdbb378bb5d274fa2850388584d6d69a8a72703515cdda007",
+    "transactionStatus": "success",
+    "blockNumber": 33982412,
+    "gasUsed": 163209,
+    "actionResultStatus": 1,
+    "verifiedAmount": "3000000",
+    "eligibilityCode": 1,
+    "orderDigest": "0xcad655482c5d64cffedf9aef23829c7a9bde3539018a49ba3d712096dad8ee34",
+    "teeSignatureBytes": 65,
+    "proxySignatureBytes": 65
+  },
+  "settlement": {
+    "transaction": "0xe14e3665278e716e12b1fff34f330fc38acfe0ff844dbea41aa9a8215f08e089",
+    "transactionStatus": "reverted",
+    "blockNumber": 33982415,
+    "gasUsed": 73956,
+    "escrowBalanceAtBlock": "2000000",
+    "totalSettledAtBlock": "0",
+    "creatorBalanceAtBlock": "8000000",
+    "payoutMoved": false
+  },
+  "campaignConfiguration": {
+    "merchant": "0x9f758be3ae3D985713964339E2f0bD783fC6015c",
+    "creator": "0x9f758be3ae3D985713964339E2f0bD783fC6015c",
+    "commissionBps": 300,
+    "campaignId": "0x1b29d4e526c201901b5400872e1b88bd492c0230da8580d7ee77ea990f3c3571",
+    "ruleVersion": "0xfcd354bfe2b0aa9eb09d4044f82835fddca9161ae3ccaa52eebd914a9cb86333"
+  },
+  "note": "The private FCE verification succeeded for 3 test FXRP. The settlement transaction reverted and totalSettled remained zero. This attempt must not be presented as a completed FXRP payout."
+}
