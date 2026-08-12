@@ -27,11 +27,11 @@ const jbMono = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL("https://jorqeth.vercel.app"),
   title: {
-    default: "Jorqeth: private commissions, verified on Flare",
+    default: "Jorqeth: private XRP commissions, verified on Flare",
     template: "%s · Jorqeth",
   },
   description:
-    "Private commission settlement powered by Flare Confidential Compute. Jorqeth privately evaluates an agreed merchant record and settles the exact creator or affiliate commission on Coston2 without exposing the underlying ledger.",
+    "Private FXRP commission settlement powered by Flare Confidential Compute. Jorqeth privately evaluates an agreed merchant record and settles the exact XRP-denominated creator or affiliate commission on Coston2 without exposing the underlying ledger.",
   applicationName: "Jorqeth",
   icons: {
     icon: [
@@ -41,9 +41,9 @@ export const metadata: Metadata = {
     apple: [{ url: "/assets/apple-touch-icon.png" }],
   },
   openGraph: {
-    title: "Jorqeth: private commissions, verified on Flare",
+    title: "Jorqeth: private XRP commissions, verified on Flare",
     description:
-      "Private merchant records stay private. Exact creator and affiliate commissions settle on Flare, powered by Flare Confidential Compute.",
+      "Fund with test FXRP, keep merchant records private with Flare Confidential Compute, and settle the exact commission on Coston2.",
     url: "/",
     siteName: "Jorqeth",
     locale: "en_US",
@@ -53,15 +53,15 @@ export const metadata: Metadata = {
         url: "/assets/og.png",
         width: 1200,
         height: 630,
-        alt: "Jorqeth: private commission settlement powered by Flare Confidential Compute",
+        alt: "Jorqeth: private FXRP commission settlement powered by Flare Confidential Compute",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Jorqeth: private commissions, verified on Flare",
+    title: "Jorqeth: private XRP commissions, verified on Flare",
     description:
-      "Private commission settlement powered by Flare Confidential Compute and settled on Coston2.",
+      "Private FXRP commission settlement powered by Flare Confidential Compute on Coston2.",
     images: ["/assets/og.png"],
   },
 };
