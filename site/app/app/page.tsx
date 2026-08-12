@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import FceSettlementJourney from "@/components/FceSettlementJourney";
 
 export const metadata: Metadata = {
-  title: "Settle with Flare Confidential Compute",
+  title: "Private commission settlement on Flare",
   description:
-    "Create a Coston2 campaign, fund escrow, run the private commission evaluation through Flare Confidential Compute, verify the signed TEE ActionResult, and settle the exact payout on Flare.",
+    "Set the commission rule, fund the campaign, privately verify the agreed merchant record with Flare Confidential Compute, and settle the exact creator or affiliate commission on Coston2.",
 };
 
 export default function SettlementPage() {
