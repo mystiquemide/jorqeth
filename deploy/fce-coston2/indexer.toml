@@ -5,7 +5,7 @@ rpc_concurrency = 5
 batch_size = 25
 log_range = 200
 new_block_check_millis = 1000
-confirmations = 1
+confirmations = 12
 no_new_blocks_delay_warning = 60
 
 [logger]
@@ -13,7 +13,7 @@ level = "INFO"
 console = true
 
 [chain]
-node_url = "https://coston2-api.flare.network/ext/C/rpc"
+node_url = "https://falling-skilled-uranium.flare-coston2.quiknode.pro/ext/bc/C/rpc"
 chain_type = 1
 
 [db]

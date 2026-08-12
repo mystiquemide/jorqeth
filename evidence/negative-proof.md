@@ -6,7 +6,7 @@ eligible order, moved value, and it moved exactly the commission. Every other pa
 paid nothing, and each reverting path reverted for the expected reason.
 
 - **Chain:** local Anvil devnet (chainId 31337)
-- **Verifier mode:** `action-result-compat-v1/simulated-attestation` (format compatibility only)
+- **Verifier mode:** `fcc-action-result-v1/simulated-attestation` (format compatibility only)
 - **Regenerate:** `bash evidence/run-negative-proof.sh` (Foundry + jq; no secrets, no live systems)
 
 ## Outcome per attempt

@@ -23,8 +23,8 @@ that replay is rejected.
 - [`FccResultVerifier.sol`](contracts/src/FccResultVerifier.sol) reconstructs Flare's
   ActionResult signing hash and accepts the signer only when it is in the current
   MachineManager active set for the Jorqeth extension.
-- The interactive app retains the disclosed-signer path as a separate test flow. It does
-  not weaken or stand in for the committed FCE proof.
+- The interactive app now creates FCE campaigns and uses the live instruction sender,
+  result proxy, active-TEE verifier, and settlement contract for its private check.
 
 ## Architecture
 
@@ -32,7 +32,6 @@ that replay is rejected.
 wallet -> Coston2 campaign factory -> funded settlement -> exact payout or zero
                     |
                     +-> FCE: instruction sender -> active TEE -> signed ActionResult -> verifier
-                    +-> demo: disclosed testnet evaluator signer
 ```
 
 Raw order references and merchant credentials stay inside the evaluation boundary. The
@@ -63,7 +62,7 @@ The contract also prevents the merchant from reclaiming escrow before `campaignE
 | --- | --- |
 | `JorqethSettlement` | Escrow, domain binding, replay guard, exact or zero payout |
 | `JorqethCampaignFactory` | Creates and records fixed campaign deployments |
-| `SignatureResultVerifier` | Disclosed trusted-signer verifier used on Coston2 today |
+| `SignatureResultVerifier` | Compatibility verifier retained for local/reference proofs |
 | `JorqethInstructionSender` | Current FCE instruction selection and dispatch |
 | `FccResultVerifier` | Raw Flare ActionResult verification against the active TEE set |
 | `MockUSD` | Six-decimal Coston2 test token with no cash value |
@@ -101,8 +100,9 @@ settlement evidence.
 - Jorqeth settles what the agreed merchant record source reports. It does not prove
   attribution outside that source.
 - The token used on Coston2 has no real-world value.
-- The FCE proof uses Flare's supported simulated-TEE testnet mode, not hardware-backed
-  production attestation.
+- The live FCE path uses Flare's supported simulated-TEE testnet mode, not hardware-backed
+  production attestation. The committed local invariant evidence still uses its disclosed
+  development signer and does not stand in for TEE attestation.
 - Production use needs confidential credential delivery, a real commerce connector,
   operational monitoring, and legal and privacy review.
 

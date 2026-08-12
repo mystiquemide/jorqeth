@@ -12,6 +12,7 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -69,6 +70,10 @@ type extension struct {
 }
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "healthcheck" {
+		os.Exit(runHealthcheck())
+	}
+
 	ext, err := newExtension(os.Getenv("JORQETH_PRIVATE_RECORDS"))
 	if err != nil {
 		log.Fatal(err)
@@ -96,6 +101,20 @@ func main() {
 	case err := <-errCh:
 		log.Fatal(err)
 	}
+}
+
+func runHealthcheck() int {
+	port := intEnv("EXTENSION_PORT", 7702)
+	client := &http.Client{Timeout: 3 * time.Second}
+	resp, err := client.Get(fmt.Sprintf("http://127.0.0.1:%d/state", port))
+	if err != nil {
+		return 1
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return 1
+	}
+	return 0
 }
 
 func newExtension(raw string) (*extension, error) {

@@ -64,10 +64,10 @@ export default function Docs() {
           <section>
             <h2>Current trust boundary</h2>
             <p>
-              The testnet evaluator runs server-side and signs results with the key registered in
-              the deployed verifier. The browser never receives the underlying record. This is a
-              disclosed testnet trust root, not production Flare Confidential Compute attestation.
-              The production FCC attestation round trip remains to be connected.
+              The private check is sent through the deployed FCE instruction sender. An active
+              Coston2 TEE reads the record inside the extension, returns a signed ActionResult,
+              and the browser verifies that result against the current MachineManager set. The
+              browser never receives the underlying record.
             </p>
             <p>
               The settlement contract still checks the campaign, recipient, amount, rule, chain,
@@ -102,7 +102,7 @@ export default function Docs() {
           <section>
             <h2>Reference evidence</h2>
             <p>
-              The committed proof suite remains available separately from the interactive testnet
+              The committed proof suite remains available alongside the live interactive testnet
               flow. Inspect the <Link className="legal__inline" href="/app/receipt">reference receipt</Link>, the <Link className="legal__inline" href="/app/activity">failure matrix</Link>, or the <Link className="legal__inline" href="/app/inspector">verification checks</Link>.
             </p>
           </section>

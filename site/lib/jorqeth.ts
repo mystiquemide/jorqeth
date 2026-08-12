@@ -39,7 +39,10 @@ export const deployment = {
 };
 
 export const deploymentConfigured = Boolean(
-  deployment.token && deployment.verifier && deployment.factory,
+  deployment.token &&
+    deployment.fceVerifier &&
+    deployment.fceFactory &&
+    deployment.fceInstructionSender,
 );
 
 export const publicClient = createPublicClient({ chain: coston2, transport: http(COSTON2_RPC_URL) });
@@ -74,6 +77,11 @@ export const payableResultTypes = {
     { name: "issuedAt", type: "uint64" },
     { name: "expiry", type: "uint64" },
   ],
+} as const;
+
+export const payableResultParameter = {
+  type: "tuple",
+  components: payableResultTypes.PayableResult,
 } as const;
 
 export const factoryAbi = [
@@ -244,5 +252,78 @@ export const verifierAbi = [
     stateMutability: "view",
     inputs: [],
     outputs: [{ name: "", type: "address" }],
+  },
+] as const;
+
+export const fceInstructionSenderAbi = [
+  {
+    type: "function",
+    name: "sendEvaluation",
+    stateMutability: "payable",
+    inputs: [{ name: "message", type: "bytes" }],
+    outputs: [{ name: "instructionId", type: "bytes32" }],
+  },
+  {
+    type: "function",
+    name: "extensionId",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "event",
+    name: "EvaluationInstructionSent",
+    anonymous: false,
+    inputs: [
+      { name: "instructionId", type: "bytes32", indexed: true },
+      { name: "requester", type: "address", indexed: true },
+    ],
+  },
+] as const;
+
+export const fceVerifierAbi = [
+  {
+    type: "function",
+    name: "verify",
+    stateMutability: "view",
+    inputs: [
+      { name: "result", type: "tuple", components: payableResultTypes.PayableResult },
+      { name: "proof", type: "bytes" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+  },
+  {
+    type: "function",
+    name: "registry",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+  },
+  {
+    type: "function",
+    name: "extensionId",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "mode",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "string" }],
+  },
+] as const;
+
+export const activeTeeRegistryAbi = [
+  {
+    type: "function",
+    name: "getActiveTeeMachines",
+    stateMutability: "view",
+    inputs: [{ name: "extensionId", type: "uint256" }],
+    outputs: [
+      { name: "teeIds", type: "address[]" },
+      { name: "urls", type: "string[]" },
+    ],
   },
 ] as const;

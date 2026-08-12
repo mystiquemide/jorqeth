@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
     command: ["./flare-cchain-indexer", "--config", "/app/config.toml"]
     environment:
-      NODE_URL: https://coston2-api.flare.network/ext/C/rpc
+      NODE_URL: https://falling-skilled-uranium.flare-coston2.quiknode.pro/ext/bc/C/rpc
       DB_HOST: mysql
       DB_DATABASE: indexer
       DB_USERNAME: jorqeth
@@ -40,6 +40,11 @@ services:
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     tmpfs:
       - /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
 
   proxy:
     build: ./proxy
@@ -50,12 +55,17 @@ services:
       - ./proxy.toml:/app/config/config.toml:ro
     ports:
       - "127.0.0.1:6673:6663"
-      - "0.0.0.0:6674:6664"
+      - "127.0.0.1:6674:6664"
     depends_on:
       indexer:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:6664/info"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
 
   tee:
     build: ../../fce-extension
@@ -65,7 +75,7 @@ services:
       MODE: "1"
       SIMULATED_TEE: "true"
       CHAIN_ID: "114"
-      CHAIN_URL: https://coston2-api.flare.network/ext/C/rpc
+      CHAIN_URL: https://falling-skilled-uranium.flare-coston2.quiknode.pro/ext/bc/C/rpc
       EXTENSION_ID: "0x000000000000000000000000000000000000000000000000000000000001026f"
       INITIAL_OWNER: "0x85a15B970eec3B6ae8A4518595F1f79e204Fbd19"
       GOVERNANCE_SIGNERS: "0x85a15B970eec3B6ae8A4518595F1f79e204Fbd19"
@@ -78,6 +88,11 @@ services:
     depends_on:
       proxy:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "/app/jorqeth-fce", "healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
 
 volumes:
   fce-mysql:
