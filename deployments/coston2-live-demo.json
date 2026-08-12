@@ -1,0 +1,37 @@
+{
+  "network": "Coston2",
+  "chainId": 114,
+  "evidenceType": "hosted-end-to-end-fce-run",
+  "attestationMode": "simulated-tee-testnet",
+  "campaign": "0x5e77dfD9c2142B7e9e7A11017b0B5417EC5A9cc6",
+  "instruction": {
+    "transaction": "0x8142d704296efd6d9e6dd87a6aac1e3ce1abb5c4d643422d524b3d86eac02d47",
+    "id": "0x315b46e12fe1dcce3387155bcb69c8b321bc3c082875ce6101b4e9e09504a052",
+    "actionResultStatus": 1,
+    "teeSignatureBytes": 65,
+    "proxySignatureBytes": 65,
+    "activeTeeSigner": "0x9103b8400FAae0a243508F577398CD9FbfbEb5fd"
+  },
+  "settlement": {
+    "transaction": "0xf8269c7aab0ad00ed8695cc07d6defb7d5f019b58068b0ddfc1cf283d74fc4a6",
+    "paidAmount": "20000000",
+    "paidToken": "mUSD",
+    "remainingEscrow": "80000000",
+    "creatorBalanceChange": "20000000",
+    "replayRejected": true,
+    "onchainVerifierAccepted": true
+  },
+  "privacy": {
+    "privateRecordReferenceReturned": false,
+    "underlyingMerchantRecordReturned": false
+  },
+  "runtime": {
+    "publicResultEndpoint": "https://jorqeth-fce.breachresponse.xyz",
+    "webHealthEndpoint": "https://jorqeth.vercel.app/api/fce-result?health=1"
+  },
+  "limits": [
+    "Coston2 testnet only",
+    "mUSD has no cash value",
+    "The active TEE uses Flare's simulated-TEE testnet mode rather than hardware-backed production attestation"
+  ]
+}
