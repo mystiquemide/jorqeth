@@ -7,13 +7,12 @@ import ProofStrip from "@/components/ProofStrip";
 import Faq from "@/components/Faq";
 import ScrollToSection from "@/components/ScrollToSection";
 import SkipLink from "@/components/SkipLink";
-import { usd, ledgerSummary, gateSummary } from "@/lib/evidence";
+import { ledgerSummary, gateSummary } from "@/lib/evidence";
 import { liveProof } from "@/lib/live-proof";
 
 // Figures are read at build time from the committed proof artifacts.
 const s = ledgerSummary();
 const gate = gateSummary();
-const PAID = usd(20000000);
 
 const MARQUEE = [
   <><b>Built on Flare</b></>,
