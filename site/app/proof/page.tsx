@@ -6,9 +6,9 @@ import SkipLink from "@/components/SkipLink";
 import { liveProof } from "@/lib/live-proof";
 
 export const metadata: Metadata = {
-  title: "Live Flare settlement proof",
+  title: "Completed Flare FCE settlement proof",
   description:
-    "Inspect Jorqeth's live Flare Confidential Compute instruction, verified 20 mUSD commission settlement, remaining escrow, and replay rejection on Coston2.",
+    "Inspect Jorqeth's completed Flare Confidential Compute instruction, verified historical mUSD settlement, remaining escrow, and replay rejection on Coston2. The current primary app settles test FXRP.",
 };
 
 function short(value: string) {
@@ -26,26 +26,28 @@ export default function ProofPage() {
             <span className="arrow">→</span> Back to Jorqeth
           </Link>
 
-          <span className="eyebrow">Live on Flare Coston2</span>
-          <h1>A private commission was verified and paid exactly once.</h1>
+          <span className="eyebrow">Completed FCE proof · Flare Coston2</span>
+          <h1>The private settlement path was verified and paid exactly once.</h1>
           <p className="legal__lede">
-            Jorqeth sent a real Flare Confidential Compute instruction from the hosted app,
-            received a signed result from the active testnet TEE, verified it on-chain, paid
-            exactly 20 mUSD, left 80 mUSD in escrow, and rejected a replay of the same order.
+            This completed proof predates Jorqeth&apos;s FXRP cutover and used the original test mUSD
+            asset. The hosted app sent a real Flare Confidential Compute instruction, received a
+            signed result from the active testnet TEE, verified it on-chain, paid exactly 20 mUSD,
+            left 80 mUSD in escrow, and rejected a replay of the same order. The current primary
+            app now funds and settles campaigns in test FXRP.
           </p>
 
           <section>
-            <h2>The result</h2>
+            <h2>The completed result</h2>
             <ul>
               <li><b>Campaign:</b> {short(liveProof.campaign)}</li>
-              <li><b>Commission:</b> {liveProof.paidAmount} mUSD</li>
-              <li><b>Remaining escrow:</b> {liveProof.remainingEscrow} mUSD</li>
+              <li><b>Historical commission:</b> {liveProof.paidAmount} mUSD</li>
+              <li><b>Historical remaining escrow:</b> {liveProof.remainingEscrow} mUSD</li>
               <li><b>Active TEE signer:</b> {short(liveProof.teeSigner)}</li>
               <li><b>Replay attempt:</b> rejected</li>
             </ul>
             <p>
-              The private demo reference and underlying merchant record are not returned in the
-              public settlement result. The chain receives only the domain-bound data required to
+              The private demo reference and underlying merchant record were not returned in the
+              public settlement result. The chain received only the domain-bound data required to
               verify and settle the payout.
             </p>
           </section>
@@ -75,8 +77,8 @@ export default function ProofPage() {
           <section>
             <h2>3. Paid once</h2>
             <p>
-              After settlement, the order digest is closed by the replay guard. A second attempt
-              using the same order was rejected, so the same private record cannot release the
+              After settlement, the order digest was closed by the replay guard. A second attempt
+              using the same order was rejected, so the same private record could not release the
               commission twice.
             </p>
           </section>
@@ -84,24 +86,30 @@ export default function ProofPage() {
           <section>
             <h2>What this proves</h2>
             <p>
-              The hosted Jorqeth flow is not a static dashboard or a mocked payout. The live path
-              connects wallet actions, Coston2 escrow, Flare Confidential Compute, signed-result
+              The hosted Jorqeth FCE path is not a static dashboard or a mocked payout. This run
+              connected wallet actions, Coston2 escrow, Flare Confidential Compute, signed-result
               verification, and settlement into one reproducible testnet flow.
             </p>
             <p>
-              This run uses Flare&apos;s supported simulated-TEE mode on Coston2. It proves the FCE
-              lifecycle and active-TEE verification path, but it is not a claim of hardware-backed
-              production attestation.
+              Jorqeth now uses FTestXRP as the primary campaign asset. This page intentionally keeps
+              the original mUSD evidence unchanged until a genuine hosted FXRP settlement produces
+              its own instruction and settlement transactions.
+            </p>
+            <p>
+              The current runtime uses Flare&apos;s supported simulated-TEE mode on Coston2. It proves
+              the FCE lifecycle and active-TEE verification path, but it is not a claim of
+              hardware-backed production attestation.
             </p>
           </section>
 
           <section>
-            <h2>Try the flow</h2>
+            <h2>Try the current FXRP flow</h2>
             <p>
-              The public app is connected to the live FCE result bridge. Use the testnet flow to
-              create a campaign, fund escrow, run the private check, and settle an exact commission.
+              The public app is connected to the live FCE result bridge and the canonical Coston2
+              FTestXRP campaign factory. Get test FXRP, create a campaign, fund escrow, run the
+              private check, and settle the exact commission.
             </p>
-            <Link className="btn btn--primary docs-cta" href="/app">Open Jorqeth</Link>
+            <Link className="btn btn--primary docs-cta" href="/app">Open the FXRP flow</Link>
           </section>
         </div>
       </main>
