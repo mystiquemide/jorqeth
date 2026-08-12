@@ -1,129 +1,121 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { usd, deployment, payout, ledger, jorqethSpec } from "@/lib/evidence";
+import { fxrpProof as proof } from "@/lib/fxrp-proof";
 
 export const metadata: Metadata = {
-  title: "Result verification details",
+  title: "FXRP verification details",
   description:
-    "Walk the authenticity boundary in the order the contract checks it. Each guard maps to a real reject vector, so nothing here is illustrative.",
+    "Inspect the live Flare Confidential Compute result, domain binding, FXRP campaign, and fail-closed settlement state on Coston2.",
 };
 
-// The authenticity boundary, in the order the contract checks it. Each step maps
-// to a real reject vector from the negative proof, so the "what breaks it" column
-// is grounded, not illustrative.
-const BOUNDARY = [
+const CHECKS = [
   {
     n: "01",
-    title: "Signed by the configured local key",
-    desc: "This local proof uses an injected active-set adapter and development signer. An unknown key fails immediately.",
-    breaks: "untrusted_signer",
+    title: "FCE instruction confirmed on Coston2",
+    desc: `The verification transaction succeeded in block ${proof.instruction.blockNumber.toLocaleString("en-US")} and emitted instruction ${proof.instruction.id}.`,
   },
   {
     n: "02",
-    title: "Bound to this chain and contract",
-    desc: "The signed domain must match this chain id and this settlement contract. A result minted for anywhere else cannot pay here.",
-    breaks: "wrong_domain_chain",
+    title: "Signed ActionResult returned",
+    desc: `The hosted Flare Confidential Compute result returned status ${proof.actionResultStatus}, with a ${proof.teeSignatureBytes}-byte TEE signature and ${proof.proxySignatureBytes}-byte proxy signature.`,
   },
   {
     n: "03",
-    title: "Amount and recipient intact",
-    desc: "The amount and creator are inside the signed payload. Change either after signing and verification breaks at the boundary.",
-    breaks: "tampered_amount",
+    title: "Result bound to this campaign",
+    desc: `The result is bound to chain ${proof.chainId}, campaign ${proof.campaign}, creator ${proof.creator}, and the campaign rule version.`,
   },
   {
     n: "04",
-    title: "Fresh and unspent",
-    desc: "The result must be within its validity window and not already settled. Expired or replayed results are refused.",
-    breaks: "replay",
+    title: "Exact FXRP amount returned",
+    desc: `The eligible private record resolved to exactly ${proof.verifiedAmount.toFixed(6)} test FXRP at a ${proof.commissionBps / 100}% commission rule.`,
   },
   {
     n: "05",
-    title: "Payable code only",
-    desc: "Only an eligible result pays. Ineligible pays zero and settles; an undecided or error result reverts and stays retryable.",
-    breaks: "infrastructure_unknown",
+    title: "Settlement failed closed",
+    desc: `The settlement transaction reverted. The campaign still holds ${proof.escrowAtSettlement.toFixed(6)} test FXRP and reports ${proof.totalSettled.toFixed(6)} total settled, so the failed attempt moved no commission value.`,
   },
-];
+] as const;
 
 export default function Inspector() {
-  const d = deployment();
-  const { order } = payout();
-  const rows = ledger();
-  const byLabel = Object.fromEntries(rows.map((r) => [r.label, r]));
-  const eip = (jorqethSpec as unknown as { eip712: { domainName: string; domainVersion: string } }).eip712;
-
   return (
     <>
       <div className="crumb">
-        <Link href="/app">Dashboard</Link> <span>/</span> Result verification details
+        <Link href="/app">Dashboard</Link> <span>/</span> FXRP verification details
       </div>
 
       <div className="panel">
         <div className="panel__head">
           <div>
-            <div className="panel__title">The authenticity boundary</div>
+            <div className="panel__title">The live FXRP verification boundary</div>
             <div className="panel__sub">
-              Every payout clears these checks in order. Each links to the real path that fails it.
+              This is the actual Coston2 attempt from the current FXRP campaign, not the old local compatibility fixture.
             </div>
           </div>
-          <span className="pill pill--paid"><span className="pd" />ELIGIBLE result passed all five</span>
+          <span className="pill pill--retry"><span className="pd" />Verification passed · payout not completed</span>
         </div>
 
         <div className="steps-v">
-          {BOUNDARY.map((b) => {
-            const r = byLabel[b.breaks];
-            return (
-              <div className="step-v" key={b.n}>
-                <div className="step-v__i">{b.n}</div>
-                <div style={{ minWidth: 0 }}>
-                  <div className="step-v__t">{b.title}</div>
-                  <div className="step-v__d">{b.desc}</div>
-                  {r && (
-                    <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                      <span className={`pill pill--${r.category}`}><span className="pd" />What breaks it: {r.title}</span>
-                      <span className="t-err">{r.error}</span>
-                    </div>
-                  )}
-                </div>
+          {CHECKS.map((check) => (
+            <div className="step-v" key={check.n}>
+              <div className="step-v__i">{check.n}</div>
+              <div style={{ minWidth: 0 }}>
+                <div className="step-v__t">{check.title}</div>
+                <div className="step-v__d">{check.desc}</div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
 
       <div className="grid-2">
         <div className="panel">
-          <div className="panel__title" style={{ marginBottom: 16 }}>Signing domain</div>
+          <div className="panel__title" style={{ marginBottom: 16 }}>Flare Confidential Compute</div>
           <div className="kv">
-            <div className="kv__row"><span className="kv__k">Domain name</span><span className="kv__v">{eip.domainName}</span></div>
-            <div className="kv__row"><span className="kv__k">Domain version</span><span className="kv__v">{eip.domainVersion}</span></div>
-            <div className="kv__row"><span className="kv__k">Verifier mode</span><span className="kv__v">{d.verifierMode}</span></div>
-            <div className="kv__row"><span className="kv__k">Active-set adapter</span><span className="kv__v mono">{d.teeRegistry}</span></div>
-            <div className="kv__row"><span className="kv__k">Local signer</span><span className="kv__v mono">{d.teeId}</span></div>
-            <div className="kv__row"><span className="kv__k">Extension id</span><span className="kv__v mono">{d.extensionId}</span></div>
+            <div className="kv__row"><span className="kv__k">Instruction ID</span><span className="kv__v mono">{proof.instruction.id}</span></div>
+            <div className="kv__row"><span className="kv__k">Instruction tx</span><span className="kv__v mono">{proof.instruction.transaction}</span></div>
+            <div className="kv__row"><span className="kv__k">ActionResult status</span><span className="kv__v">{proof.actionResultStatus} · success</span></div>
+            <div className="kv__row"><span className="kv__k">TEE signature</span><span className="kv__v">{proof.teeSignatureBytes} bytes</span></div>
+            <div className="kv__row"><span className="kv__k">Proxy signature</span><span className="kv__v">{proof.proxySignatureBytes} bytes</span></div>
+            <div className="kv__row"><span className="kv__k">FCE verifier</span><span className="kv__v mono">{proof.verifier}</span></div>
           </div>
+          <a className="btn btn--primary docs-cta" href={proof.instructionUrl} target="_blank" rel="noreferrer">
+            Open verification transaction
+          </a>
         </div>
 
         <div className="panel">
           <div className="panel__title" style={{ marginBottom: 16 }}>What the result carries</div>
           <div className="kv">
-            <div className="kv__row"><span className="kv__k">Order digest</span><span className="kv__v mono">{order.orderDigest}</span></div>
-            <div className="kv__row"><span className="kv__k">Eligibility</span><span className="kv__v">{order.eligibility}</span></div>
-            <div className="kv__row"><span className="kv__k">Instruction id</span><span className="kv__v mono">{order.instructionId}</span></div>
-            <div className="kv__row"><span className="kv__k">Settlement</span><span className="kv__v mono">{d.settlement}</span></div>
-            <div className="kv__row"><span className="kv__k">Compatibility verifier</span><span className="kv__v mono">{d.fccVerifier}</span></div>
+            <div className="kv__row"><span className="kv__k">Order digest</span><span className="kv__v mono">{proof.orderDigest}</span></div>
+            <div className="kv__row"><span className="kv__k">Eligibility</span><span className="kv__v">ELIGIBLE ({proof.eligibilityCode})</span></div>
+            <div className="kv__row"><span className="kv__k">Amount</span><span className="kv__v">{proof.verifiedAmount.toFixed(6)} test FXRP</span></div>
+            <div className="kv__row"><span className="kv__k">Creator</span><span className="kv__v mono">{proof.creator}</span></div>
+            <div className="kv__row"><span className="kv__k">Settlement</span><span className="kv__v mono">{proof.campaign}</span></div>
+            <div className="kv__row"><span className="kv__k">Rule</span><span className="kv__v">{proof.commissionBps / 100}% commission</span></div>
           </div>
           <div className="callout" style={{ marginTop: 16 }}>
-            <b>No private data here.</b> The order reference is an opaque digest. No customer field,
-            revenue figure, or key ever enters a result or event.
+            <b>No raw merchant record is shown here.</b> The public result carries an opaque digest and the minimum domain-bound fields needed for verification and settlement.
           </div>
         </div>
       </div>
 
+      <div className="panel">
+        <div className="panel__title" style={{ marginBottom: 16 }}>Fail-closed settlement state</div>
+        <div className="kv">
+          <div className="kv__row"><span className="kv__k">Settlement tx</span><span className="kv__v mono">{proof.settlement.transaction}</span></div>
+          <div className="kv__row"><span className="kv__k">Receipt status</span><span className="kv__v">Reverted</span></div>
+          <div className="kv__row"><span className="kv__k">Verified payout</span><span className="kv__v">{proof.verifiedAmount.toFixed(6)} test FXRP</span></div>
+          <div className="kv__row"><span className="kv__k">Escrow available</span><span className="kv__v">{proof.escrowAtSettlement.toFixed(6)} test FXRP</span></div>
+          <div className="kv__row"><span className="kv__k">Total settled</span><span className="kv__v">{proof.totalSettled.toFixed(6)} test FXRP</span></div>
+        </div>
+        <a className="btn btn--tinted docs-cta" href={proof.settlementUrl} target="_blank" rel="noreferrer">
+          Inspect reverted settlement
+        </a>
+      </div>
+
       <div className="callout">
-        <b>Honest status.</b> The local verifier runs in {d.verifierMode}. It checks byte-format
-        compatibility with the pinned Flare libraries, not TEE execution or attestation. See every
-        guarded path on the{" "}
-        <Link href="/app/activity" style={{ color: "var(--jade-deep)" }}>settlement matrix</Link>.
+        <b>Honest status.</b> The current FXRP path has a genuine successful FCE verification, but this specific payout has not completed yet. Add enough test FXRP to cover the verified amount and submit a fresh settlement. The older completed mUSD FCE proof remains on the{" "}
+        <Link href="/proof" style={{ color: "var(--jade-deep)" }}>completed proof page</Link> until a successful FXRP payout replaces it.
       </div>
     </>
   );

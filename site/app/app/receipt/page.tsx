@@ -1,118 +1,102 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { usd, payout, deployment, amountAgreement, campaign, invariant } from "@/lib/evidence";
+import { fxrpProof as proof } from "@/lib/fxrp-proof";
 
 export const metadata: Metadata = {
-  title: "Payout receipt",
+  title: "FXRP settlement receipt",
   description:
-    "The real settled commission, block and transaction, with five independent amount sources shown agreeing to the cent.",
+    "Inspect the latest Jorqeth FXRP verification and settlement attempt on Flare Testnet Coston2.",
 };
 
-export default function Receipt() {
-  const { order, tx, balances } = payout();
-  const d = deployment();
-  const agree = amountAgreement();
-  const camp = campaign();
-  const inv = invariant();
+function short(value: string) {
+  return `${value.slice(0, 10)}…${value.slice(-8)}`;
+}
 
+export default function Receipt() {
   return (
     <>
       <div className="crumb">
-        <Link href="/app">Dashboard</Link> <span>/</span> Payout receipt
+        <Link href="/app">Dashboard</Link> <span>/</span> FXRP settlement receipt
       </div>
 
-      {/* the payout */}
       <div className="panel">
         <div className="payout-hero">
           <div className="payout-hero__badge">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-              <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M12 8v5M12 17h.01" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
             </svg>
           </div>
           <div>
             <div className="payout-hero__amt">
-              +{usd(balances.creatorDelta)}<span className="u">mUSD</span>
+              {proof.verifiedAmount.toFixed(6)}<span className="u">test FXRP verified</span>
             </div>
             <div className="payout-hero__meta">
-              <span className="pill pill--paid"><span className="pd" />Paid, once</span>
-              <span>Settled in block {tx.settleBlock} · {tx.settleStatus} · {tx.settleGasUsed.toLocaleString("en-US")} gas</span>
+              <span className="pill pill--retry"><span className="pd" />Not paid</span>
+              <span>Settlement tx reverted in block {proof.settlement.blockNumber.toLocaleString("en-US")}</span>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* five sources agree */}
-      <div className="panel">
-        <div className="panel__head">
-          <div>
-            <div className="panel__title">Exact to the cent</div>
-            <div className="panel__sub">Five independent sources, one number. This is what &ldquo;exact&rdquo; means.</div>
-          </div>
-        </div>
-        <div className="agree">
-          {agree.sources.map((src) => (
-            <div className="agree__row" key={src.label}>
-              <span className="agree__label">{src.label}</span>
-              <span className="agree__val">
-                {usd(src.value)}
-                <span className="agree__check">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                </span>
-              </span>
-            </div>
-          ))}
-        </div>
-        {agree.allEqual && (
-          <div className="agree__foot">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            All five agree. floor({usd(agree.netApplied)} × {agree.commissionBps / 100}%) resolves to exactly {usd(balances.creatorDelta)} mUSD.
-          </div>
-        )}
-      </div>
-
-      {/* on-chain facts */}
-      <div className="grid-2">
-        <div className="panel">
-          <div className="panel__title" style={{ marginBottom: 16 }}>Settlement</div>
-          <div className="kv">
-            <div className="kv__row"><span className="kv__k">Eligibility</span><span className="kv__v">{order.eligibility}</span></div>
-            <div className="kv__row"><span className="kv__k">Order digest</span><span className="kv__v mono">{order.orderDigest}</span></div>
-            <div className="kv__row"><span className="kv__k">Settle tx</span><span className="kv__v mono">{tx.settle}</span></div>
-            <div className="kv__row"><span className="kv__k">Fund tx</span><span className="kv__v mono">{tx.fund}</span></div>
-            <div className="kv__row"><span className="kv__k">Order settled</span><span className="kv__v">{balances.orderSettled ? "Yes, terminal" : "No"}</span></div>
-          </div>
-        </div>
-
-        <div className="panel">
-          <div className="panel__title" style={{ marginBottom: 16 }}>Balances moved</div>
-          <div className="kv">
-            <div className="kv__row"><span className="kv__k">Escrow before</span><span className="kv__v mono">{usd(balances.escrowBefore)} mUSD</span></div>
-            <div className="kv__row"><span className="kv__k">Escrow after</span><span className="kv__v mono">{usd(balances.escrowAfter)} mUSD</span></div>
-            <div className="kv__row"><span className="kv__k">Creator before</span><span className="kv__v mono">{usd(balances.creatorBefore)} mUSD</span></div>
-            <div className="kv__row"><span className="kv__k">Creator after</span><span className="kv__v mono">{usd(balances.creatorAfter)} mUSD</span></div>
-            <div className="kv__row"><span className="kv__k">Total settled</span><span className="kv__v mono">{usd(balances.totalSettled)} mUSD</span></div>
-          </div>
-        </div>
-      </div>
-
-      {/* contracts / rule */}
-      <div className="panel">
-        <div className="panel__title" style={{ marginBottom: 16 }}>Bound to this deployment and rule</div>
-        <div className="kv">
-          <div className="kv__row"><span className="kv__k">Rule</span><span className="kv__v">{camp.rounding.formula}</span></div>
-          <div className="kv__row"><span className="kv__k">Campaign</span><span className="kv__v">{camp.campaignLabel} · {camp.commissionBps / 100}% floor</span></div>
-          <div className="kv__row"><span className="kv__k">Settlement contract</span><span className="kv__v mono">{d.settlement}</span></div>
-          <div className="kv__row"><span className="kv__k">Escrow token</span><span className="kv__v mono">{d.escrowToken}</span></div>
-          <div className="kv__row"><span className="kv__k">Creator</span><span className="kv__v mono">{d.creator}</span></div>
-          <div className="kv__row"><span className="kv__k">Compatibility verifier</span><span className="kv__v mono">{d.fccVerifier}</span></div>
-          <div className="kv__row"><span className="kv__k">Verifier mode</span><span className="kv__v">{d.verifierMode}</span></div>
         </div>
       </div>
 
       <div className="callout">
-        <b>One eligible path of {inv.paths_attempted}.</b> Every other tested path, refund, replay,
-        tampering, wrong chain, expiry, or an undecided result, paid zero. See how each one is caught on
-        the <Link href="/app/activity" style={{ color: "var(--jade-deep)" }}>settlement matrix</Link>.
+        <b>The private verification succeeded, but no FXRP payout moved.</b> The signed FCE result
+        requested {proof.verifiedAmount.toFixed(6)} test FXRP while the campaign held only{" "}
+        {proof.escrowAtSettlement.toFixed(6)} test FXRP. The settlement transaction reverted and
+        the campaign still reports {proof.totalSettled.toFixed(6)} total FXRP settled.
+      </div>
+
+      <div className="grid-2">
+        <div className="panel">
+          <div className="panel__title" style={{ marginBottom: 16 }}>Private verification</div>
+          <div className="kv">
+            <div className="kv__row"><span className="kv__k">Status</span><span className="kv__v">Success</span></div>
+            <div className="kv__row"><span className="kv__k">Verified amount</span><span className="kv__v mono">{proof.verifiedAmount.toFixed(6)} test FXRP</span></div>
+            <div className="kv__row"><span className="kv__k">Commission rule</span><span className="kv__v">{proof.commissionBps / 100}%</span></div>
+            <div className="kv__row"><span className="kv__k">Instruction ID</span><span className="kv__v mono">{proof.instruction.id}</span></div>
+            <div className="kv__row"><span className="kv__k">Verification tx</span><span className="kv__v mono">{short(proof.instruction.transaction)}</span></div>
+            <div className="kv__row"><span className="kv__k">Block</span><span className="kv__v mono">{proof.instruction.blockNumber.toLocaleString("en-US")}</span></div>
+          </div>
+          <a className="btn btn--primary docs-cta" href={proof.instructionUrl} target="_blank" rel="noreferrer">
+            Open verification on Coston2
+          </a>
+        </div>
+
+        <div className="panel">
+          <div className="panel__title" style={{ marginBottom: 16 }}>Settlement state</div>
+          <div className="kv">
+            <div className="kv__row"><span className="kv__k">Transaction</span><span className="kv__v mono">{short(proof.settlement.transaction)}</span></div>
+            <div className="kv__row"><span className="kv__k">Receipt</span><span className="kv__v">Reverted</span></div>
+            <div className="kv__row"><span className="kv__k">Campaign escrow</span><span className="kv__v mono">{proof.escrowAtSettlement.toFixed(6)} test FXRP</span></div>
+            <div className="kv__row"><span className="kv__k">Verified payout</span><span className="kv__v mono">{proof.verifiedAmount.toFixed(6)} test FXRP</span></div>
+            <div className="kv__row"><span className="kv__k">Funding shortfall</span><span className="kv__v mono">{proof.shortfall.toFixed(6)} test FXRP</span></div>
+            <div className="kv__row"><span className="kv__k">Total settled</span><span className="kv__v mono">{proof.totalSettled.toFixed(6)} test FXRP</span></div>
+          </div>
+          <a className="btn btn--tinted docs-cta" href={proof.settlementUrl} target="_blank" rel="noreferrer">
+            Open reverted settlement
+          </a>
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel__title" style={{ marginBottom: 16 }}>Bound to the live FXRP campaign</div>
+        <div className="kv">
+          <div className="kv__row"><span className="kv__k">Campaign</span><span className="kv__v mono">{proof.campaign}</span></div>
+          <div className="kv__row"><span className="kv__k">FTestXRP token</span><span className="kv__v mono">{proof.token}</span></div>
+          <div className="kv__row"><span className="kv__k">FCE verifier</span><span className="kv__v mono">{proof.verifier}</span></div>
+          <div className="kv__row"><span className="kv__k">Creator</span><span className="kv__v mono">{proof.creator}</span></div>
+          <div className="kv__row"><span className="kv__k">Order digest</span><span className="kv__v mono">{proof.orderDigest}</span></div>
+          <div className="kv__row"><span className="kv__k">Chain</span><span className="kv__v">Coston2 · {proof.chainId}</span></div>
+        </div>
+        <a className="btn btn--tinted docs-cta" href={proof.campaignUrl} target="_blank" rel="noreferrer">
+          Open campaign on Coston2
+        </a>
+      </div>
+
+      <div className="callout">
+        This page now reflects the latest live FXRP attempt. The older successful mUSD FCE run is
+        retained separately on the <Link href="/proof" style={{ color: "var(--jade-deep)" }}>completed proof page</Link>{" "}
+        until a successful FXRP settlement replaces it.
       </div>
     </>
   );

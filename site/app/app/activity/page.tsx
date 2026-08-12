@@ -1,11 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { usd, ledger, ledgerSummary, invariant, CATEGORY_LABEL, type Category } from "@/lib/evidence";
+import { fxrpProof as proof } from "@/lib/fxrp-proof";
 
 export const metadata: Metadata = {
   title: "Settlement matrix",
   description:
-    "All twelve tested settlement paths in one view. One paid the exact commission, every other path settled to zero.",
+    "Inspect the latest live FXRP attempt alongside Jorqeth's deterministic negative-path settlement regression matrix.",
 };
 
 const PILL: Record<Category, string> = {
@@ -29,10 +30,35 @@ export default function Activity() {
       <div className="panel">
         <div className="panel__head">
           <div>
-            <div className="panel__title">Every path, one outcome each</div>
+            <div className="panel__title">Latest live FXRP attempt</div>
             <div className="panel__sub">
-              {inv.paths_attempted} paths attempted, {inv.paths_that_transferred_value} moved value.
-              This is the committed negative proof, in full.
+              The private FCE verification succeeded for {proof.verifiedAmount.toFixed(6)} test FXRP. The payout transaction reverted, so no FXRP was counted as settled.
+            </div>
+          </div>
+          <span className="pill pill--retry"><span className="pd" />No payout moved</span>
+        </div>
+
+        <div className="grid-4" style={{ marginBottom: 22 }}>
+          <div className="metric"><div className="metric__k">Verified payout</div><div className="metric__v">{proof.verifiedAmount}</div></div>
+          <div className="metric"><div className="metric__k">Escrow available</div><div className="metric__v">{proof.escrowAtSettlement}</div></div>
+          <div className="metric"><div className="metric__k">Shortfall</div><div className="metric__v">{proof.shortfall}</div></div>
+          <div className="metric"><div className="metric__k">Total settled</div><div className="metric__v">{proof.totalSettled}</div></div>
+        </div>
+
+        <div className="kv">
+          <div className="kv__row"><span className="kv__k">Campaign</span><span className="kv__v mono">{proof.campaign}</span></div>
+          <div className="kv__row"><span className="kv__k">Verification tx</span><span className="kv__v mono">{proof.instruction.transaction}</span></div>
+          <div className="kv__row"><span className="kv__k">Settlement tx</span><span className="kv__v mono">{proof.settlement.transaction}</span></div>
+          <div className="kv__row"><span className="kv__k">Settlement receipt</span><span className="kv__v">Reverted</span></div>
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel__head">
+          <div>
+            <div className="panel__title">Deterministic settlement regression matrix</div>
+            <div className="panel__sub">
+              {inv.paths_attempted} local contract paths attempted, {inv.paths_that_transferred_value} moved value. These are regression vectors, not the live FXRP transaction history above.
             </div>
           </div>
         </div>
@@ -69,7 +95,7 @@ export default function Activity() {
                     <span className={`pill ${PILL[r.category]}`}><span className="pd" />{CATEGORY_LABEL[r.category]}</span>
                   </td>
                   <td className="num" style={{ color: r.amount > 0 ? "var(--jade-deep)" : "var(--text-muted)" }}>
-                    {r.amount > 0 ? `+${usd(r.amount)}` : usd(r.amount)}
+                    {r.amount > 0 ? `+${usd(r.amount)}` : usd(r.amount)} test units
                   </td>
                   <td><span className="t-err">{r.error === "none" ? "-" : r.error}</span></td>
                 </tr>
@@ -80,11 +106,8 @@ export default function Activity() {
       </div>
 
       <div className="callout">
-        <b>Only the eligible path paid.</b> Creator final {usd(inv.creator_final)} mUSD, escrow final{" "}
-        {usd(inv.escrow_final)} mUSD, total settled {usd(inv.total_settled)} mUSD. Refunds settle at
-        zero, undecided and error results stay retryable with escrow intact, and every tamper or
-        wrong-domain case is rejected at the boundary. Walk the checks on the{" "}
-        <Link href="/app/inspector" style={{ color: "var(--jade-deep)" }}>result verification details</Link>.
+        <b>The two sections prove different things.</b> The top section is the real Coston2 FXRP attempt. The matrix is the committed local regression suite showing that refund, replay, tampering, wrong-domain, expiry, and undecided paths fail closed. Inspect the live FCE fields on the{" "}
+        <Link href="/app/inspector" style={{ color: "var(--jade-deep)" }}>verification details</Link>.
       </div>
     </>
   );
