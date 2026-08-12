@@ -6,12 +6,19 @@ export const dynamic = "force-dynamic";
 const instructionPattern = /^0x[0-9a-fA-F]{64}$/;
 
 export async function GET(request: NextRequest) {
+  const proxyUrl = process.env.JORQETH_FCE_PROXY_URL?.replace(/\/$/, "");
+  if (request.nextUrl.searchParams.get("health") === "1") {
+    return NextResponse.json(
+      { configured: Boolean(proxyUrl) },
+      { headers: { "Cache-Control": "no-store, max-age=0" } },
+    );
+  }
+
   const instructionId = request.nextUrl.searchParams.get("instructionId") || "";
   if (!instructionPattern.test(instructionId)) {
     return NextResponse.json({ error: "A valid FCE instruction ID is required." }, { status: 400 });
   }
 
-  const proxyUrl = process.env.JORQETH_FCE_PROXY_URL?.replace(/\/$/, "");
   if (!proxyUrl) {
     return NextResponse.json(
       {
