@@ -5,8 +5,19 @@ export const dynamic = "force-dynamic";
 
 const instructionPattern = /^0x[0-9a-fA-F]{64}$/;
 
+function unavailableResponse() {
+  return NextResponse.json(
+    {
+      code: "PRIVATE_VERIFICATION_UNAVAILABLE",
+      error: "Private verification is temporarily unavailable. Try again shortly.",
+    },
+    { status: 502, headers: { "Cache-Control": "no-store, max-age=0" } },
+  );
+}
+
 export async function GET(request: NextRequest) {
   const proxyUrl = process.env.JORQETH_FCE_PROXY_URL?.replace(/\/$/, "");
+
   if (request.nextUrl.searchParams.get("health") === "1") {
     return NextResponse.json(
       { configured: Boolean(proxyUrl) },
@@ -16,16 +27,21 @@ export async function GET(request: NextRequest) {
 
   const instructionId = request.nextUrl.searchParams.get("instructionId") || "";
   if (!instructionPattern.test(instructionId)) {
-    return NextResponse.json({ error: "A valid FCE instruction ID is required." }, { status: 400 });
+    console.error("FCE result request rejected: invalid instruction ID format");
+    return NextResponse.json(
+      { code: "INVALID_VERIFICATION_REQUEST", error: "We couldn’t start this private verification. Please try again." },
+      { status: 400 },
+    );
   }
 
   if (!proxyUrl) {
+    console.error("FCE result proxy unavailable: JORQETH_FCE_PROXY_URL is not configured");
     return NextResponse.json(
       {
-        error:
-          "The public FCE result proxy is not configured. Set JORQETH_FCE_PROXY_URL to the HTTPS tee-proxy endpoint.",
+        code: "PRIVATE_VERIFICATION_NOT_CONFIGURED",
+        error: "Private verification is temporarily unavailable. Try again shortly.",
       },
-      { status: 503 },
+      { status: 503, headers: { "Cache-Control": "no-store, max-age=0" } },
     );
   }
 
@@ -39,16 +55,16 @@ export async function GET(request: NextRequest) {
     if (response.status === 404 || response.status === 202) {
       return NextResponse.json({ pending: true }, { status: 202 });
     }
+
     if (!response.ok) {
-      return NextResponse.json(
-        { error: `FCE proxy returned HTTP ${response.status}.` },
-        { status: 502 },
-      );
+      console.error(`FCE result proxy returned HTTP ${response.status}`);
+      return unavailableResponse();
     }
 
     const payload: unknown = await response.json();
     if (!payload || typeof payload !== "object") {
-      return NextResponse.json({ error: "FCE proxy returned an invalid response." }, { status: 502 });
+      console.error("FCE result proxy returned a non-object response");
+      return unavailableResponse();
     }
 
     const action = payload as {
@@ -72,11 +88,13 @@ export async function GET(request: NextRequest) {
       typeof action.result.data !== "string" ||
       typeof action.signature !== "string"
     ) {
-      return NextResponse.json({ error: "FCE proxy response is missing signed result fields." }, { status: 502 });
+      console.error("FCE result proxy response is missing required signed-result fields");
+      return unavailableResponse();
     }
 
     if (action.result.id.toLowerCase() !== instructionId.toLowerCase()) {
-      return NextResponse.json({ error: "FCE proxy returned a result for a different instruction." }, { status: 502 });
+      console.error("FCE result proxy returned a result for a different instruction ID");
+      return unavailableResponse();
     }
 
     if (action.result.status === 2) {
@@ -88,9 +106,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("FCE result polling failed", error);
-    return NextResponse.json(
-      { error: "The FCE result proxy could not be reached." },
-      { status: 502 },
-    );
+    return unavailableResponse();
   }
 }
