@@ -7,7 +7,7 @@
   "summary": {
     "checklist_items_passed": 9,
     "checklist_items_total": 9,
-    "forge_tests_passed": 73,
+    "forge_tests_passed": 74,
     "forge_tests_failed": 0,
     "genuine_signature_vector": "go regen skipped (toolchain go1.25 unavailable offline); covered by forge FccRealSignatureTest",
     "privacy_scan_findings": 0
@@ -23,7 +23,7 @@
       "item": "settlement_invariant_end_to_end",
       "requirement": "The settlement invariant works end to end.",
       "status": "pass",
-      "evidence": "forge test 73 passed / 0 failed; positive-proof.json=PASS; negative-proof.json only_eligible=true"
+      "evidence": "forge test 74 passed / 0 failed; positive-proof.json=PASS; negative-proof.json only_eligible=true"
     },
     {
       "item": "action_result_compatibility",
@@ -65,7 +65,7 @@
       "item": "no_prohibited_fields",
       "requirement": "Public evidence contains no raw merchant/customer record or credential.",
       "status": "pass",
-      "evidence": "privacy scan of 43 tracked files: 0 prohibited pattern(s); only the documented public anvil dev key is present"
+      "evidence": "privacy scan of 47 tracked files: 0 prohibited pattern(s); only the documented public anvil dev key is present"
     },
     {
       "item": "core_reproducible",
