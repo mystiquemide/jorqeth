@@ -4,12 +4,14 @@ initial_signing_policy_offset = 0
 signing_policy_fetch_interval = "20s"
 chain_id = 114
 
+# Template only. Copy this file to proxy.runtime.toml and set the database password
+# in that ignored runtime copy before starting the stack.
 [db]
 host = "mysql"
 port = 3306
 database = "indexer"
 username = "jorqeth"
-password = "__FCE_MYSQL_PASSWORD__"
+password = ""
 log_queries = false
 
 [addresses]

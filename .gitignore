@@ -16,6 +16,7 @@ site/CLAUDE.md
 *.pem
 *.key
 secrets*.json
+deploy/fce-coston2/proxy.runtime.toml
 
 # --- Foundry ---
 /out/

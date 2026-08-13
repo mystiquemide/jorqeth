@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
-import SettlementJourney from "@/components/SettlementJourney";
+import FceSettlementJourney from "@/components/FceSettlementJourney";
 
-export const metadata: Metadata = {
-  title: "Settle a commission",
-  description:
-    "Create and fund a Coston2 commission campaign, run a private evaluation, settle the exact payout, and verify it paid once.",
-};
+const fxrpEnabled = Boolean(process.env.NEXT_PUBLIC_JORQETH_FXRP_FACTORY_ADDRESS);
+
+export const metadata: Metadata = fxrpEnabled
+  ? {
+      title: "Private FXRP commission settlement on Flare",
+      description:
+        "Fund a campaign with test FXRP, privately verify the agreed merchant record with Flare Confidential Compute, and settle the exact XRP-denominated creator or affiliate commission on Coston2.",
+    }
+  : {
+      title: "Private commission settlement on Flare",
+      description:
+        "Set the commission rule, fund the campaign, privately verify the agreed merchant record with Flare Confidential Compute, and settle the exact creator or affiliate commission on Coston2.",
+    };
 
 export default function SettlementPage() {
-  return <SettlementJourney />;
+  return <FceSettlementJourney />;
 }

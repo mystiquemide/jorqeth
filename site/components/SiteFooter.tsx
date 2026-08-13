@@ -11,13 +11,15 @@ export default function SiteFooter() {
             Jorqeth
           </Link>
           <p className="footer__proof">
-            Five evidence sources agree on the committed local payout, and only one of twelve
-            tested settlement paths moved value.
+            Private commission settlement powered by Flare Confidential Compute. Jorqeth privately
+            checks an agreed merchant record and settles the exact creator or affiliate commission
+            on Coston2 without exposing the underlying ledger.
           </p>
           <div className="footer__links">
             <Link href="/docs">How Jorqeth works</Link>
+            <Link href="/app">Open the app</Link>
+            <Link href="/proof">Live Flare proof</Link>
             <Link href="/app/receipt">Settlement receipt</Link>
-            <Link href="/app/activity">Settlement matrix</Link>
             <Link href="/terms">Terms</Link>
             <Link href="/privacy">Privacy</Link>
             <a
@@ -35,7 +37,7 @@ export default function SiteFooter() {
           </div>
         </div>
         <div className="footer__bottom">
-          <span>© 2026 Jorqeth · Testnet only</span>
+          <span>© 2026 Jorqeth · Built on Flare · Coston2 testnet · Flare Confidential Compute</span>
         </div>
       </div>
     </footer>

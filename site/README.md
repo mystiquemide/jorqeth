@@ -1,25 +1,28 @@
 # Jorqeth site
 
-The public landing page, interactive Coston2 settlement flow, and committed proof viewer
-for Jorqeth.
+The public web app for **private commission settlement powered by Flare Confidential Compute**.
+
+Jorqeth privately checks an agreed merchant record, calculates the exact creator or affiliate
+commission, and settles it on Flare Coston2 without exposing the underlying ledger.
 
 Built with Next.js 16, React 19, viem, and plain CSS. Fonts are self-hosted.
 
-The source includes the interactive Coston2 settlement journey, local invariant evidence,
-and a complete Coston2 FCE proof. The proof selects an active TEE, evaluates the private
-record in the extension, verifies the raw signed ActionResult, and releases escrow once.
+## Routes
 
 | Route | What it shows |
 | --- | --- |
-| `/` | Landing page. |
-| `/how`, `/proof`, `/security`, `/faq` | Refresh-safe landing section routes. |
-| `/app` | Eight-step Coston2 commission settlement flow. |
-| `/app/activity` | Committed 12-path settlement matrix. |
+| `/` | Product-first Flare landing page. |
+| `/proof` | Dedicated live hosted FCE instruction and settlement proof. |
+| `/how`, `/security`, `/faq` | Refresh-safe landing section routes. |
+| `/app` | Primary Flare Confidential Compute settlement journey. |
+| `/app/demo` | Separate disclosed-signer fallback test flow. |
+| `/app/activity` | Deterministic settlement-path matrix. |
 | `/app/receipt` | Reference settlement receipt. |
 | `/app/inspector` | Reference verification checks and trust boundary. |
-| `/docs` | Product flow, current trust boundary, privacy, and troubleshooting. |
+| `/docs` | Product flow, Flare trust path, privacy boundary, and troubleshooting. |
 | `/terms`, `/privacy` | Legal and privacy details. |
-| `/api/fce-result` | Server-only bridge to the public FCE result proxy and signed-result decoder. |
+| `/api/fce-result` | Server-side result bridge and readiness check for the FCE runtime. |
+| `/api/evaluate` | Legacy disclosed-signer fallback evaluator used only by `/app/demo`. |
 
 ## Develop
 
@@ -30,7 +33,7 @@ npm run dev
 
 The site runs at `http://localhost:3000`.
 
-## Configure the Coston2 flow
+## Configure the Flare Coston2 flow
 
 Copy the values from the repository `.env.example` into `site/.env.local` or your host's
 environment settings.
@@ -46,54 +49,75 @@ Public build variables:
 - `NEXT_PUBLIC_JORQETH_FCE_INSTRUCTION_SENDER_ADDRESS`
 - `NEXT_PUBLIC_JORQETH_FCE_EXTENSION_ID`
 
-Server-only variables:
+Primary FCE server-only variable:
 
 - `JORQETH_FCE_PROXY_URL`
 
-`JORQETH_FCE_PROXY_URL` points to the HTTPS result endpoint for the running Flare FCE
-stack. Never prefix server-only variables with `NEXT_PUBLIC_`.
+The production Vercel project has this server-only variable configured for the hosted FCE result
+bridge. It must point to the public HTTPS tee-proxy endpoint that serves `/info` and
+`GET /action/result/{instructionId}` for Jorqeth extension `66159`. The browser never receives the
+proxy URL.
 
-## Deploy the contracts
+`GET /api/fce-result?health=1` performs an actual `/info` readiness check through the server. A
+healthy runtime returns:
 
-From the repository root:
-
-```bash
-cp .env.example .env
-source .env
-forge script script/Deploy.s.sol:Deploy \
-  --rpc-url coston2 \
-  --broadcast \
-  --verify
+```json
+{"configured":true,"ready":true}
 ```
 
-The script deploys the open-faucet test mUSD token, testnet signature verifier, and
-campaign factory. The live interactive path uses the separately deployed FCE factory,
-instruction sender, and ActionResult verifier listed in the root deployment manifest.
+Fallback demo server-only variables:
 
-The deployer wallet needs C2FLR for gas. The app also requires connected wallets to hold
-C2FLR for campaign, funding, and settlement transactions.
+- `JORQETH_EVALUATOR_PRIVATE_KEY`
+- `JORQETH_PRIVATE_RECORDS_JSON`
+
+Those variables support only the separate `/app/demo` disclosed-signer flow. Never prefix
+server-only variables with `NEXT_PUBLIC_`.
+
+## Flare trust path
+
+```text
+wallet
+  -> Coston2 FCE campaign factory
+  -> funded JorqethSettlement
+  -> JorqethInstructionSender
+  -> Flare Confidential Compute
+  -> registered active TEE
+  -> signed Flare ActionResult
+  -> FccResultVerifier
+  -> exact commission settlement on Coston2
+```
+
+The private merchant record remains inside the evaluation runtime. The public chain sees only the
+minimum domain-bound result required to verify and settle the payout.
+
+## Live proof
+
+The dedicated `/proof` route uses `lib/live-proof.ts`, which mirrors the hosted Coston2 run recorded
+in `../deployments/coston2-live-demo.json`:
+
+- FCE instruction: `0x8142d704...`
+- Settlement: `0xf8269c7a...`
+- Exact commission: `20 mUSD`
+- Remaining escrow: `80 mUSD`
+- Replay: rejected
+
+The older deterministic proof pages remain useful for negative-path and settlement-invariant
+inspection; they are separate from the live hosted transaction proof.
 
 ## Build and check
 
 ```bash
+npm run typecheck
 npm run build
-npm run start
 ```
-
-The production build type-checks the API and client, prerenders the clean landing routes,
-and leaves `/api/fce-result` as a server route.
 
 ## Trust boundary
 
-Campaign creation, escrow funding, FCE instruction dispatch, signed-result verification,
-settlement, balances, and replay protection run on Coston2. The live stack uses Flare's
-supported simulated-TEE testnet mode and the current MachineManager active set.
-Hardware-backed production attestation, confidential credential delivery, and a real
-commerce connector remain production requirements.
-
-The proof pages read their figures from `data/*.json`, mirrored from the repository's
-committed Foundry evidence. They remain reference evidence and do not pretend to be the
-connected wallet's live transaction history.
+The primary path is a real Flare FCE testnet integration. The current hosted runtime uses Flare's
+supported simulated-TEE mode and verifies the result signer against the active TEE set. This is not
+hardware-backed production attestation. Confidential credential delivery, a real commerce
+connector, measured production attestation, and operational monitoring remain production
+requirements.
 
 ## License
 
