@@ -8,7 +8,7 @@ import { liveProof } from "@/lib/live-proof";
 export const metadata: Metadata = {
   title: "Completed Flare FCE settlement proof",
   description:
-    "Inspect Jorqeth's completed Flare Confidential Compute instruction, verified historical mUSD settlement, remaining escrow, and replay rejection on Coston2. The current primary app settles test FXRP.",
+    "Inspect Jorqeth's live Flare Confidential Compute instruction, verified 3 FTestXRP commission settlement, remaining escrow, and replay rejection on Coston2.",
 };
 
 function short(value: string) {
@@ -29,19 +29,17 @@ export default function ProofPage() {
           <span className="eyebrow">Completed FCE proof · Flare Coston2</span>
           <h1>The private settlement path was verified and paid exactly once.</h1>
           <p className="legal__lede">
-            This completed proof predates Jorqeth&apos;s FXRP cutover and used the original test mUSD
-            asset. The hosted app sent a real Flare Confidential Compute instruction, received a
-            signed result from the active testnet TEE, verified it on-chain, paid exactly 20 mUSD,
-            left 80 mUSD in escrow, and rejected a replay of the same order. The current primary
-            app now funds and settles campaigns in test FXRP.
+            Jorqeth sent a real Flare Confidential Compute instruction from the hosted app,
+            received a signed result from the active testnet TEE, verified it on-chain, paid
+            exactly 3 FTestXRP, left 5 FTestXRP in escrow, and rejected a replay of the same order.
           </p>
 
           <section>
             <h2>The completed result</h2>
             <ul>
               <li><b>Campaign:</b> {short(liveProof.campaign)}</li>
-              <li><b>Historical commission:</b> {liveProof.paidAmount} mUSD</li>
-              <li><b>Historical remaining escrow:</b> {liveProof.remainingEscrow} mUSD</li>
+              <li><b>Commission:</b> {liveProof.paidAmount} {liveProof.asset}</li>
+              <li><b>Remaining escrow:</b> {liveProof.remainingEscrow} {liveProof.asset}</li>
               <li><b>Active TEE signer:</b> {short(liveProof.teeSigner)}</li>
               <li><b>Replay attempt:</b> rejected</li>
             </ul>
@@ -65,8 +63,8 @@ export default function ProofPage() {
           <section>
             <h2>2. Exact on-chain settlement</h2>
             <p>
-              The signed result decoded to a 20 mUSD commission. The settlement contract accepted
-              the verifier proof, moved exactly that amount to the creator, and retained 80 mUSD in
+              The signed result decoded to a 3 FTestXRP commission. The settlement contract accepted
+              the verifier proof, moved exactly that amount to the creator, and retained 5 FTestXRP in
               the campaign escrow.
             </p>
             <a className="btn btn--primary docs-cta" href={liveProof.settlementUrl} target="_blank" rel="noreferrer">

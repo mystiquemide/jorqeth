@@ -5,7 +5,7 @@ bound creator, once, as a local on-chain transaction using the ActionResult comp
 adapter and a local development signer.
 
 - **Chain:** local Anvil devnet (chainId 31337)
-- **Verifier mode:** `action-result-compat-v1/simulated-attestation` (format compatibility only)
+- **Verifier mode:** `fcc-action-result-v1/simulated-attestation` (format compatibility only)
 - **Regenerate:** `bash evidence/run-positive-proof.sh` (Foundry + jq; no secrets, no live systems)
 
 This run proves the settlement invariant on local Anvil. It does not prove TEE execution,
@@ -31,7 +31,7 @@ live in `contracts/src/JorqethInstructionSender.sol` and `fce-extension/`.
 2. A local development signer signed an ELIGIBLE compatibility result for order
    `0xbe4b0fa03136646a52108527f8dd4873c60796d246fe5dd610ec0d4a2f6a1a45`.
 3. `settle()` verified authenticity and released the exact commission
-   (tx `0x0585c38b2aa088e8d6756b5d87cfc0f168a2f4043c0a3b670c147f38b548c9e6`, block 9, success, 139198 gas).
+   (tx `0x9aeaf95238e9a5cad67bb824419b82c5ec4e9f62365e120ad5429daacb273366`, block 9, success, 139309 gas).
 
 ## Exact-amount agreement (every independent source equal)
 

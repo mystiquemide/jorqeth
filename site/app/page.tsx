@@ -123,24 +123,22 @@ export function LandingPage({ scrollTo }: { scrollTo?: LandingSection }) {
         <section className="section" id="outcomes">
           <div className="container">
             <Reveal className="head">
-              <span className="eyebrow">Completed FCE proof · pre-FXRP cutover</span>
-              <h2>The confidential settlement path already works end to end.</h2>
+              <span className="eyebrow">Live Flare Coston2 FXRP proof</span>
+              <h2>A private check produced one exact 3 FTestXRP payout.</h2>
               <p>
-                Before the FXRP cutover, the hosted app completed a genuine FCE instruction,
-                signed-result verification, exact mUSD settlement, and replay rejection on Coston2.
-                That proof remains unchanged while the primary app now settles test FXRP.
+                The hosted app completed a genuine FCE instruction, signed-result verification,
+                exact FXRP settlement, and replay rejection on Coston2.
               </p>
             </Reveal>
             <div className="stats">
-              <Reveal className="stat"><div className="stat__value">+{liveProof.paidAmount}<span className="unit">mUSD</span></div><div className="stat__label">Historical exact commission released in the completed hosted FCE run.</div></Reveal>
-              <Reveal className="stat"><div className="stat__value">{liveProof.remainingEscrow}<span className="unit">mUSD left</span></div><div className="stat__label">Historical campaign balance after the verified payout.</div></Reveal>
+              <Reveal className="stat"><div className="stat__value">+{liveProof.paidAmount}<span className="unit">FTestXRP</span></div><div className="stat__label">Exact testnet commission released to the creator in the live hosted FCE run.</div></Reveal>
+              <Reveal className="stat"><div className="stat__value">{liveProof.remainingEscrow}<span className="unit">FTestXRP left</span></div><div className="stat__label">The campaign retained the remaining escrow after the verified payout.</div></Reveal>
               <Reveal className="stat"><div className="stat__value">1<span className="unit">payout</span></div><div className="stat__label">A replay attempt for the same order was rejected after settlement.</div></Reveal>
             </div>
             <Reveal className="outcomes__note">
               <p>
-                The completed proof used the original mUSD test asset. Jorqeth now uses Coston2
-                FTestXRP as the primary campaign asset, and the historical transaction evidence is
-                deliberately not relabeled as FXRP.
+                The live run used a 100-unit private order at a 3% commission rate. The underlying
+                merchant record was not returned to the browser or written on-chain.
               </p>
               <div className="hero__actions">
                 <Link className="btn btn--primary" href="/proof">Inspect the completed proof <span className="arrow">→</span></Link>

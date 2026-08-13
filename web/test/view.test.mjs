@@ -60,7 +60,7 @@ test("campaignView binds to the funded campaign", () => {
   const c = campaignView(POS);
   assert.equal(c.escrowFunded, "100.000000");
   assert.equal(c.commissionPercent, "10");
-  assert.equal(c.verifierMode, "action-result-compat-v1/simulated-attestation");
+  assert.equal(c.verifierMode, "fcc-action-result-v1/simulated-attestation");
   assert.equal(c.creator, POS.deployment.creator);
 });
 

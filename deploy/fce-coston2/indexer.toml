@@ -8,6 +8,10 @@ new_block_check_millis = 1000
 confirmations = 1
 no_new_blocks_delay_warning = 60
 
+[[indexer.collect_transactions]]
+contract_name = "FlareSystemsManager"
+func_sig = "6b4c7bd6"
+
 [logger]
 level = "INFO"
 console = true

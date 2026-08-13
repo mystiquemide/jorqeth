@@ -13,7 +13,7 @@ const ITEMS = [
   },
   {
     q: "Can I verify a real settlement?",
-    a: "Yes. The live proof page links the hosted FCE instruction and the completed Coston2 settlement. The demonstrated run paid exactly 20 mUSD, left 80 mUSD in escrow, and rejected a second payout attempt for the same order.",
+    a: "Yes. The live proof page links the hosted FCE instruction and the completed Coston2 settlement. The demonstrated run paid exactly 3 FTestXRP, left 5 FTestXRP in escrow, and rejected a second payout attempt for the same order.",
   },
   {
     q: "Do I have to trust the merchant?",
@@ -33,7 +33,7 @@ const ITEMS = [
   },
   {
     q: "How is the amount calculated?",
-    a: "A fixed-rate floor formula: the eligible net order amount times the agreed rate, rounded down. In the live Coston2 run, a 100 mUSD eligible amount at a 20 percent rule produced exactly 20 mUSD. The settlement left 80 mUSD in escrow.",
+    a: "A fixed-rate floor formula: the eligible net order amount times the agreed rate, rounded down. In the live Coston2 run, a 100-unit eligible amount at a 3 percent rule produced exactly 3 FTestXRP. The settlement left 5 FTestXRP in escrow.",
   },
 ];
 

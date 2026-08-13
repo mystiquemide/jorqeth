@@ -72,8 +72,8 @@ export default function Docs() {
               pay twice.
             </p>
             <p>
-              A completed hosted run paid exactly 20 mUSD from a 100 mUSD test campaign, left 80
-              mUSD in escrow, and rejected replay. Inspect the <Link className="legal__inline" href="/proof">live Flare proof</Link> for the FCE instruction and settlement transactions.
+              A completed hosted run paid exactly 3 FTestXRP from an 8 FTestXRP test campaign, left 5
+              FTestXRP in escrow, and rejected replay. Inspect the <Link className="legal__inline" href="/proof">live Flare proof</Link> for the FCE instruction and settlement transactions.
             </p>
           </section>
 

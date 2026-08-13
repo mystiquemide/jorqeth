@@ -58,6 +58,9 @@ The contracts do not trust a browser-calculated payout. The FCE result is authen
 active TEE set and then checked against the campaign, recipient, rule, chain, expiry, and replay
 state before escrow can move.
 
+The public app has completed a genuine end-to-end FCE-backed settlement using the FXRP-bound
+campaign and the private reference `private-order-1`.
+
 ## Primary product flow
 
 The primary `/app` journey is written for a normal user:
@@ -112,14 +115,14 @@ the original test mUSD asset.
 
 | Evidence | Completed result |
 | --- | --- |
-| Campaign | `0x5e77dfD9c2142B7e9e7A11017b0B5417EC5A9cc6` |
-| FCE instruction tx | `0x8142d704296efd6d9e6dd87a6aac1e3ce1abb5c4d643422d524b3d86eac02d47` |
-| Instruction ID | `0x315b46e12fe1dcce3387155bcb69c8b321bc3c082875ce6101b4e9e09504a052` |
+| Campaign | `0x07D1251A5D94C7e833215016EBBbB774833091b4` |
+| FCE instruction tx | `0xb5a838d9efe0ab286fd545d58eaf6dc7ead9c80205fba2f51d67c7a3f32c19fb` |
+| Instruction ID | `0xe96856c93c4507b35620819dfc78bb1bc254396e32e8183a45a60022b36958d2` |
 | Active TEE signer | `0x9103b8400FAae0a243508F577398CD9FbfbEb5fd` |
-| Historical decoded commission | `20 mUSD` |
-| Historical creator balance change | `+20 mUSD` |
-| Historical remaining escrow | `80 mUSD` |
-| Settlement tx | `0xf8269c7aab0ad00ed8695cc07d6defb7d5f019b58068b0ddfc1cf283d74fc4a6` |
+| Decoded commission | `3 FTestXRP` |
+| Creator balance change | `+3 FTestXRP` |
+| Remaining escrow | `5 FTestXRP` |
+| Settlement tx | `0x29044f953279d925295947cf36c9200bd58d4ddaa5291f6e0c8f752f8d48938f` |
 | Replay attempt | Rejected |
 
 The live-run summary is committed at
@@ -129,13 +132,12 @@ proof bundle remains at [`deployments/coston2-fce-proof.json`](deployments/costo
 The returned result did not contain the private order reference or the underlying merchant record.
 The public result contains only the domain-bound fields needed to verify and settle the payout.
 
-The historical mUSD evidence is deliberately not relabeled as FXRP. A new FXRP proof replaces it
-only after a genuine hosted FXRP settlement produces its own instruction and settlement
-transactions.
-
 > **Testnet boundary:** the current runtime uses Flare's supported simulated-TEE mode on Coston2.
 > The FCE instruction, signed result, active-TEE registry check, verifier path, and settlement are
 > real testnet interactions, but this is not a claim of hardware-backed production attestation.
+
+The earlier mUSD proof bundle remains available in
+[`deployments/coston2-fce-proof.json`](deployments/coston2-fce-proof.json) as historical evidence.
 
 ## Hosted runtime
 
@@ -186,6 +188,7 @@ digest and returns only the minimum result required for settlement.
 | `JorqethInstructionSender` | Selects an active Flare TEE and dispatches the FCE evaluation |
 | `FccResultVerifier` | Verifies raw Flare `ActionResult` signatures against the active TEE set |
 | `SignatureResultVerifier` | Disclosed trusted-signer verifier used only by the fallback demo |
+| `FTestXRP` | Six-decimal Coston2 test token with no cash value |
 | `MockUSD` | Historical six-decimal test asset retained for fallback/evidence compatibility |
 
 The frozen result schema and golden vectors live in

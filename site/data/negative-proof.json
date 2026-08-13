@@ -9,7 +9,7 @@
     "escrowToken": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
     "teeRegistry": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
     "fccVerifier": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-    "verifierMode": "action-result-compat-v1/simulated-attestation",
+    "verifierMode": "fcc-action-result-v1/simulated-attestation",
     "creator": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
     "teeId": "0xC9fe5A864FbE024a2cc46d0dF6b2F5e2417204ca",
     "extensionId": "65536"
