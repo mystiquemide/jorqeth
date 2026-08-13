@@ -97,8 +97,8 @@ in `../deployments/coston2-live-demo.json`:
 
 - FCE instruction: `0x8142d704...`
 - Settlement: `0xf8269c7a...`
-- Exact commission: `20 mUSD`
-- Remaining escrow: `80 mUSD`
+- Exact commission: `3 FTestXRP`
+- Remaining escrow: `5 FTestXRP`
 - Replay: rejected
 
 The older deterministic proof pages remain useful for negative-path and settlement-invariant

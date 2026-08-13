@@ -304,3 +304,50 @@ export const fceInstructionSenderAbi = [
     ],
   },
 ] as const;
+
+export const fceVerifierAbi = [
+  {
+    type: "function",
+    name: "verify",
+    stateMutability: "view",
+    inputs: [
+      { name: "result", type: "tuple", components: payableResultTypes.PayableResult },
+      { name: "proof", type: "bytes" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+  },
+  {
+    type: "function",
+    name: "registry",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+  },
+  {
+    type: "function",
+    name: "extensionId",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "mode",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "string" }],
+  },
+] as const;
+
+export const activeTeeRegistryAbi = [
+  {
+    type: "function",
+    name: "getActiveTeeMachines",
+    stateMutability: "view",
+    inputs: [{ name: "extensionId", type: "uint256" }],
+    outputs: [
+      { name: "teeIds", type: "address[]" },
+      { name: "urls", type: "string[]" },
+    ],
+  },
+] as const;

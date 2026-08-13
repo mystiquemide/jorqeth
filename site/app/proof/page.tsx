@@ -8,7 +8,7 @@ import { liveProof } from "@/lib/live-proof";
 export const metadata: Metadata = {
   title: "Live Flare settlement proof",
   description:
-    "Inspect Jorqeth's live Flare Confidential Compute instruction, verified 20 mUSD commission settlement, remaining escrow, and replay rejection on Coston2.",
+    "Inspect Jorqeth's live Flare Confidential Compute instruction, verified 3 FTestXRP commission settlement, remaining escrow, and replay rejection on Coston2.",
 };
 
 function short(value: string) {
@@ -31,15 +31,15 @@ export default function ProofPage() {
           <p className="legal__lede">
             Jorqeth sent a real Flare Confidential Compute instruction from the hosted app,
             received a signed result from the active testnet TEE, verified it on-chain, paid
-            exactly 20 mUSD, left 80 mUSD in escrow, and rejected a replay of the same order.
+            exactly 3 FTestXRP, left 5 FTestXRP in escrow, and rejected a replay of the same order.
           </p>
 
           <section>
             <h2>The result</h2>
             <ul>
               <li><b>Campaign:</b> {short(liveProof.campaign)}</li>
-              <li><b>Commission:</b> {liveProof.paidAmount} mUSD</li>
-              <li><b>Remaining escrow:</b> {liveProof.remainingEscrow} mUSD</li>
+              <li><b>Commission:</b> {liveProof.paidAmount} {liveProof.asset}</li>
+              <li><b>Remaining escrow:</b> {liveProof.remainingEscrow} {liveProof.asset}</li>
               <li><b>Active TEE signer:</b> {short(liveProof.teeSigner)}</li>
               <li><b>Replay attempt:</b> rejected</li>
             </ul>
@@ -63,8 +63,8 @@ export default function ProofPage() {
           <section>
             <h2>2. Exact on-chain settlement</h2>
             <p>
-              The signed result decoded to a 20 mUSD commission. The settlement contract accepted
-              the verifier proof, moved exactly that amount to the creator, and retained 80 mUSD in
+              The signed result decoded to a 3 FTestXRP commission. The settlement contract accepted
+              the verifier proof, moved exactly that amount to the creator, and retained 5 FTestXRP in
               the campaign escrow.
             </p>
             <a className="btn btn--primary docs-cta" href={liveProof.settlementUrl} target="_blank" rel="noreferrer">

@@ -1,19 +1,22 @@
 export const liveProof = {
   network: "Flare Coston2",
   chainId: 114,
-  campaign: "0x5e77dfD9c2142B7e9e7A11017b0B5417EC5A9cc6",
-  instructionTx: "0x8142d704296efd6d9e6dd87a6aac1e3ce1abb5c4d643422d524b3d86eac02d47",
-  instructionId: "0x315b46e12fe1dcce3387155bcb69c8b321bc3c082875ce6101b4e9e09504a052",
-  settlementTx: "0xf8269c7aab0ad00ed8695cc07d6defb7d5f019b58068b0ddfc1cf283d74fc4a6",
+  asset: "FTestXRP",
+  campaign: "0x07D1251A5D94C7e833215016EBBbB774833091b4",
+  campaignId: "0x1b29d4e526c201901b5400872e1b88bd492c0230da8580d7ee77ea990f3c3571",
+  instructionTx: "0xb5a838d9efe0ab286fd545d58eaf6dc7ead9c80205fba2f51d67c7a3f32c19fb",
+  instructionId: "0xe96856c93c4507b35620819dfc78bb1bc254396e32e8183a45a60022b36958d2",
+  settlementTx: "0x29044f953279d925295947cf36c9200bd58d4ddaa5291f6e0c8f752f8d48938f",
   teeSigner: "0x9103b8400FAae0a243508F577398CD9FbfbEb5fd",
-  paidAmount: "20",
-  remainingEscrow: "80",
+  paidAmount: "3",
+  remainingEscrow: "5",
+  creatorBalanceChange: "3",
   replayRejected: true,
   simulatedTee: true,
   instructionUrl:
-    "https://coston2-explorer.flare.network/tx/0x8142d704296efd6d9e6dd87a6aac1e3ce1abb5c4d643422d524b3d86eac02d47",
+    "https://coston2-explorer.flare.network/tx/0xb5a838d9efe0ab286fd545d58eaf6dc7ead9c80205fba2f51d67c7a3f32c19fb",
   settlementUrl:
-    "https://coston2-explorer.flare.network/tx/0xf8269c7aab0ad00ed8695cc07d6defb7d5f019b58068b0ddfc1cf283d74fc4a6",
+    "https://coston2-explorer.flare.network/tx/0x29044f953279d925295947cf36c9200bd58d4ddaa5291f6e0c8f752f8d48938f",
   campaignUrl:
-    "https://coston2-explorer.flare.network/address/0x5e77dfD9c2142B7e9e7A11017b0B5417EC5A9cc6",
+    "https://coston2-explorer.flare.network/address/0x07D1251A5D94C7e833215016EBBbB774833091b4",
 } as const;

@@ -54,19 +54,19 @@ escrow can move.
 
 ## Live hosted FCE proof
 
-The public app has completed a genuine end-to-end FCE-backed settlement using the demo reference
-`private-order-1`.
+The public app has completed a genuine end-to-end FCE-backed settlement using the FXRP-bound
+campaign and the private reference `private-order-1`.
 
 | Evidence | Live result |
 | --- | --- |
-| Campaign | `0x5e77dfD9c2142B7e9e7A11017b0B5417EC5A9cc6` |
-| FCE instruction tx | `0x8142d704296efd6d9e6dd87a6aac1e3ce1abb5c4d643422d524b3d86eac02d47` |
-| Instruction ID | `0x315b46e12fe1dcce3387155bcb69c8b321bc3c082875ce6101b4e9e09504a052` |
+| Campaign | `0x07D1251A5D94C7e833215016EBBbB774833091b4` |
+| FCE instruction tx | `0xb5a838d9efe0ab286fd545d58eaf6dc7ead9c80205fba2f51d67c7a3f32c19fb` |
+| Instruction ID | `0xe96856c93c4507b35620819dfc78bb1bc254396e32e8183a45a60022b36958d2` |
 | Active TEE signer | `0x9103b8400FAae0a243508F577398CD9FbfbEb5fd` |
-| Decoded commission | `20 mUSD` |
-| Creator balance change | `+20 mUSD` |
-| Remaining escrow | `80 mUSD` |
-| Settlement tx | `0xf8269c7aab0ad00ed8695cc07d6defb7d5f019b58068b0ddfc1cf283d74fc4a6` |
+| Decoded commission | `3 FTestXRP` |
+| Creator balance change | `+3 FTestXRP` |
+| Remaining escrow | `5 FTestXRP` |
+| Settlement tx | `0x29044f953279d925295947cf36c9200bd58d4ddaa5291f6e0c8f752f8d48938f` |
 | Replay attempt | Rejected |
 
 The live-run summary is committed at
@@ -87,7 +87,7 @@ The primary `/app` journey is deliberately written for a normal user:
 
 1. Connect a wallet to Flare Coston2.
 2. Choose the creator or affiliate payout wallet and commission rate.
-3. Fund the campaign with test mUSD.
+3. Fund the campaign with test FXRP.
 4. Enter the agreed private order reference.
 5. Run the private verification with Flare Confidential Compute.
 6. Review the verified amount and settle it on Flare.
@@ -129,7 +129,7 @@ digest and returns only the minimum result required for settlement.
 
 | Component | Address |
 | --- | --- |
-| MockUSD | `0x4F928576d415298c260897Bd9b8CbF70D91c5Cd4` |
+| FTestXRP | `0x0b6A3645c240605887a5532109323A3E12273dc7` |
 | SignatureResultVerifier | `0xEA16d390d6278EBA9d4a856d32bEf9F9975463B6` |
 | Demo campaign factory | `0x1f4F27be826ef7F12622FE6da1d86d04ffda3226` |
 | FCE instruction sender | `0x86bE7C32A5E566b105a224F94b3A2Ed3F751d097` |
@@ -143,7 +143,7 @@ digest and returns only the minimum result required for settlement.
 | `JorqethInstructionSender` | Selects an active Flare TEE and dispatches the FCE evaluation |
 | `FccResultVerifier` | Verifies raw Flare `ActionResult` signatures against the active TEE set |
 | `SignatureResultVerifier` | Disclosed trusted-signer verifier used only by the fallback demo |
-| `MockUSD` | Six-decimal Coston2 test token with no cash value |
+| `FTestXRP` | Six-decimal Coston2 test token with no cash value |
 
 The frozen result schema and golden vectors live in
 [`spec/jorqeth-v1.json`](spec/jorqeth-v1.json).
@@ -191,7 +191,7 @@ The `/info` route is used for readiness checks.
 
 - Jorqeth settles what the agreed merchant record source reports. It does not prove attribution
   outside that source.
-- The Coston2 mUSD token has no real-world value.
+- Coston2 FTestXRP has no real-world value.
 - The current FCE runtime uses simulated-TEE testnet mode, not hardware-backed production
   attestation.
 - Production use requires confidential credential delivery, a real commerce connector,

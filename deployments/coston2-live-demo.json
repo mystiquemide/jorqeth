@@ -3,23 +3,46 @@
   "chainId": 114,
   "evidenceType": "hosted-end-to-end-fce-run",
   "attestationMode": "simulated-tee-testnet",
-  "campaign": "0x5e77dfD9c2142B7e9e7A11017b0B5417EC5A9cc6",
+  "asset": {
+    "symbol": "FTestXRP",
+    "address": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+    "decimals": 6
+  },
+  "campaign": {
+    "address": "0x07D1251A5D94C7e833215016EBBbB774833091b4",
+    "campaignId": "0x1b29d4e526c201901b5400872e1b88bd492c0230da8580d7ee77ea990f3c3571",
+    "creator": "0x9f758be3ae3D985713964339E2f0bD783fC6015c",
+    "commissionBps": 300,
+    "ruleVersion": "0xfcd354bfe2b0aa9eb09d4044f82835fddca9161ae3ccaa52eebd914a9cb86333",
+    "escrowBefore": "8000000",
+    "escrowAfter": "5000000"
+  },
   "instruction": {
-    "transaction": "0x8142d704296efd6d9e6dd87a6aac1e3ce1abb5c4d643422d524b3d86eac02d47",
-    "id": "0x315b46e12fe1dcce3387155bcb69c8b321bc3c082875ce6101b4e9e09504a052",
+    "transaction": "0xb5a838d9efe0ab286fd545d58eaf6dc7ead9c80205fba2f51d67c7a3f32c19fb",
+    "block": 33999199,
+    "id": "0xe96856c93c4507b35620819dfc78bb1bc254396e32e8183a45a60022b36958d2",
     "actionResultStatus": 1,
+    "submissionTag": "threshold",
+    "version": "0.2.0",
     "teeSignatureBytes": 65,
     "proxySignatureBytes": 65,
     "activeTeeSigner": "0x9103b8400FAae0a243508F577398CD9FbfbEb5fd"
   },
   "settlement": {
-    "transaction": "0xf8269c7aab0ad00ed8695cc07d6defb7d5f019b58068b0ddfc1cf283d74fc4a6",
-    "paidAmount": "20000000",
-    "paidToken": "mUSD",
-    "remainingEscrow": "80000000",
-    "creatorBalanceChange": "20000000",
+    "transaction": "0x29044f953279d925295947cf36c9200bd58d4ddaa5291f6e0c8f752f8d48938f",
+    "block": 33999248,
+    "paidAmountBaseUnits": "3000000",
+    "paidAmount": "3",
+    "paidToken": "FTestXRP",
+    "remainingEscrowBaseUnits": "5000000",
+    "remainingEscrow": "5",
+    "creatorBalanceBefore": "2000000",
+    "creatorBalanceAfter": "5000000",
+    "creatorBalanceChange": "3000000",
+    "totalSettled": "3000000",
     "replayRejected": true,
-    "onchainVerifierAccepted": true
+    "onchainVerifierAccepted": true,
+    "orderSettled": true
   },
   "privacy": {
     "privateRecordReferenceReturned": false,
@@ -27,11 +50,15 @@
   },
   "runtime": {
     "publicResultEndpoint": "https://jorqeth-fce.breachresponse.xyz",
-    "webHealthEndpoint": "https://jorqeth.vercel.app/api/fce-result?health=1"
+    "webHealthEndpoint": "https://jorqeth.vercel.app/api/fce-result?health=1",
+    "extensionId": "66159",
+    "codeHash": "0x194844cf417dde867073e5ab7199fa4d21fd82b5dbe2bdea8b3d7fc18d10fdc2",
+    "initialSigningPolicyId": 5932,
+    "lastSigningPolicyId": 5934
   },
   "limits": [
     "Coston2 testnet only",
-    "mUSD has no cash value",
+    "FTestXRP has no cash value",
     "The active TEE uses Flare's simulated-TEE testnet mode rather than hardware-backed production attestation"
   ]
 }

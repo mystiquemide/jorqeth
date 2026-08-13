@@ -127,20 +127,20 @@ export function LandingPage({ scrollTo }: { scrollTo?: LandingSection }) {
           <div className="container">
             <Reveal className="head">
               <span className="eyebrow">Live Flare Coston2 proof</span>
-              <h2>A private check produced one exact 20 mUSD payout.</h2>
+              <h2>A private check produced one exact 3 FTestXRP payout.</h2>
               <p>
                 The hosted app completed the full path from FCE instruction to signed result,
                 on-chain verification, exact settlement, and replay rejection on Coston2.
               </p>
             </Reveal>
             <div className="stats">
-              <Reveal className="stat"><div className="stat__value">+{liveProof.paidAmount}<span className="unit">mUSD</span></div><div className="stat__label">Exact testnet commission released to the creator in the live hosted FCE run.</div></Reveal>
-              <Reveal className="stat"><div className="stat__value">{liveProof.remainingEscrow}<span className="unit">mUSD left</span></div><div className="stat__label">The campaign retained the remaining escrow after the verified payout.</div></Reveal>
+              <Reveal className="stat"><div className="stat__value">+{liveProof.paidAmount}<span className="unit">FTestXRP</span></div><div className="stat__label">Exact testnet commission released to the creator in the live hosted FCE run.</div></Reveal>
+              <Reveal className="stat"><div className="stat__value">{liveProof.remainingEscrow}<span className="unit">FTestXRP left</span></div><div className="stat__label">The campaign retained the remaining escrow after the verified payout.</div></Reveal>
               <Reveal className="stat"><div className="stat__value">1<span className="unit">payout</span></div><div className="stat__label">A replay attempt for the same order was rejected after settlement.</div></Reveal>
             </div>
             <Reveal className="outcomes__note">
               <p>
-                The live run used a 100 mUSD private order at a 20% commission rate. The underlying
+                The live run used a 100-unit private order at a 3% commission rate. The underlying
                 merchant record was not returned to the browser or written on-chain.
               </p>
               <div className="hero__actions">
