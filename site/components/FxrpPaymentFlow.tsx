@@ -167,18 +167,45 @@ export default function FxrpPaymentFlow() {
 
   useEffect(() => {
     if (!provider) return;
+    let active = true;
+
+    const applyAccounts = (accounts: Address[] | undefined) => {
+      if (!active) return;
+      const nextAccount = accounts?.[0];
+      setAccount(nextAccount);
+      if (nextAccount) {
+        setRecipient((current) => current || nextAccount);
+        void refreshWalletFxrp(nextAccount);
+      }
+    };
+
+    const syncWallet = async () => {
+      try {
+        const [accounts, currentChain] = await Promise.all([
+          provider.request({ method: "eth_accounts" }) as Promise<Address[]>,
+          provider.request({ method: "eth_chainId" }) as Promise<string>,
+        ]);
+        if (!active) return;
+        applyAccounts(accounts);
+        if (typeof currentChain === "string") setChainId(Number.parseInt(currentChain, 16));
+      } catch (cause) {
+        console.error("Could not restore wallet session:", cause);
+      }
+    };
+
     const accountsChanged = (...args: unknown[]) => {
-      const accounts = args[0] as Address[] | undefined;
-      setAccount(accounts?.[0]);
-      if (accounts?.[0]) setRecipient((current) => current || accounts[0]);
+      applyAccounts(args[0] as Address[] | undefined);
     };
     const chainChanged = (...args: unknown[]) => {
       const next = args[0];
       if (typeof next === "string") setChainId(Number.parseInt(next, 16));
     };
+
+    void syncWallet();
     provider.on?.("accountsChanged", accountsChanged);
     provider.on?.("chainChanged", chainChanged);
     return () => {
+      active = false;
       provider.removeListener?.("accountsChanged", accountsChanged);
       provider.removeListener?.("chainChanged", chainChanged);
     };
