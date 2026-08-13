@@ -543,12 +543,16 @@ export default function FxrpPaymentFlow() {
 
   async function refreshCampaign(address: Address) {
     try {
-      const [funds, total] = await Promise.all([
+      const [funds, total, savedRecipient, savedCommissionBps] = await Promise.all([
         publicClient.readContract({ address, abi: settlementAbi, functionName: "escrowBalance" }),
         publicClient.readContract({ address, abi: settlementAbi, functionName: "totalSettled" }),
+        publicClient.readContract({ address, abi: settlementAbi, functionName: "creator" }),
+        publicClient.readContract({ address, abi: settlementAbi, functionName: "commissionBps" }),
       ]);
       setAvailableFunds(funds);
       setTotalPaid(total);
+      setRecipient(savedRecipient);
+      setCommissionPercent((Number(savedCommissionBps) / 100).toString());
     } catch (cause) {
       console.error("Could not refresh saved payment:", cause);
       window.localStorage.removeItem(CAMPAIGN_KEY);
