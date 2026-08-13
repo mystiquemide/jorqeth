@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AppNav from "@/components/AppNav";
 import AppWalletDisconnect from "@/components/AppWalletDisconnect";
+import "../payment-console.css";
 
 export const metadata: Metadata = {
   title: {
