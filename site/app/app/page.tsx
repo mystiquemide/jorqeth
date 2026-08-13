@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import FceSettlementJourney from "@/components/FceSettlementJourney";
+import FxrpPaymentFlow from "@/components/FxrpPaymentFlow";
 
 export const metadata: Metadata = {
-  title: "Private FXRP commission settlement on Flare",
+  title: "Pay a private FXRP commission",
   description:
-    "Fund a campaign with test FXRP, privately verify the agreed merchant record with Flare Confidential Compute, and settle the exact XRP-denominated creator or affiliate commission on Coston2.",
+    "Choose who gets paid, add test FXRP, check the private order record, and pay the exact commission on Flare.",
 };
 
 export default function SettlementPage() {
-  return <FceSettlementJourney />;
+  return <FxrpPaymentFlow />;
 }
