@@ -15,14 +15,13 @@ Built with Next.js 16, React 19, viem, and plain CSS. Fonts are self-hosted.
 | `/proof` | Dedicated live hosted FCE instruction and settlement proof. |
 | `/how`, `/security`, `/faq` | Refresh-safe landing section routes. |
 | `/app` | Primary Flare Confidential Compute settlement journey. |
-| `/app/demo` | Separate disclosed-signer fallback test flow. |
+| `/app/demo` | Legacy mUSD Flare Confidential Compute fallback test flow. |
 | `/app/activity` | Deterministic settlement-path matrix. |
 | `/app/receipt` | Reference settlement receipt. |
 | `/app/inspector` | Reference verification checks and trust boundary. |
 | `/docs` | Product flow, Flare trust path, privacy boundary, and troubleshooting. |
 | `/terms`, `/privacy` | Legal and privacy details. |
 | `/api/fce-result` | Server-side result bridge and readiness check for the FCE runtime. |
-| `/api/evaluate` | Legacy disclosed-signer fallback evaluator used only by `/app/demo`. |
 
 ## Develop
 
@@ -65,13 +64,13 @@ healthy runtime returns:
 {"configured":true,"ready":true}
 ```
 
-Fallback demo server-only variables:
+Historical fallback variables:
 
 - `JORQETH_EVALUATOR_PRIVATE_KEY`
 - `JORQETH_PRIVATE_RECORDS_JSON`
 
-Those variables support only the separate `/app/demo` disclosed-signer flow. Never prefix
-server-only variables with `NEXT_PUBLIC_`.
+The current `/app/demo` component does not read these variables. They remain in the template only
+for historical deployment compatibility. Never prefix server-only variables with `NEXT_PUBLIC_`.
 
 ## Flare trust path
 

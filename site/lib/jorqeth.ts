@@ -33,7 +33,7 @@ function publicAddress(value: string | undefined): Address | undefined {
 }
 
 export const deployment = {
-  // Legacy MockUSD deployment retained for the disclosed-signer fallback and the
+  // Legacy MockUSD deployment retained for the legacy mUSD FCE fallback and the
   // historical mUSD proof. The primary FCE app uses the canonical FXRP factory.
   token: publicAddress(process.env.NEXT_PUBLIC_JORQETH_TOKEN_ADDRESS),
   verifier: publicAddress(process.env.NEXT_PUBLIC_JORQETH_VERIFIER_ADDRESS),
@@ -189,7 +189,7 @@ export const mockTokenAbi = [
   },
 ] as const;
 
-// Backward-compatible export for the disclosed-signer demo.
+// Backward-compatible export for the legacy mUSD FCE fallback.
 export const tokenAbi = mockTokenAbi;
 
 export const settlementAbi = [

@@ -2,6 +2,15 @@
   "name": "jorqeth-vercel-root",
   "private": true,
   "version": "0.0.0",
+  "scripts": {
+    "cli": "node scripts/jorqeth-qa.mjs",
+    "health": "node scripts/jorqeth-qa.mjs health",
+    "doctor": "node scripts/jorqeth-qa.mjs doctor",
+    "config:check": "node scripts/jorqeth-qa.mjs config check",
+    "deploy:check": "node scripts/jorqeth-qa.mjs deploy check",
+    "qa": "node scripts/jorqeth-qa.mjs qa",
+    "qa:full": "node scripts/jorqeth-qa.mjs qa --full"
+  },
   "dependencies": {
     "next": "16.3.0-canary.97"
   }

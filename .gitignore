@@ -31,6 +31,7 @@ build/
 coverage/
 *.tsbuildinfo
 .pnpm-store/
+artifacts/qa/
 
 # --- OS / editor ---
 .DS_Store

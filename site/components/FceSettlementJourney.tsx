@@ -684,7 +684,7 @@ export default function FceSettlementJourney() {
           <h2>Want a quicker fallback demo?</h2>
           <p>
             {usingFxrp
-              ? "The main flow above uses test FXRP and Flare Confidential Compute. The simplified fallback remains separate and uses the original disclosed-signer test flow."
+              ? "The main flow above uses test FXRP and Flare Confidential Compute. The simplified fallback remains separate and uses the legacy mUSD FCE test flow."
               : "A simplified test flow is available separately. The main flow above uses Flare Confidential Compute."}
           </p>
         </div>

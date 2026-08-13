@@ -89,9 +89,8 @@ export default function ProofPage() {
               verification, and settlement into one reproducible testnet flow.
             </p>
             <p>
-              Jorqeth now uses FTestXRP as the primary campaign asset. This page intentionally keeps
-              the original mUSD evidence unchanged until a genuine hosted FXRP settlement produces
-              its own instruction and settlement transactions.
+              Jorqeth now uses FTestXRP as the primary campaign asset. The older mUSD proof bundle is
+              kept separately in the repository as historical evidence for the legacy fallback path.
             </p>
             <p>
               The current runtime uses Flare&apos;s supported simulated-TEE mode on Coston2. It proves

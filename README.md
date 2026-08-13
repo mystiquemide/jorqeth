@@ -77,8 +77,8 @@ The app checks the connected wallet's FTestXRP balance and links the official Fl
 FXRP is needed. Unlike the historical MockUSD path, the FXRP path does not call a Jorqeth-owned
 `mint()` function.
 
-The disclosed-signer route remains separately available at `/app/demo` as a fallback test flow. It
-is not the primary product path.
+The legacy mUSD Flare Confidential Compute route remains separately available at `/app/demo` as a
+fallback test flow. It is not the primary product path.
 
 ## Canonical Coston2 FXRP deployment
 
@@ -110,8 +110,8 @@ The full cutover record is committed at
 ## Completed hosted FCE proof
 
 Jorqeth already has a genuine hosted end-to-end FCE-backed settlement proving the confidential
-compute and settlement lifecycle. That completed run predates the FXRP cutover and therefore used
-the original test mUSD asset.
+compute and settlement lifecycle. The committed completed run uses the canonical Coston2 FTestXRP
+asset. The original mUSD proof remains historical evidence for the legacy fallback.
 
 | Evidence | Completed result |
 | --- | --- |
@@ -177,9 +177,9 @@ digest and returns only the minimum result required for settlement.
 | FCE instruction sender | `0x86bE7C32A5E566b105a224F94b3A2Ed3F751d097` |
 | FCE ActionResult verifier | `0xf314850e31970d8337372380D183aD17a93B7F88` |
 | Historical mUSD FCE factory | `0x9C685107E49a09760c5014031606D973aEA08C50` |
-| MockUSD fallback token | `0x4F928576d415298c260897Bd9b8CbF70D91c5Cd4` |
-| SignatureResultVerifier fallback | `0xEA16d390d6278EBA9d4a856d32bEf9F9975463B6` |
-| Disclosed-signer demo factory | `0x1f4F27be826ef7F12622FE6da1d86d04ffda3226` |
+| MockUSD legacy fallback token | `0x4F928576d415298c260897Bd9b8CbF70D91c5Cd4` |
+| Historical SignatureResultVerifier | `0xEA16d390d6278EBA9d4a856d32bEf9F9975463B6` |
+| Historical disclosed-signer factory | `0x1f4F27be826ef7F12622FE6da1d86d04ffda3226` |
 
 | Contract | Role |
 | --- | --- |
@@ -187,12 +187,30 @@ digest and returns only the minimum result required for settlement.
 | `JorqethCampaignFactory` | Creates and records fixed campaign deployments |
 | `JorqethInstructionSender` | Selects an active Flare TEE and dispatches the FCE evaluation |
 | `FccResultVerifier` | Verifies raw Flare `ActionResult` signatures against the active TEE set |
-| `SignatureResultVerifier` | Disclosed trusted-signer verifier used only by the fallback demo |
+| `SignatureResultVerifier` | Historical disclosed trusted-signer verifier retained for contract and evidence compatibility |
 | `FTestXRP` | Six-decimal Coston2 test token with no cash value |
 | `MockUSD` | Historical six-decimal test asset retained for fallback/evidence compatibility |
 
 The frozen result schema and golden vectors live in
 [`spec/jorqeth-v1.json`](spec/jorqeth-v1.json).
+
+## Production QA CLI
+
+The repository includes a read-only CLI for release checks, deployment health, source drift, and
+proof verification. It never asks for a production wallet, resets data, or writes to Coston2.
+
+```bash
+npm run doctor
+npm run config:check
+npm run health
+npm run deploy:check
+npm run qa
+npm run qa:full
+```
+
+Use `npm run cli -- --help` for flags such as `--url`, `--timeout`, `--json`, and `--ci`. Reports
+are written to `artifacts/qa/summary.json`, `artifacts/qa/summary.md`, and
+`artifacts/qa/junit.xml`.
 
 ## Run the repository checks
 

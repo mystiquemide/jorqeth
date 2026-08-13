@@ -14,7 +14,7 @@ const STEPS = [
   ["Connect to Flare Coston2", "Use an injected EVM wallet and switch to Coston2, chain 114."],
   ["Choose the recipient", "Set the creator or affiliate wallet that the campaign can pay."],
   ["Fix the rule", "Create a campaign with the agreed commission percentage and settlement window."],
-  ["Fund escrow on Flare", "Add test mUSD and lock the payout budget in the Coston2 campaign."],
+  ["Fund escrow on Flare", "Add test FXRP and lock the payout budget in the Coston2 campaign."],
   ["Enter the agreed reference", "Use the private order reference agreed with the merchant. The underlying record does not enter the browser or chain."],
   ["Evaluate with Flare Confidential Compute", "Jorqeth sends the request through FCE. The private merchant record stays inside the evaluation runtime and only the payout result returns."],
   ["Verify the signed result", "Jorqeth checks the Flare result against the active TEE set before any escrow can move."],
@@ -93,7 +93,7 @@ export default function Docs() {
               operational monitoring.
             </p>
             <p>
-              The disclosed-signer route remains available separately at <Link className="legal__inline" href="/app/demo">/app/demo</Link> as a fallback test flow. It is not the primary product path.
+              The legacy mUSD FCE route remains available separately at <Link className="legal__inline" href="/app/demo">/app/demo</Link> as a fallback test flow. It is not the primary product path.
             </p>
           </section>
 
