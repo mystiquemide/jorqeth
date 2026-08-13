@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import AppNav from "@/components/AppNav";
 import AppWalletDisconnect from "@/components/AppWalletDisconnect";
 import "../payment-console.css";
+import "../mobile-app.css";
 
 export const metadata: Metadata = {
   title: {
@@ -19,7 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="appmain">
         <header className="apptop">
           <div>
-            <div className="apptop__title">Private commission payments</div>
+            <div className="apptop__title">Commission payments</div>
             <div className="apptop__sub">Test mode on Flare</div>
           </div>
           <div className="apptop__right">
