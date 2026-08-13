@@ -195,8 +195,24 @@
   }
 
   .payment-task {
+    order: 0;
     min-height: 0;
     border-radius: 18px;
+  }
+
+  /* On mobile, once a payment exists, funding is part of the current task.
+     Let the balance card participate directly in the grid and place it first. */
+  .payment-sidebar {
+    display: contents;
+  }
+
+  .payment-balance-card:has(.payment-fund-box) {
+    order: -1;
+  }
+
+  .payment-summary-card,
+  .payment-help-card {
+    order: 1;
   }
 
   .payment-task__body,
@@ -245,6 +261,7 @@
   .payment-tx {
     padding-left: 14px;
     padding-right: 14px;
+    font-size: 0.88rem;
   }
 
   .payment-tx {
@@ -253,10 +270,6 @@
 
   .payment-tx a {
     white-space: nowrap;
-  }
-
-  .payment-sidebar {
-    gap: 12px;
   }
 
   .payment-balance-card,
