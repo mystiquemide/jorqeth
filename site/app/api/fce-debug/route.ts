@@ -19,7 +19,8 @@ const sentEvent = parseAbiItem("event EvaluationInstructionSent(bytes32 indexed 
 export async function GET() {
   try {
     const latest = await client.getBlockNumber();
-    const fromBlock = latest > 5000n ? latest - 5000n : 0n;
+    const span = BigInt(5000);
+    const fromBlock = latest > span ? latest - span : BigInt(0);
     const logs = await client.getLogs({
       address: sender,
       event: sentEvent,
