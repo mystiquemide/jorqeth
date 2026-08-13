@@ -13,6 +13,8 @@ export const COSTON2_RPC_URL =
 
 export const COSTON2_FTEST_XRP_ADDRESS =
   "0x0b6A3645c240605887a5532109323A3E12273dc7" as Address;
+export const COSTON2_JORQETH_FXRP_FACTORY_ADDRESS =
+  "0xF5D10934c08955fcaCA7b1b5dAF59b99d86DEa99" as Address;
 export const FLARE_COSTON2_FAUCET_URL = "https://faucet.flare.network/";
 
 export const coston2 = defineChain({
@@ -32,8 +34,7 @@ function publicAddress(value: string | undefined): Address | undefined {
 
 export const deployment = {
   // Legacy MockUSD deployment retained for the disclosed-signer fallback and the
-  // historical mUSD proof. The primary FCE app automatically prefers FXRP once
-  // an FXRP-bound campaign factory is configured.
+  // historical mUSD proof. The primary FCE app uses the canonical FXRP factory.
   token: publicAddress(process.env.NEXT_PUBLIC_JORQETH_TOKEN_ADDRESS),
   verifier: publicAddress(process.env.NEXT_PUBLIC_JORQETH_VERIFIER_ADDRESS),
   factory: publicAddress(process.env.NEXT_PUBLIC_JORQETH_FACTORY_ADDRESS),
@@ -46,7 +47,9 @@ export const deployment = {
   fxrpToken:
     publicAddress(process.env.NEXT_PUBLIC_JORQETH_FXRP_TOKEN_ADDRESS) ||
     COSTON2_FTEST_XRP_ADDRESS,
-  fxrpFactory: publicAddress(process.env.NEXT_PUBLIC_JORQETH_FXRP_FACTORY_ADDRESS),
+  fxrpFactory:
+    publicAddress(process.env.NEXT_PUBLIC_JORQETH_FXRP_FACTORY_ADDRESS) ||
+    COSTON2_JORQETH_FXRP_FACTORY_ADDRESS,
 };
 
 export const deploymentConfigured = Boolean(
@@ -67,7 +70,21 @@ export const fxrpDeploymentConfigured = Boolean(
     deployment.fceInstructionSender,
 );
 
-export const publicClient = createPublicClient({ chain: coston2, transport: http(COSTON2_RPC_URL) });
+const basePublicClient = createPublicClient({ chain: coston2, transport: http(COSTON2_RPC_URL) });
+const waitForReceipt = basePublicClient.waitForTransactionReceipt.bind(basePublicClient);
+type WaitForReceiptParameters = Parameters<typeof waitForReceipt>[0];
+
+// viem resolves waitForTransactionReceipt for both successful and reverted receipts.
+// The interactive app must never treat a mined-but-reverted transaction as confirmation.
+export const publicClient = Object.assign(basePublicClient, {
+  waitForTransactionReceipt: async (parameters: WaitForReceiptParameters) => {
+    const receipt = await waitForReceipt(parameters);
+    if (receipt.status !== "success") {
+      throw new Error("Transaction failed on Flare Coston2. No state change was applied.");
+    }
+    return receipt;
+  },
+});
 
 export type PayableResult = {
   schemaVersion: number;

@@ -1,8 +1,8 @@
 # Coston2 FXRP cutover
 
 Jorqeth's settlement contracts are ERC-20 agnostic, but each `JorqethCampaignFactory` stores one
-immutable settlement token. The existing live FCE factory remains bound to MockUSD, so the FXRP
-primary path needs one new factory deployment that reuses the existing FCE verifier.
+immutable settlement token. The original live FCE factory remains bound to MockUSD. The primary
+FXRP path therefore uses a separate factory while reusing the existing FCE verifier.
 
 ## Canonical Coston2 asset
 
@@ -14,71 +14,54 @@ Flare Testnet Coston2 FTestXRP / test FXRP:
 
 The token uses 6 decimals.
 
-Existing Jorqeth FCE verifier reused by the new factory:
+Existing Jorqeth FCE verifier reused by the FXRP factory:
 
 ```text
 0xf314850e31970d8337372380D183aD17a93B7F88
 ```
 
-No new instruction sender, extension ID, TEE registration, proxy, or verifier is required.
+No new instruction sender, extension ID, TEE registration, proxy, or verifier was required.
 
-## 1. Deploy the FXRP-bound campaign factory
+## Deployed FXRP factory
 
-Run this from the persistent Jorqeth checkout that already has access to the Coston2 deployer key.
-Do not paste the key into chat, commit it, or echo it.
-
-```bash
-cd /root/projects/jorqeth
-git pull --ff-only
-
-set -a
-. /root/.config/jorqeth/coston2-deployment.env
-set +a
-
-export JORQETH_FCE_VERIFIER_ADDRESS=0xf314850e31970d8337372380D183aD17a93B7F88
-export JORQETH_FXRP_TOKEN_ADDRESS=0x0b6A3645c240605887a5532109323A3E12273dc7
-
-forge script script/DeployFxrpFactory.s.sol:DeployFxrpFactory \
-  --rpc-url "$COSTON2_RPC_URL" \
-  --broadcast
-```
-
-Record only the printed `FXRP JorqethCampaignFactory` address and deployment transaction. Do not
-record or expose the deployer key.
-
-## 2. Verify the factory before web cutover
-
-For the new factory address `$FXRP_FACTORY`, verify its immutable token and verifier through RPC or
-Cast before changing Vercel:
-
-```bash
-cast call "$FXRP_FACTORY" 'token()(address)' --rpc-url "$COSTON2_RPC_URL"
-cast call "$FXRP_FACTORY" 'verifier()(address)' --rpc-url "$COSTON2_RPC_URL"
-```
-
-Expected token:
+Canonical Jorqeth FXRP campaign factory:
 
 ```text
-0x0b6A3645c240605887a5532109323A3E12273dc7
+0xF5D10934c08955fcaCA7b1b5dAF59b99d86DEa99
 ```
 
-Expected verifier:
+Deployment transaction:
 
 ```text
-0xf314850e31970d8337372380D183aD17a93B7F88
+0xc9067b63ed6efd01794f89af25beb01011fec2df12488b3f660bed7fe3433a22
 ```
 
-## 3. Cut production to FXRP
+The deployment was independently read back from Coston2 through the Vercel preview runtime before
+production activation. The checks returned:
 
-Set these **Production** environment variables on the existing Jorqeth Vercel project:
+```text
+receipt status: success
+contract address: 0xF5D10934c08955fcaCA7b1b5dAF59b99d86DEa99
+bytecode present: true
+token(): 0x0b6A3645c240605887a5532109323A3E12273dc7
+verifier(): 0xf314850e31970d8337372380D183aD17a93B7F88
+```
+
+That confirms the factory is bound to the intended Coston2 FTestXRP token and the existing Jorqeth
+FCE ActionResult verifier.
+
+## Production activation
+
+The FXRP production cutover was merged to `main` on 2026-08-12. The canonical Coston2 FXRP token
+and factory addresses are public deployment defaults in the web application. Environment variables
+can still override them for a future redeployment:
 
 ```text
 NEXT_PUBLIC_JORQETH_FXRP_TOKEN_ADDRESS=0x0b6A3645c240605887a5532109323A3E12273dc7
-NEXT_PUBLIC_JORQETH_FXRP_FACTORY_ADDRESS=<new factory address>
+NEXT_PUBLIC_JORQETH_FXRP_FACTORY_ADDRESS=0xF5D10934c08955fcaCA7b1b5dAF59b99d86DEa99
 ```
 
-`NEXT_PUBLIC_JORQETH_FXRP_FACTORY_ADDRESS` is the cutover switch. Until it exists, `/app` keeps the
-current proven MockUSD FCE flow. Once it exists and the app is redeployed, `/app` automatically:
+The primary `/app` therefore:
 
 - creates campaigns through the FXRP-bound factory,
 - checks the connected wallet's FTestXRP balance,
@@ -88,7 +71,7 @@ current proven MockUSD FCE flow. Once it exists and the app is redeployed, `/app
 
 The FCE result bridge remains server-only through `JORQETH_FCE_PROXY_URL` and does not change.
 
-## 4. Demo funding
+## Demo funding
 
 The official Flare Coston2 faucet supplies test FXRP. The app links directly to:
 
@@ -96,8 +79,7 @@ The official Flare Coston2 faucet supplies test FXRP. The app links directly to:
 https://faucet.flare.network/
 ```
 
-The current private `private-order-1` runtime record represents 100 units. To avoid changing the
-private runtime record during cutover, the FXRP UI defaults to:
+The current private `private-order-1` runtime record represents 100 units. The FXRP UI defaults to:
 
 ```text
 5 test FXRP escrow
@@ -108,11 +90,12 @@ private runtime record during cutover, the FXRP UI defaults to:
 
 The escrow is a payout budget, so it does not need to equal the private sale amount.
 
-## 5. Live proof gate
+## Live proof gate
 
-Do not replace the current public mUSD proof until a genuine hosted FXRP run succeeds.
+The existing public 20 mUSD proof remains historical evidence of the genuine hosted FCE path. Do
+not relabel that evidence as FXRP.
 
-Required evidence for the FXRP proof:
+Required evidence for the new FXRP proof:
 
 1. New FXRP campaign address.
 2. `token()` on that campaign equals the official Coston2 FTestXRP address.
@@ -124,5 +107,5 @@ Required evidence for the FXRP proof:
 8. Replay of the same order digest is rejected.
 9. Private order reference and underlying merchant record are absent from the public result.
 
-Only after those checks pass should the landing page and `/proof` be promoted from the historical
-mUSD evidence to the new FXRP evidence.
+Only after those checks pass should `/proof` replace the historical mUSD evidence with the new FXRP
+evidence.
