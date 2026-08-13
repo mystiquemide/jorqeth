@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AppNav from "@/components/AppNav";
 import AppWalletDisconnect from "@/components/AppWalletDisconnect";
+import LivePaymentRoute from "@/components/LivePaymentRoute";
 import "../payment-console.css";
 import "../mobile-app.css";
 
@@ -31,7 +32,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <AppWalletDisconnect />
           </div>
         </header>
-        <div className="appbody">{children}</div>
+        <div className="appbody"><LivePaymentRoute>{children}</LivePaymentRoute></div>
       </div>
     </div>
   );
