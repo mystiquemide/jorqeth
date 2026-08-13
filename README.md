@@ -1,98 +1,118 @@
 # Jorqeth
 
-**Private FXRP commission settlement powered by Flare Confidential Compute.**
+**Private commission settlement on Flare using Flare Confidential Compute and FXRP.**
 
-Jorqeth lets a merchant fund a commission campaign with test FXRP, privately evaluate an agreed
-merchant record with Flare Confidential Compute, and release the exact XRP-denominated creator or
-affiliate payout on Flare Coston2 without exposing the underlying customer, order, or revenue data.
+Jorqeth lets merchants settle creator and affiliate commissions from private commercial records without publishing the underlying customer, order, or revenue data onchain.
 
-**Built for Flare Summer Signal · Confidential Compute Apps**
+A merchant fixes the recipient and commission rule, Jorqeth evaluates the agreed private record through a Flare Compute Extension, and the settlement contract releases exactly the verified amount in FXRP on Flare.
 
-- Live app: [jorqeth.vercel.app](https://jorqeth.vercel.app)
-- Completed FCE proof: [jorqeth.vercel.app/proof](https://jorqeth.vercel.app/proof)
-- Network: Flare Testnet Coston2, chain `114`
-- Primary settlement asset: Coston2 FTestXRP / test FXRP
+- **Live app:** [jorqeth.vercel.app](https://jorqeth.vercel.app)
+- **Technical proof:** [jorqeth.vercel.app/proof](https://jorqeth.vercel.app/proof)
+- **Network:** Flare Testnet Coston2, chain ID `114`
+- **Settlement asset:** Coston2 FTestXRP / test FXRP
+- **Built for:** Flare Summer Signal · Confidential Compute Apps
 
-## The problem
+## Overview
 
-Creators and affiliates are often paid from private merchant ledgers they cannot inspect. The
-merchant cannot publish customer and revenue data just to prove a commission is fair, so payout
-verification often falls back to screenshots, exports, or trust.
+Commission payments often depend on merchant data that should not be public. A creator or affiliate needs confidence that the payout is correct, while the merchant may need to keep customer details, order data, and revenue records confidential.
 
-Jorqeth fixes the record source and commission rule before settlement. Flare Confidential Compute
-privately evaluates the agreed record, and the settlement contract releases only the verified
-amount to the bound recipient.
+Jorqeth separates the private record from the public settlement.
 
-## Why Flare
+The merchant defines who gets paid and the commission percentage. A Jorqeth Flare Compute Extension (FCE) evaluates the agreed merchant record inside the Flare Confidential Compute (FCC) execution path. The resulting `ActionResult` is verified before the settlement contract can release funds.
 
-Flare is part of Jorqeth's trust path and settlement asset layer.
+Only the information required to authorize and settle the payout is exposed to the public payment flow.
 
-```text
-Merchant funds campaign with test FXRP on Coston2
-                         |
-                         v
-               Jorqeth FCE instruction
-                         |
-                         v
-            Flare Confidential Compute
-                         |
-                         v
-             Registered active testnet TEE
-                         |
-                         v
-               Signed Flare ActionResult
-                         |
-                         v
-                 FccResultVerifier
-                         |
-                         v
-             Exact FXRP payout on Coston2
-```
-
-Jorqeth combines two Flare-native pieces:
-
-1. **FTestXRP / FXRP** as the campaign settlement asset.
-2. **Flare Confidential Compute** as the private evaluation and signed-result path.
-
-The contracts do not trust a browser-calculated payout. The FCE result is authenticated against the
-active TEE set and then checked against the campaign, recipient, rule, chain, expiry, and replay
-state before escrow can move.
-
-The public app has completed a genuine end-to-end FCE-backed settlement using the FXRP-bound
-campaign and the private reference `private-order-1`.
-
-## Primary product flow
-
-The primary `/app` journey is written for a normal user:
+## How it works
 
 1. Connect a wallet to Flare Coston2.
-2. Choose the creator or affiliate payout wallet and commission rate.
-3. Fund the campaign with test FXRP.
-4. Enter the agreed private order reference.
-5. Run the private verification with Flare Confidential Compute.
-6. Review the signed amount and settle the exact FXRP commission on Flare.
-7. Confirm the payout and paid-once protection.
+2. Choose the creator or affiliate payout address.
+3. Set the commission rate and create the payment configuration.
+4. Submit the agreed private order reference for evaluation.
+5. Jorqeth sends an instruction through Flare Confidential Compute.
+6. The Jorqeth FCE evaluates the private merchant record and returns a signed result.
+7. `FccResultVerifier` authenticates the result against the active TEE set.
+8. The settlement contract checks the campaign, recipient, rule, chain, expiry, and replay state.
+9. The merchant funds the payment with test FXRP.
+10. Jorqeth releases exactly the authorized FXRP amount to the recipient.
+11. The recipient can inspect the receipt and verify the settlement on Flare.
 
-The app checks the connected wallet's FTestXRP balance and links the official Flare faucet when test
-FXRP is needed. Unlike the historical MockUSD path, the FXRP path does not call a Jorqeth-owned
-`mint()` function.
-
-The legacy mUSD Flare Confidential Compute route remains separately available at `/app/demo` as a
-fallback test flow. It is not the primary product path.
-
-## Canonical Coston2 FXRP deployment
-
-Official Coston2 FTestXRP:
+## Architecture
 
 ```text
-0x0b6A3645c240605887a5532109323A3E12273dc7
+Private merchant record
+        |
+        v
+JorqethInstructionSender
+        |
+        v
+Flare Confidential Compute
+        |
+        v
+Jorqeth Flare Compute Extension
+        |
+        v
+Trusted Execution Environment
+        |
+        v
+Signed Flare ActionResult
+        |
+        v
+FccResultVerifier
+        |
+        v
+JorqethSettlement
+        |
+        v
+Exact FXRP payout on Coston2
 ```
 
-Jorqeth FXRP campaign factory:
+Flare Confidential Compute provides the instruction and TEE execution path. Jorqeth owns the application-specific pieces at the edges of that flow: the onchain instruction sender, the FCE business logic, result verification, and settlement rules.
 
-```text
-0xF5D10934c08955fcaCA7b1b5dAF59b99d86DEa99
-```
+The settlement contract does not trust a payout amount calculated by the browser. Funds move only after the returned result has been authenticated and bound to the expected settlement context.
+
+## Flare integration
+
+Jorqeth uses two Flare-native components in the primary product flow.
+
+### Flare Confidential Compute
+
+Jorqeth uses Flare Confidential Compute to evaluate private merchant records outside the public EVM state while keeping the result usable by onchain settlement logic.
+
+`JorqethInstructionSender` dispatches the instruction. The Jorqeth FCE processes the private input through the TEE stack and returns a signed `ActionResult`. `FccResultVerifier` verifies the result against the active TEE set before the settlement contract accepts it.
+
+The result is then checked against:
+
+- campaign
+- recipient
+- commission rule
+- chain ID
+- expiry
+- replay state
+
+### FXRP
+
+The primary settlement path uses Coston2 FTestXRP as test FXRP.
+
+The merchant funds the payment with FXRP and Jorqeth releases only the commission amount authorized by the verified confidential-compute result. The FXRP path does not depend on a Jorqeth-owned token `mint()` function.
+
+Official Coston2 FXRP address discovery is documented by Flare here: [Get FXRP Address](https://dev.flare.network/fxrp/token-interactions/fxrp-address).
+
+## Privacy model
+
+Raw merchant records and credentials stay inside the evaluation boundary. The browser and public chain do not need the customer ledger or private revenue fields to settle a commission.
+
+The public result contains only the domain-bound fields required to verify and execute the payout.
+
+Jorqeth does not prove commercial facts outside the agreed merchant data source. It verifies and settles what that configured source reports.
+
+## Coston2 deployment
+
+| Component | Address |
+| --- | --- |
+| FTestXRP / test FXRP | `0x0b6A3645c240605887a5532109323A3E12273dc7` |
+| Jorqeth FXRP campaign factory | `0xF5D10934c08955fcaCA7b1b5dAF59b99d86DEa99` |
+| Jorqeth FCE instruction sender | `0x86bE7C32A5E566b105a224F94b3A2Ed3F751d097` |
+| FCE `ActionResult` verifier | `0xf314850e31970d8337372380D183aD17a93B7F88` |
 
 Factory deployment transaction:
 
@@ -100,57 +120,67 @@ Factory deployment transaction:
 0xc9067b63ed6efd01794f89af25beb01011fec2df12488b3f660bed7fe3433a22
 ```
 
-Before production activation, the deployment was read back from Coston2 and confirmed to have
-bytecode, a successful deployment receipt, the intended FTestXRP `token()`, and the existing Jorqeth
-FCE verifier as `verifier()`.
+The FXRP cutover record is committed at [`deployments/coston2-fxrp-cutover.md`](deployments/coston2-fxrp-cutover.md).
 
-The full cutover record is committed at
-[`deployments/coston2-fxrp-cutover.md`](deployments/coston2-fxrp-cutover.md).
+### Historical test components
 
-## Completed hosted FCE proof
+The repository retains the earlier mUSD path for regression and evidence compatibility. It is not the primary product path.
 
-Jorqeth already has a genuine hosted end-to-end FCE-backed settlement proving the confidential
-compute and settlement lifecycle. The committed completed run uses the canonical Coston2 FTestXRP
-asset. The original mUSD proof remains historical evidence for the legacy fallback.
+| Component | Address |
+| --- | --- |
+| Historical mUSD FCE factory | `0x9C685107E49a09760c5014031606D973aEA08C50` |
+| MockUSD legacy fallback token | `0x4F928576d415298c260897Bd9b8CbF70D91c5Cd4` |
+| Historical `SignatureResultVerifier` | `0xEA16d390d6278EBA9d4a856d32bEf9F9975463B6` |
+| Historical disclosed-signer factory | `0x1f4F27be826ef7F12622FE6da1d86d04ffda3226` |
 
-| Evidence | Completed result |
+## Contracts
+
+| Contract | Role |
+| --- | --- |
+| `JorqethSettlement` | Escrow, domain binding, replay protection, and exact-or-zero ERC-20 payout |
+| `JorqethCampaignFactory` | Creates and records fixed payment configurations |
+| `JorqethInstructionSender` | Selects an active Flare TEE and dispatches FCC instructions |
+| `FccResultVerifier` | Verifies Flare `ActionResult` signatures against the active TEE set |
+| `SignatureResultVerifier` | Historical trusted-signer verifier retained for compatibility |
+
+The frozen result schema and golden vectors live in [`spec/jorqeth-v1.json`](spec/jorqeth-v1.json).
+
+## End-to-end Coston2 proof
+
+The repository includes a completed FCC-backed settlement on Coston2 using the FXRP-bound flow.
+
+| Evidence | Result |
 | --- | --- |
 | Campaign | `0x07D1251A5D94C7e833215016EBBbB774833091b4` |
-| FCE instruction tx | `0xb5a838d9efe0ab286fd545d58eaf6dc7ead9c80205fba2f51d67c7a3f32c19fb` |
+| FCC instruction transaction | `0xb5a838d9efe0ab286fd545d58eaf6dc7ead9c80205fba2f51d67c7a3f32c19fb` |
 | Instruction ID | `0xe96856c93c4507b35620819dfc78bb1bc254396e32e8183a45a60022b36958d2` |
 | Active TEE signer | `0x9103b8400FAae0a243508F577398CD9FbfbEb5fd` |
 | Decoded commission | `3 FTestXRP` |
-| Creator balance change | `+3 FTestXRP` |
+| Recipient balance change | `+3 FTestXRP` |
 | Remaining escrow | `5 FTestXRP` |
-| Settlement tx | `0x29044f953279d925295947cf36c9200bd58d4ddaa5291f6e0c8f752f8d48938f` |
+| Settlement transaction | `0x29044f953279d925295947cf36c9200bd58d4ddaa5291f6e0c8f752f8d48938f` |
 | Replay attempt | Rejected |
 
-The live-run summary is committed at
-[`deployments/coston2-live-demo.json`](deployments/coston2-live-demo.json). The earlier detailed FCE
-proof bundle remains at [`deployments/coston2-fce-proof.json`](deployments/coston2-fce-proof.json).
+Evidence is committed in:
 
-The returned result did not contain the private order reference or the underlying merchant record.
-The public result contains only the domain-bound fields needed to verify and settle the payout.
+- [`deployments/coston2-live-demo.json`](deployments/coston2-live-demo.json)
+- [`deployments/coston2-fce-proof.json`](deployments/coston2-fce-proof.json)
+- [`deployments/coston2-fxrp-cutover.md`](deployments/coston2-fxrp-cutover.md)
+- [`evidence/`](evidence/)
 
-> **Testnet boundary:** the current runtime uses Flare's supported simulated-TEE mode on Coston2.
-> The FCE instruction, signed result, active-TEE registry check, verifier path, and settlement are
-> real testnet interactions, but this is not a claim of hardware-backed production attestation.
+The returned result does not contain the private order reference or underlying merchant record.
 
-The earlier mUSD proof bundle remains available in
-[`deployments/coston2-fce-proof.json`](deployments/coston2-fce-proof.json) as historical evidence.
+## Hosted FCC runtime
 
-## Hosted runtime
+The live application reaches the FCC result bridge through the server-only `JORQETH_FCE_PROXY_URL` environment variable. The browser does not receive the proxy URL.
 
-The live web deployment is connected to the FCE result bridge through the server-only
-`JORQETH_FCE_PROXY_URL` Vercel variable. The browser never receives the proxy URL.
-
-Current public FCE result endpoint:
+Public result endpoint:
 
 ```text
 https://jorqeth-fce.breachresponse.xyz
 ```
 
-Readiness can be checked through the application boundary:
+Application readiness endpoint:
 
 ```text
 https://jorqeth.vercel.app/api/fce-result?health=1
@@ -158,46 +188,19 @@ https://jorqeth.vercel.app/api/fce-result?health=1
 
 A healthy deployment returns both `configured` and `ready` as `true`.
 
-The persistent runtime contains MySQL, the Flare C-chain indexer, Redis, tee-proxy, and the Jorqeth
-TEE/extension. Only the external result endpoint is intended to be public. Database, Redis, and
-internal TEE/proxy ports stay private.
+The persistent runtime contains the Flare C-chain indexer, MySQL, Redis, the extension proxy, and the Jorqeth TEE extension. Database, Redis, and internal TEE/proxy ports remain private.
 
-## What stays private
+## Testnet boundary
 
-Raw merchant records and credentials stay inside the evaluation boundary. The browser and public
-chain do not need the customer ledger, revenue fields, or private keys. Jorqeth uses an opaque order
-digest and returns only the minimum result required for settlement.
+The current FCC runtime uses Flare's supported simulated-TEE mode against the real Coston2 chain.
 
-## Coston2 contracts
+The instruction transaction, signed result, active-TEE registry check, verifier path, and settlement are real Coston2 interactions. The current deployment does not claim hardware-backed production attestation.
 
-| Component | Address |
-| --- | --- |
-| FTestXRP / test FXRP | `0x0b6A3645c240605887a5532109323A3E12273dc7` |
-| FXRP campaign factory | `0xF5D10934c08955fcaCA7b1b5dAF59b99d86DEa99` |
-| FCE instruction sender | `0x86bE7C32A5E566b105a224F94b3A2Ed3F751d097` |
-| FCE ActionResult verifier | `0xf314850e31970d8337372380D183aD17a93B7F88` |
-| Historical mUSD FCE factory | `0x9C685107E49a09760c5014031606D973aEA08C50` |
-| MockUSD legacy fallback token | `0x4F928576d415298c260897Bd9b8CbF70D91c5Cd4` |
-| Historical SignatureResultVerifier | `0xEA16d390d6278EBA9d4a856d32bEf9F9975463B6` |
-| Historical disclosed-signer factory | `0x1f4F27be826ef7F12622FE6da1d86d04ffda3226` |
+Coston2 FTestXRP and the historical mUSD token are testnet assets with no real-world value.
 
-| Contract | Role |
-| --- | --- |
-| `JorqethSettlement` | Escrow, domain binding, replay guard, exact-or-zero ERC-20 payout |
-| `JorqethCampaignFactory` | Creates and records fixed campaign deployments |
-| `JorqethInstructionSender` | Selects an active Flare TEE and dispatches the FCE evaluation |
-| `FccResultVerifier` | Verifies raw Flare `ActionResult` signatures against the active TEE set |
-| `SignatureResultVerifier` | Historical disclosed trusted-signer verifier retained for contract and evidence compatibility |
-| `FTestXRP` | Six-decimal Coston2 test token with no cash value |
-| `MockUSD` | Historical six-decimal test asset retained for fallback/evidence compatibility |
+## QA
 
-The frozen result schema and golden vectors live in
-[`spec/jorqeth-v1.json`](spec/jorqeth-v1.json).
-
-## Production QA CLI
-
-The repository includes a read-only CLI for release checks, deployment health, source drift, and
-proof verification. It never asks for a production wallet, resets data, or writes to Coston2.
+The repository includes a read-only QA CLI for deployment health, configuration checks, source drift, and proof verification.
 
 ```bash
 npm run doctor
@@ -208,42 +211,64 @@ npm run qa
 npm run qa:full
 ```
 
-Use `npm run cli -- --help` for flags such as `--url`, `--timeout`, `--json`, and `--ci`. Reports
-are written to `artifacts/qa/summary.json`, `artifacts/qa/summary.md`, and
-`artifacts/qa/junit.xml`.
+Use `npm run cli -- --help` for options including `--url`, `--timeout`, `--json`, and `--ci`.
 
-## Run the repository checks
+Reports are written to:
+
+```text
+artifacts/qa/summary.json
+artifacts/qa/summary.md
+artifacts/qa/junit.xml
+```
+
+## Repository checks
+
+Smart contracts:
 
 ```bash
 forge fmt --check
 forge build
 forge test -vvv
+```
 
+Flare Compute Extension:
+
+```bash
 cd fce-extension
 go test ./...
 go vet ./...
+```
 
-cd ../tools/tee-signer
+TEE signer tooling:
+
+```bash
+cd tools/tee-signer
 go test ./...
 go vet ./...
+```
 
-cd ../../site
+Web application:
+
+```bash
+cd site
 npm ci
 npm run typecheck
 npm run build
 ```
 
-Run `bash evidence/run-proof-gate.sh` for the deterministic evidence gate. The Foundry test suite
-uses local Anvil, chain ID `31337`; that environment is a local devnet and is separate from the
-public Coston2 proof.
+Run the deterministic proof gate from the repository root:
 
-## FCE runtime configuration
+```bash
+bash evidence/run-proof-gate.sh
+```
 
-The tracked deployment files under `deploy/fce-coston2` are templates. Keep database passwords,
-proxy signing keys, and private merchant records in an ignored `.env` or other runtime-only config.
-Do not commit them.
+The Foundry suite uses local Anvil with chain ID `31337`. That local development environment is separate from the committed Coston2 proof.
 
-The external tee-proxy route required by the web application is:
+## FCC runtime configuration
+
+Tracked files under `deploy/fce-coston2` are deployment templates. Keep database passwords, proxy signing keys, private merchant records, and other runtime secrets in ignored environment files or an external secret store.
+
+The web application expects the extension proxy result route:
 
 ```text
 GET /action/result/{instructionId}
@@ -251,15 +276,11 @@ GET /action/result/{instructionId}
 
 The `/info` route is used for readiness checks.
 
-## Limits
+## Current limits
 
-- Jorqeth settles what the agreed merchant record source reports. It does not prove attribution
-  outside that source.
-- Coston2 FTestXRP and the historical mUSD token are testnet assets with no real-world payout value.
-- The current FCE runtime uses simulated-TEE testnet mode, not hardware-backed production
-  attestation.
-- Production use requires confidential credential delivery, a real commerce connector,
-  operational monitoring, and legal and privacy review.
+- The current deployment uses simulated-TEE testnet mode rather than hardware-backed production attestation.
+- Jorqeth currently uses a configured merchant-record source rather than a production commerce connector.
+- Production use requires confidential credential delivery, operational monitoring, and legal and privacy review.
 
 ## License
 
