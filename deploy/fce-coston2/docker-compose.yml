@@ -20,7 +20,7 @@ services:
     env_file:
       - .env.indexer
     environment:
-      NODE_URL: https://falling-skilled-uranium.flare-coston2.quiknode.pro/ext/bc/C/rpc
+      NODE_URL: https://coston2-api.flare.network/ext/C/rpc
       DB_HOST: mysql
       DB_DATABASE: indexer
       DB_USERNAME: jorqeth
