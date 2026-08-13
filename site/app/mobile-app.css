@@ -1,73 +1,73 @@
 /* Mobile-first corrections for the authenticated Jorqeth app.
    This file intentionally overrides the desktop shell without changing the landing page. */
 
+.appnav__mobile-label { display: none; }
+
 @media (max-width: 820px) {
   .appshell {
     display: block;
     min-height: 100dvh;
   }
 
+  /* Phone navigation belongs at the bottom. All five destinations remain visible
+     without horizontal scrolling or covering page content. */
   .appnav {
-    position: sticky;
-    top: 0;
-    z-index: 40;
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 60;
     width: 100%;
-    height: 58px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-    padding: 7px 10px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    background: rgba(251, 247, 239, 0.96);
-    border-right: 0;
-    border-bottom: 1px solid var(--border);
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
+    height: calc(64px + env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 2px;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    overflow: visible;
+    background: rgba(254, 252, 249, 0.97);
+    border: 0;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -8px 30px rgba(23, 21, 15, 0.06);
+    backdrop-filter: saturate(1.25) blur(14px);
+    -webkit-backdrop-filter: saturate(1.25) blur(14px);
   }
 
-  .appnav::-webkit-scrollbar { display: none; }
-
-  .appnav__brand {
-    flex: 0 0 auto;
-    width: 36px;
-    min-width: 36px;
-    height: 36px;
-    padding: 3px;
-    margin: 0 4px 0 0;
-    overflow: hidden;
-    border-radius: 10px;
-    font-size: 0;
-  }
-
-  .appnav__brand img {
-    width: 28px;
-    height: 28px;
+  .appnav__brand,
+  .appnav__section,
+  .appnav__foot {
+    display: none;
   }
 
   .appnav > div:not(.appnav__foot) {
     display: contents;
   }
 
-  .appnav__section,
-  .appnav__foot {
-    display: none;
-  }
-
   .appnav__link {
-    flex: 0 0 auto;
-    min-height: 40px;
-    gap: 7px;
-    padding: 8px 11px;
-    border-radius: 11px;
-    font-size: 0.82rem;
+    min-width: 0;
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 5px 2px;
+    border-radius: 12px;
+    font-size: 0.67rem;
+    line-height: 1;
     white-space: nowrap;
+    text-align: center;
   }
 
   .appnav__link svg {
-    width: 17px;
-    height: 17px;
+    width: 19px;
+    height: 19px;
+  }
+
+  .appnav__label { display: none; }
+  .appnav__mobile-label { display: block; }
+
+  .appnav__link--active {
+    background: var(--jade-14);
+    color: var(--jade-deep);
   }
 
   .appmain {
@@ -126,7 +126,7 @@
 
   .appbody {
     max-width: none;
-    padding: 18px 14px 32px;
+    padding: 18px 14px calc(94px + env(safe-area-inset-bottom));
   }
 
   .payment-console {
@@ -200,8 +200,8 @@
     border-radius: 18px;
   }
 
-  /* On mobile, once a payment exists, funding is part of the current task.
-     Let the balance card participate directly in the grid and place it first. */
+  /* Once a payment exists, the balance is an immediate prerequisite for paying.
+     Put it before the current order task on phones. */
   .payment-sidebar {
     display: contents;
   }
@@ -307,25 +307,19 @@
 
 @media (max-width: 430px) {
   .appnav {
-    height: 54px;
-    padding-inline: 8px;
-  }
-
-  .appnav__brand {
-    width: 32px;
-    min-width: 32px;
-    height: 34px;
-  }
-
-  .appnav__brand img {
-    width: 26px;
-    height: 26px;
+    height: calc(62px + env(safe-area-inset-bottom));
+    padding: 5px 5px calc(5px + env(safe-area-inset-bottom));
   }
 
   .appnav__link {
-    min-height: 38px;
-    padding: 7px 9px;
-    font-size: 0.76rem;
+    min-height: 48px;
+    border-radius: 10px;
+    font-size: 0.62rem;
+  }
+
+  .appnav__link svg {
+    width: 18px;
+    height: 18px;
   }
 
   .apptop {
@@ -346,7 +340,7 @@
   }
 
   .appbody {
-    padding: 16px 12px 28px;
+    padding: 16px 12px calc(90px + env(safe-area-inset-bottom));
   }
 
   .payment-console__head h1 {
