@@ -325,7 +325,7 @@
   }
 
   .wallet {
-    padding: 6px 8px;
+    display: none;
   }
 
   .apptop__right .btn {
