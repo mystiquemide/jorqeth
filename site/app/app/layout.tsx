@@ -4,11 +4,11 @@ import AppWalletDisconnect from "@/components/AppWalletDisconnect";
 
 export const metadata: Metadata = {
   title: {
-    default: "Settlement app",
+    default: "Commission payments",
     template: "%s · Jorqeth",
   },
   description:
-    "Create, fund, evaluate, and settle an exact private commission on Flare Testnet Coston2.",
+    "Check a private sales record and pay the exact commission in test FXRP on Flare.",
 };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -18,13 +18,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="appmain">
         <header className="apptop">
           <div>
-            <div className="apptop__title">Private commission settlement</div>
-            <div className="apptop__sub">Flare Testnet Coston2 · chain 114</div>
+            <div className="apptop__title">Private commission payments</div>
+            <div className="apptop__sub">Test mode on Flare</div>
           </div>
           <div className="apptop__right">
             <span className="wallet">
               <span className="dot" style={{ background: "var(--tone-retry)" }} />
-              Testnet only
+              Test mode
             </span>
             <AppWalletDisconnect />
           </div>
